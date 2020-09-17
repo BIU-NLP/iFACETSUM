@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0615,238,Species adapt to their environment and pass on genetic characteristics to their offspring.,Y,A2IU5TX5S0FA1C,D0615.M.250.F.J,1
+D0615,230_1,Proponents of Creation Science use the bible as the ultimate authority on how the world was formed.,Y,A2YKW761AK4ZGY,D0615.M.250.F.A,1
+D0615,pos_D0615_0,,,,,1
+D0615,225,Creative design is seen by some as a compromise.,Y,A2Q3FS9G8ITCN7,D0615.M.250.F.A,1
+D0615,203,"Supporters of creationism, creation science, and intelligent design are primarily fundamentalist Christians.",Y,AJQGWGESKQT4Y,D0615.M.250.F.E,1
+D0602,neg_D0615_1,New steroids are often marketed as dietary supplements and girls are unaware of what they are taking.,Y,oriFake,D0602.M.250.B.A,1
+D0615,230_0,Proponents of Creation Science use the bible as the ultimate authority on how the world was formed.,Y,A2YKW761AK4ZGY,D0615.M.250.F.A,1
+D0614,neg_D0615_0,"In 1999, Chretien proposed legislation making secession attempts difficult for Quebec.",Y,A249LDVPG27XCE,D0614.M.250.E.B,1
+D0615,pos_D0615_1,,,,,1
+D0615,224,Proponents of 'Creation Science' want evolution to be fairly represented and juxtaposed with other theories of life.,Y,A2Q3FS9G8ITCN7,D0615.M.250.F.A,1

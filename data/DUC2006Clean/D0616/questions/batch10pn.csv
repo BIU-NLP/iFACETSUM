@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0616,pos_D0616_1,,,,,1
+D0616,21,In March 1996 Boris Yeltsin halted the offensive.,Y,A2Q3FS9G8ITCN7,D0616.M.250.G.A,1
+D0647,neg_D0616_0,The relatives of Elian Gonzalez challenged the ruling of the INS in court.,Y,A1C7UV2UT2S9T7,D0647.M.250.B.C,1
+D0616,37,The Russians say Chechnya must stay within the Russian Confederation.,Y,A2YKW761AK4ZGY,D0616.M.250.G.G,1
+D0616,22_1,Yeltsin promised free and democratic elections.,Y,A2Q3FS9G8ITCN7,D0616.M.250.G.A,1
+D0616,12,Boris Yeltsin warned more terrorist attacks would be dealt with severely.,Y,A2VR9O234UCT9T,D0616.M.250.G.A,1
+D0616,50,Russians responded with all-out attempts to occupy Chechnya in 1994-96.,Y,A2Q3FS9G8ITCN7,D0616.M.250.G.E,1
+D0616,pos_D0616_0,,,,,1
+D0616,22_0,Yeltsin promised free and democratic elections.,Y,A2Q3FS9G8ITCN7,D0616.M.250.G.A,1
+D0615,neg_D0616_1,Biology and other aspects of science cannot be mastered without first understanding evolution.,Y,A2Q3FS9G8ITCN7,D0615.M.250.F.A,1
