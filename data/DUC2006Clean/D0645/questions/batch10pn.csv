@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0645,146_0,There were two low-income renters for every low-cost unit.,Y,AI6U09NVOZ62B,D0645.M.250.I.F,1
+D0645,pos_D0645_0,,,,,1
+D0645,146_1,There were two low-income renters for every low-cost unit.,Y,AI6U09NVOZ62B,D0645.M.250.I.F,1
+D0645,137,The number of homeless was rising.,Y,AJQGWGESKQT4Y,D0645.M.250.I.D,1
+D0617,neg_D0645_1,Neither pilot nor co-pilot sent a distress message.,Y,A2YKW761AK4ZGY,D0617.M.250.H.H,1
+D0645,174,The pool of affordable housing has shrunk.,Y,AJQGWGESKQT4Y,D0645.M.250.I.C,1
+D0645,179,It was proposed that FHA revenues be reserved for use in federal housing initiatives.,Y,AJQGWGESKQT4Y,D0645.M.250.I.C,1
+D0645,134,There is not enough low-cost housing in the United States.,Y,AJQGWGESKQT4Y,D0645.M.250.I.D,1
+D0645,pos_D0645_1,,,,,1
+D0631,neg_D0645_0,"The  Concorde, has been flying trans-Atlantic and charter routes for almost 25 years",Y,AOGFK82SQRJY7,D0631.M.250.D.G,1
