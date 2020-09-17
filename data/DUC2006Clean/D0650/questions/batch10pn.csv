@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0650,pos_D0650_1,,,,,1
+D0650,233_1,In August 1999 President Clinton awarded former President Carter the Medal of Freedom.,Y,AJQGWGESKQT4Y,D0650.M.250.E.E,1
+D0650,225,Former President Jimmy Carter founded the Carter Center.,Y,A2IU5TX5S0FA1C,D0650.M.250.E.E,1
+D0650,233_0,In August 1999 President Clinton awarded former President Carter the Medal of Freedom.,Y,AJQGWGESKQT4Y,D0650.M.250.E.E,1
+D0617,neg_D0650_0,The cockpit voice recorder captured someone uttering a prayer before the autopilot disengaged.,Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0650,259,"In the years since he left office, Carter has traveled extensively to monitor elections",Y,AJQGWGESKQT4Y,D0650.M.250.E.J,1
+D0650,226,Transparency for Growth in The Americas is a program for combating corruption through openness in government.,Y,A2IU5TX5S0FA1C,D0650.M.250.E.E,1
+D0650,265,River blindness is a disease that infects 18 million people mainly in Africa.,Y,AJQGWGESKQT4Y,D0650.M.250.E.J,1
+D0650,pos_D0650_0,,,,,1
+D0629,neg_D0650_1,Numerous computer viruses have damaged computers worldwide.,Y,AJQGWGESKQT4Y,D0629.M.250.B.B,1
