@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0620,69,"Another innovation in these schools is sponsoring a chapter of SAVE, Students Against Violence Everywhere.",Y,A2Q3FS9G8ITCN7,D0620.M.250.B.I,1
+D0620,pos_D0620_1,,,,,1
+D0645,neg_D0620_1,Rises in housing costs were driven by a strong economy.,Y,ANCCKNF1DKRZO,D0645.M.250.I.C,1
+D0620,81,Schools are trying to address the root cause of violent and anti-social behavior.,Y,A1CY01G7686ORZ,D0620.M.250.B.H,1
+D0620,76,Many districts have gun-free campaigns.,Y,A2YKW761AK4ZGY,D0620.M.250.B.I,1
+D0624,neg_D0620_0,Athena was the name of a the crackdown on racist crimes in London.,Y,A3GQ6KDIZWCMW6,D0624.M.250.F.H,1
+D0620,98_0,Schools do lockdown drills.,Y,A2YKW761AK4ZGY,D0620.M.250.B.B,1
+D0620,61,The killers in the Columbine incident were isolated and picked on by other students.,Y,A22VACRM9GC73M,D0620.M.250.B.J,1
+D0620,98_1,Schools do lockdown drills.,Y,A2YKW761AK4ZGY,D0620.M.250.B.B,1
+D0620,pos_D0620_0,,,,,1
