@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0617,315,EgyptAir flight 990's autopilot was switched off.,Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0617,322,Cockpit voice recordings indicated that someone uttered a prayer in Arabic just before the autopilot disengaged.,Y,A2YKW761AK4ZGY,D0617.M.250.H.H,1
+D0617,324,EgyptAir Flight 990 crashed into the Atlantic on October 31 1999.,Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,291,The flight recorder revealed that the cockpit turned off both engines.,Y,A2YKW761AK4ZGY,D0617.M.250.H.D,1
+D0617,307,Both engines had been switched off from the cockpit.,Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,1
+D0617,314,"EgyptAir flight 990 plummeted 15,000 feet, but then climbed 8000 feet before its final fall to the ocean.",Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0617,318,The plane's autopilot was disconnected.,Y,A2YKW761AK4ZGY,D0617.M.250.H.H,1
+D0617,325,All 217 people on board Flight 990 died when it crashed.,Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,300,Computer shutdown was speculated as the cause of the crash of EgyptAir Flight 990.,Y,A22VACRM9GC73M,D0617.M.250.H.D,1
+D0617,301,EgyptAir flight 990 crashed in October 1999.,Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,1

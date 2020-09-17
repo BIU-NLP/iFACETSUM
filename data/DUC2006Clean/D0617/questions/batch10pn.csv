@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0617,315_1,EgyptAir flight 990's autopilot was switched off.,Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0624,neg_D0617_1,Lawrence was stabbed at a bus stop in London.,Y,A2Q3FS9G8ITCN7,D0624.M.250.F.F,1
+D0617,297,"EgyptAir Flight 990's flight recorder contained the co-pilot chanting, 'I rely on God'.",Y,A22VACRM9GC73M,D0617.M.250.H.D,1
+D0617,315_0,EgyptAir flight 990's autopilot was switched off.,Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0617,324,EgyptAir Flight 990 crashed into the Atlantic on October 31 1999.,Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0647,neg_D0617_0,"On November 25, 1999 Elian Gonzalez was six years old.",Y,A1C7UV2UT2S9T7,D0647.M.250.B.C,1
+D0617,pos_D0617_1,,,,,1
+D0617,pos_D0617_0,,,,,1
+D0617,328,Speculation that malfunctioning reverse thrusters caused the crash was disproved.,Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,325,All 217 people on board Flight 990 died when it crashed.,Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1

@@ -1,0 +1,44 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0617,288,"There were no radio reports of trouble.",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,0
+D0617,289,"The flight recorder was recovered on November 9.",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,1
+D0617,290,"The flight recorder revealed that the autopilot was disconnected",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,0
+D0617,291,"The flight recorder revealed that the cockpit turned off both engines.",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,1
+D0617,292,"The cockpit voice recorder was recovered on November 15.",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,0
+D0617,293,"The National Transportation Safety Board stated on January 21, 2000 that there was no sign of mechanical failure.",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,0
+D0617,294,"The cockpit voice recorder contained the co-pilot chanting, 'I rely on God'.",Y,A2YKW761AK4ZGY,D0617.M.250.H.D,0
+D0617,295,"EgyptAir Flight 990 crashed on October 31, 1999.",Y,A22VACRM9GC73M,D0617.M.250.H.D,0
+D0617,296,"EgyptAir Flight 990's flight recorder was recovered on November 9.",Y,A22VACRM9GC73M,D0617.M.250.H.D,0
+D0617,297,"EgyptAir Flight 990's flight recorder contained the co-pilot chanting, 'I rely on God'.",Y,A22VACRM9GC73M,D0617.M.250.H.D,1
+D0617,298,"The emotional stability of the passengers and crew of EgyptAir Flight 990 were examined.",Y,A22VACRM9GC73M,D0617.M.250.H.D,0
+D0617,299,"Egyptians blamed technical problems for the crash of EgyptAir Flight 990.",Y,A22VACRM9GC73M,D0617.M.250.H.D,0
+D0617,300,"Computer shutdown was speculated as the cause of the crash of EgyptAir Flight 990.",Y,A22VACRM9GC73M,D0617.M.250.H.D,1
+D0617,301,"EgyptAir flight 990 crashed in October 1999.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,1
+D0617,302,"There was no distress call.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,0
+D0617,303,"An emergency descent was virtually ruled out.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,0
+D0617,304,"The tail elevators were in uneven positions.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,0
+D0617,305,"Boeing step up inspections of its elevator systems.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,0
+D0617,306,"Investigators determined there was no sign of mechanical failure.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,0
+D0617,307,"Both engines had been switched off from the cockpit.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,1
+D0617,308,"The co-pilot was the subject of several investigations by New York hotel security police.",Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,1
+D0617,309,"The EgyptAir flight 990 crash was evaluated for mechanical defects, operational errors, or human sabotage.",Y,A22VACRM9GC73M,D0617.M.250.H.A,0
+D0617,310,"EgyptAir flight 990's tail elevators were in uneven positions.",Y,A22VACRM9GC73M,D0617.M.250.H.A,0
+D0617,311,"Boeing inspected EgyptAir flight 990's elevator systems.",Y,A22VACRM9GC73M,D0617.M.250.H.A,0
+D0617,312,"EgyptAir flight 990 has no sign of mechanical failure.",Y,A22VACRM9GC73M,D0617.M.250.H.A,0
+D0617,313,"EgyptAir flight 990's co-pilot was investigated by New York hotel security police.",Y,A22VACRM9GC73M,D0617.M.250.H.A,0
+D0617,314,"EgyptAir flight 990 plummeted 15,000 feet, but then climbed 8000 feet before its final fall to the ocean.",Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0617,315,"EgyptAir flight 990's autopilot was switched off.",Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0617,316,"EgyptAir Flight 990 off Nantucket crashed in October 1999.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,0
+D0617,317,"There were no survivors in the EgyptAir Flight 990 crash.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,0
+D0617,318,"The plane's autopilot was disconnected.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,1
+D0617,319,"One thrust reverser had been previously deactivated.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,0
+D0617,320,"Neither pilot nor co-pilot sent a distress message.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,1
+D0617,321,"Data from one Black Box showed that both engines had been switched off from the cabin.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,0
+D0617,322,"Cockpit voice recordings indicated that someone uttered a prayer in Arabic just before the autopilot disengaged.",Y,A2YKW761AK4ZGY,D0617.M.250.H.H,1
+D0617,323,"Some speculated that an in-flight electrical or computer problem caused the crash of EgyptAir Flight 990.",Y,A2IU5TX5S0FA1C,D0617.M.250.H.B,0
+D0617,324,"EgyptAir Flight 990 crashed into the Atlantic on October 31 1999.",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,325,"All 217 people on board Flight 990 died when it crashed.",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,326,"As it flew at 33,000 feet, the aircraft's automatic pilot was shut off.",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,0
+D0617,327,"The cockpit voice recorder captured someone uttering a prayer before the autopilot disengaged.",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,328,"Speculation that malfunctioning reverse thrusters caused the crash was disproved.",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,1
+D0617,329,"NTSB investigators found no evidence that mechanical or electrical problems or an explosion caused the crash.",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,0
+D0617,330,"The crew did not advise of either an emergency or mechanical problem before or during the dive",Y,A2YKW761AK4ZGY,D0617.M.250.H.B,0
