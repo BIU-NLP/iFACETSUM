@@ -1,0 +1,422 @@
+{
+    "D0601": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0603": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0605": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0608": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0614": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0615": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0616": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0617": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0620": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0624": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0627": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0628": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0629": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0630": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0631": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0640": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0643": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0645": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0647": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ],
+    "D0650": [
+        {
+            "type": "initial",
+            "request_len": 200
+        },
+        {
+            "type": "keyword",
+            "text": "<[0]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[1]>",
+            "request_len": 2
+        },
+        {
+            "type": "keyword",
+            "text": "<[2]>",
+            "request_len": 2
+        }
+    ]
+}
