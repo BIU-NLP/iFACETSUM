@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0647,pos_D0647_0,,,,,1
+D0627,neg_D0647_1,"Most international adoptees look different than their white, middle-class parents.",Y,A2YKW761AK4ZGY,D0627.M.250.I.I,1
+D0647,87,Elian became a symbol of the continuing struggle between Castro and the US Cuban-exile community.,Y,AJQGWGESKQT4Y,D0647.M.250.B.D,1
+D0647,pos_D0647_1,,,,,1
+D0647,115_1,"On April 22, federal agents seized Elian in a pre-dawn raid.",Y,A2C84POENS2UNY,D0647.M.250.B.B,1
+D0647,106,"On January 7, 2000 Lazaro Gonzalez filed petition for temporary custody in state court for Elian Gonzales.",Y,A2IU5TX5S0FA1C,D0647.M.250.B.F,1
+D0647,89,On June 28 the Supreme Court refused to review the case or extend the injunction.,Y,AJQGWGESKQT4Y,D0647.M.250.B.D,1
+D0603,neg_D0647_0,The Wetlands are a natural ecological system sometimes called 'Earth's kidney'.,Y,AU01P6YB9J5JX,D0603.M.250.C.A,1
+D0647,115_0,"On April 22, federal agents seized Elian in a pre-dawn raid.",Y,A2C84POENS2UNY,D0647.M.250.B.B,1
+D0647,107,Elian's mother drowned when their boat capsized.,Y,AJQGWGESKQT4Y,D0647.M.250.B.B,1
