@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0631,65,The Concorde takes less than 4 hours to fly across the Atlantic.,Y,A5NE8TWS8ZV7B,D0631.M.250.D.D,1
+D0631,83,"A Concorde struck a hotel near Paris in July 2000, killing all 109 aboard and four on the ground.",Y,AC5UD8N187QD6,D0631.M.250.D.G,1
+D0631,104_0,The Concorde main route was from Paris and London to New York.,Y,AVQGY7FCU80XP,D0631.M.250.D.I,1
+D0640,neg_D0631_0,The Kursk was able to carry 118 crew members.,Y,A3U21PUMQ6NGT2,D0640.M.250.D.D,1
+D0631,77,"Air France paid each family $20,000 to cover immediate expenses after the 2000 crash.",Y,AC5UD8N187QD6,D0631.M.250.D.D,1
+D0617,neg_D0631_1,"EgyptAir flight 990 plummeted 15,000 feet, but then climbed 8000 feet before its final fall to the ocean.",Y,A22VACRM9GC73M,D0617.M.250.H.A,1
+D0631,pos_D0631_1,,,,,1
+D0631,114,The planes leaving from Paris were immediately grounded after the crash.,Y,A33B85TN97HQ33,D0631.M.250.D.I,1
+D0631,104_1,The Concorde main route was from Paris and London to New York.,Y,AVQGY7FCU80XP,D0631.M.250.D.I,1
+D0631,pos_D0631_0,,,,,1

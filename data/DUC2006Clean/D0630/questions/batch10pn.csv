@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0630,9,Online book sales captured 2% of the market in 1999.,Y,AC5UD8N187QD6,D0630.M.250.C.C,1
+D0630,23_0,"In the 1990s, membership in the American Bookseller Association dropped by almost half.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,1
+D0630,pos_D0630_1,,,,,1
+D0630,50,Books sells declined in 1999 by 3 percent.,Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,1
+D0640,neg_D0630_1,Norwegian divers opened hatches to Kursk's flooded ninth compartment.,Y,A3CWW9DIL73I14,D0640.M.250.D.F,1
+D0630,42,The ABA was formed to represent and promote the independent booksellers.,Y,A3QAETE7C7Z4R3,D0630.M.250.C.H,1
+D0605,neg_D0630_0,Three new NSAIDS containing COX-2 (cyclooxygenase-2) inhibitors have been developed.,Y,A249LDVPG27XCE,D0605.M.250.E.A,1
+D0630,60,Adults purchased over 50 million titles online.,Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,1
+D0630,23_1,"In the 1990s, membership in the American Bookseller Association dropped by almost half.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,1
+D0630,pos_D0630_0,,,,,1

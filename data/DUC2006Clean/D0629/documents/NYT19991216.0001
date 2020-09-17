@@ -1,0 +1,68 @@
+&QL; 
+
+ We are entering the plague years of computer viruses. In recent weeks a number of new, malicious and destructive viruses have been detected on the Internet and in the networks of several large organizations. 
+
+ Last week, the director of the FBI's National Infrastructure Protection Center, Michael A. Vatis, said the agency was on alert for a possible flurry of computer attacks, including viruses, timed to coincide with the already difficult year 2000 transition. 
+
+ ``It's natural to expect there might be people doing stupid things with computers,'' Vatis said. 
+
+ Kathy Fithen, manager of the Computer Emergency Response Team at Carnegie Mellon University, a project that receives part of its financing from the Department of Defense, said: ``We are anticipating a lot of date-triggered viruses because of Jan. 1. This is really a time to be diligent'' in following standard antivirus procedures, Ms. Fithen said, ``but it's not a time for panic.'' The team maintains a computer security Web page at www.cert.org/y2kinfo. 
+
+ Several of the newer threats, including viruses called Prilissa and Mypics, are scheduled to do their nastiest work in coming weeks, in Prilissa's case when someone opens an infected e-mail attachment on Christmas Day, and when Mypics detects the computer's clock changing to 2000. Other viruses are expected to emerge in coming weeks as their twisted creators try to capitalize on Y2K-related confusion. 
+
+ Some of these viruses can reformat your hard disk drive, permanently erasing all the files on it. Some can mail themselves to your friends and associates by commandeering your e-mail address book. There is even one that can alter your system and notify the hacker via e-mail when your computer is vulnerable to further attacks. 
+
+ So, it is time for a refresher on viruses and the simple, prudent precautions you can take to minimize the chances of your computer becoming infected. Although the risk of receiving a virus is relatively small for home computer users, there is a risk. 
+
+ Viruses are frightening to many novice computer users in part because they are relatively rare and not well understood. (Viruses are also frightening to many experienced computer users who understand viruses all too well, not because they are particularly dangerous, but rather because they are a major pain to deal with.) There is no need to panic. There are plenty of unavoidable annoyances that come with computers these days, so it seems a shame to waste more time and energy on viruses and worms, which are so easily avoided. 
+
+ Here we go. 
+
+ For people who have no reason to believe their systems have been infected: 1. Back up (make copies of) all your important files. 
+
+ 2. Get in the habit of making regular backups. 
+
+ 3. Get an anti-virus program and use it. 
+
+ 4. Update the program frequently by downloading new virus signature files from the software maker's Web site. 
+
+ People who suspect their computer may be infected should start with steps 3 and 4, make sure their systems are virus-free, and then do steps 1 and 2. 
+
+ In anticipation of a surge in virus hoaxes in coming weeks, many of the world's anti-virus software makers are offering fully functional, 90-day trial versions of their programs, including free updates, until Dec. 31. The Microsoft Corp. has assembled links to these free programs on a Web page at www.microsoft.com/y2k/antivirus/antivirus.htm. 
+
+ Many new computers come from the factory loaded with an anti-virus program, so you may not need to buy one. But whether the program comes already installed or from a store shelf, it should be updated quickly. 
+
+ In the last month, several significant viruses and worms have been detected for the first time, including Prilissa, Babylonia and Worm.Explore.Zip(pack), alias the MiniZip worm, which is particularly nasty. 
+
+ Many people install an anti-virus program and assume, erroneously, that they are safe from future infection. This is like installing smoke detectors in your home and then never changing the batteries. 
+
+ I use Symantec's Norton Antivirus for both my Windows and Macintosh computers. (While early disk-based viruses typically targeted one type of computer or another, newer e-mail-based viruses attack different kinds of computers impartially.) Norton Antivirus 2000 version 6.0 for Windows costs $39.95 and the Macintosh version 6.0 is $69.95; they can be downloaded from Symantec's Web site (www.symantec.com). Another highly regarded anti-virus program for is McAfee's VirusScan 4.0, which costs $29.95 and is available at www.mcafee.com/centers/anti-virus/). 
+
+ The most prevalent villains on the virus scene are so-called macro viruses, which typically arrive in e-mail attachments. Virus writers seem to be particularly fond of Microsoft products, including Windows, Word, Outlook and Outlook Express, so users of those programs should be especially vigilant. 
+
+ In general, simply reading an e-mail message will not infect your computer, even if the subject line of the message says, ``There is a mean, ugly, nasty virus hidden in this message.'' 
+
+ The real danger is in opening file attachments that come appended to e-mail messages. You should never, ever, under any circumstances, open an attached file unless you are absolutely sure you know from whom it comes, what it does and that the person who sent it intended to send it to you. 
+
+ If the attachment contains one of these macro viruses, opening the file can cause the infection. If there is any doubt whatsoever about the nature of the attachment, just dump it in the trash. Then empty the trash. 
+
+ Second, turn off the functions in your computer that open so-called macro applications automatically. Your software manual will tell you how to do it. 
+
+ Although most of the newer viruses arrive as e-mail attachments, viruses can come from any number of sources, including commercial, shrink-wrapped software. It is prudent to check all new software before installing it. It is annoying, but not nearly as annoying as losing files and rebuilding a hard disk. 
+
+ There. That wasn't so hard. 
+
+ nn 
+
+ Now, copy this article and send it immediately to the first 50 people in your address book, and tell them all to do the same. If it reaches two million people by Jan. 1, Bill Gates will send $1,000 and free tickets to Disneyland to everyone on the forwarding lists. 
+
+ Stop! This is a hoax, and it is one of the most common stupid things people do with computers. Gates is one of the most generous philanthropists of our time, but he does not pay people to clog the Internet with inane e-mail messages that replicate like computer viruses. 
+
+ As a home computer user you are far more likely to be the recipient of a virus hoax than you are to be the recipient of a virus. 
+
+ The typical hoax letter says that there is a new and particularly nasty virus on the loose, confirmed by (insert the name of some completely irrelevant organization like the Federal Communications Commission), and that if you open an e-mail message with a certain subject line, a virus will delete all the files on your hard drive. In almost all cases, the hoax letter will urge the recipient to pass this important message along to as many people as possible. 
+
+ Don't do it. Instead, go to the Internet site ciac.llnl.gov/ciac/CIACHoaxes.html, which lists the most common hoaxes in circulation. 
+
+ Finally, remember that computers can do weird things and mess up your files without the aid of a virus. I have a friend who immediately suspects computer viruses whenever the printer stops working or her system crashes. As far as I can tell, the only thing that is infecting her computer is Windows 98. 
+

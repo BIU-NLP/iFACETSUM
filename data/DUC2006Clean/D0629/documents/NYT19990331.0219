@@ -1,0 +1,58 @@
+Melissa is a new and spectacularly promiscuous computer virus, one that has infected tens of thousands of computers worldwide since its discovery less than a week ago. It has already cost millions of dollars in lost productivity, experts estimate. 
+
+ And what a bargain it has been, because Melissa is relatively sweet, as viruses go. The next time around _ and there will be a next time _ a Melissa-type virus could be much more damaging. 
+
+ Melissa has focused the computing world's attention on the rapidly growing threat of computer viruses in the Internet era and underscored the need of all PC users to take virus protection seriously. 
+
+ Melissa, as the new viral vixen was named by its creator _ as yet unknown _ combines elements of both a computer virus (spreading from file to file) and a worm program (spreading from computer to computer over a network). It is only one of several recent viruses designed to prey on an otherwise useful feature of Microsoft Word that enables macro programs _ automated scripts that trigger one or more actions in the host computer _ to be started from within a file. 
+
+ Melissa is mainly a nuisance. It will not erase your files, demagnetize the stripes on your credit cards, reset your VCR clock to flash 12:00, remove your mattress tags or hide your car keys. It is not destructive, except to the extent that it clogs e-mail systems and forces system administrators to spend most of their time cleansing the virus from their computers. 
+
+ Although relatively benign, easy to detect and simple to disable, at least in its current form, Melissa is alarming to many virus experts because it represents the first worm program to sweep through common desktop computers. 
+
+ Melissa typically enters a computer hidden in a Microsoft Word 97 or Word 2000 file attached to an electronic mail message. It can also travel via diskettes and downloaded files, but electronic mail is an exquisitely more efficient carrier, given the millions of e-mail messages that traverse computer networks every day. 
+
+ This particular worm virus' preferred mode of travel is Microsoft Outlook 98, the part of the popular Office suite that handles electronic messages. Computers without Outlook 98 can be infected, but they cannot pass along the virus to others except on disk. If Outlook is installed but is not the user's primary e-mail program, Melissa will try to seduce Outlook into helping it along. 
+
+ No matter how it arrives, Melissa can infect any computer that uses Microsoft Word, including Macintoshes (but Macs cannot pass it along via Outlook). Once in the computer it will infect any Word files that the owner opens or creates, and it will rifle through his or her Outlook address book and send a copy of itself, embedded in a Word document, to the first 50 people or groups on the list. 
+
+ If the victim is unfortunate enough to open or create a sensitive file using Word 97 when Melissa kicks in, it will surreptitiously send that file, infected with the virus, to those 50 addresses. 
+
+ Each of those who open the document could potentially send it to 50 others, and so on. The damage is amplified if any of the addresses are to mailing lists, like ``A-team,'' ``book club'' or another list early in the alphabet. 
+
+ The recipients will receive a message with the subject line ``Important message from (your name)'' and the message ``Here is the document you asked for. ... don't show anyone else ;-).'' An infected Word file is attached to the message. 
+
+ The original virus file was called list.doc and was a list of passwords to pornographic Web sites. As the virus spreads, the file certainly will change. Keep in mind that computer viruses can mutate quickly and alter their modus operandi. There is already evidence that Melissa variants are in circulation. 
+
+ Opening the attachment triggers the virus, unless an updated antivirus program is on guard to stop it. Dont open it. And if the program asks whether you want to allow macros to run, just say no. 
+
+ If Melissa succeeds in infecting the computer, once an hour it can insert a snippet of dialogue from a ``Simpsons'' television episode into any Word 97 document that is open at the time: ``Twenty-two points, plus triple-word-score, plus 50 points for using all my letters. Game's over. I'm outta here.'' 
+
+ nn 
+
+ With some simple modification, Melissa could have copied critical data from the victim's computer and sent it to Bulgaria, reformatted the hard disk, changed random zeros to ones in a spreadsheet and perhaps even erased any trace that it had been there. But it didn't. 
+
+ Because Melissa is not destructive, there might be a temptation to shrug it off as a transient blip in Internet security. Instead, it ought to highlight how vulnerable all computers are to viruses as the world's communications and commerce systems become more dependent on the Internet each year. 
+
+ So the first rule is to install a tough antivirus program. No computer connected to the Internet should be without one. 
+
+ An antivirus program is designed to recognize telltale virus signatures and to intercept and destroy the rogue code before it has a chance to infect the computer. But such programs are useful only on viruses the software has been trained to catch. When a new virus like Melissa appears, it could slip past any antivirus program that has not been updated to catch it. 
+
+ The two best antivirus programs I have used are Norton Antivirus 5.0 from the Symantec Corp. (www.symantec.com) and Virus Scan from the McAfee division of Network Associates (www.nai.com). Both are about $50 and include a one-year subscription for online updates, and both quickly posted Melissa updates on their sites. 
+
+ The second rule is to update the software frequently. New viruses are being created all the time. Jeffrey Carpenter, team leader at the Computer Emergency Response Team (CERT) at Carnegie Mellon University, said reports of virus attacks have increased significantly since last August. 
+
+ Almost all of the major antivirus programs can easily be updated over the Internet, through a relatively quick download that updates the program's database of known virus signatures. In some cases the user does not have to do anything; the downloads are performed automatically. Not using this feature in effect defeats the purpose of the software. 
+
+ The third rule is more Draconian: Never open e-mail attachments or download files unless you are absolutely confident of their contents, even if they are not Word files. It would be trivial for a malicious programmer to modify Melissa to affect Excel files, for example, and apparently someone has done just that, in a new virus called Papa. 
+
+ The conventional advice is never to open any attachment sent by a stranger, but with Melissa, and with several other new viruses designed to propagate via e-mail, the files almost always come from acquaintances, even friends. 
+
+ If you use Word 97, go to the Word toolbar and click Tools, then Options, then General, then make sure there is a check mark in the box labeled ``Macro virus protection.'' 
+
+ More tips are available from several Web sites, including www.microsoft.com and www.cert.org. It might be a good idea to bookmark them, because Melissa is unlikely to be the last such virus we will see. 
+
+ ``It is by far the most prolific threat I've seen in a long time,'' said Carey Nachenberg, chief researcher at the Symantec Antivirus Research Center in Santa Monica, Calif., adding that future virus worms will spread faster as more PC users connect to the Internet through always-connected high-speed phone lines and cable modems. 
+
+ But he expressed hope that once Melissa's author is identified and tied to the whipping post, others will be deterred from releasing such viruses into the world. 
+

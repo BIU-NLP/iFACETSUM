@@ -1,0 +1,32 @@
+PITTSBURGH (AP) -- A new computer virus can allow documents to be e-mailed to other people without warning, a potential security breach that should worry businesses and governments, an expert at Carnegie Mellon University said Saturday. 
+
+ The ``Melissa macro'' or W97M--Melissa virus spreads via infected e-mail and attacks computers loaded with Microsoft's widely used Word 97 or Word 2000 programs, according to CERT -- or Computer Emergency Response Team -- Carnegie Mellon's Department of Defense-funded computer security team. 
+
+ CERT first heard of the virus Friday afternoon and its members worked through the night to analyze the virus and develop a fix, CERT manager Katherine Fithen said. 
+
+ ``We're getting so many reports from across the world, that we know this is going to be a huge problem come Monday,'' Fithen said. 
+
+ She noted that since CERT was founded 10 years ago, this is only the second time it has considered a virus important enough to warrant a public announcement. The first, in 1994, warned of a virus that allowed computer burglars to collect passwords. 
+
+ CERT has not determined where the Melissa virus originated. 
+
+ Fithen said she is not allowed to say whether any governmental agency has suffered a security breach as the result of Melissa. 
+
+ Microsoft spokesman Adam Sohn said company programmers worked with CERT and manufacturers of anti-virus programs to develop an antidote. 
+
+ If a computer user opens an infected Word-format document, the virus propagates itself by reading the user's e-mail address book and sending an infected message to the first 50 entries, CERT said. 
+
+ The message can include the contents of any Word document that is open on the computer, Fithen said. 
+
+ Also, the virus reproduces and sends so much unwanted e-mail that the volume can overload some mail servers, the computers that distribute e-mail. 
+
+ However, it apparently causes no direct damage to a computer's memory or programs. 
+
+ Infected documents are sent as attachments to e-mails most frequently bearing a header: ``Subject: Important Message From'' the name of person whose computer relayed the virus. 
+
+ The body of the message says ``Here is that document you asked for ... don't show it to anyone else ;-).'' 
+
+ *------ 
+
+ EDITOR'S NOTE: CERT information about the Melissa virus is available on the Web at http://www.cert.org/advisories/CA-99-04-Melissa-Macro-Virus.html. Microsoft has a patch available at http://www.microsoft.com/security/bulletins/ms99-002.asp.  
+

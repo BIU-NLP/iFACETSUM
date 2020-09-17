@@ -1,0 +1,52 @@
+NEW YORK (AP) -- The FBI on Friday tried to track the author of a file-destroying computer virus that has hit some of the nation's biggest corporations and infected tens of thousands of machines. 
+
+ Software companies posted new virus-killing programs on their Web sites to attack the Worm.Explore.Zip virus, which enters machines in almost the same way as the recent Melissa virus -- by disguising itself as a friendly piece of e-mail. 
+
+ Melissa infected hundreds of thousands of computers, but there were signs Friday that the new virus may not be spreading as quickly. 
+
+ Still, it hit systems at leading technology companies such as Compaq Computer and Motorola and other major companies, including AT&T, Boeing and General Electric.
+
+ The FBI would not reveal the methods of its investigation or provide a more specific estimate of how many computers were infected. 
+
+ ``This program is deleting files, and for people who did not have back-ups, they could be lost for good,'' said Mark Zajicek, member of the Computer Emergency Response Team at Carnegie Mellon University in Pittsburgh. 
+
+ First detected in Israel early this week, Worm.Explore.Zip masquerades as a message from a friend or acquaintance: ``Hi (Recipient Name)! I received your e-mail and I shall send you a reply ASAP. Till then, take a look at the attached zipped docs.'' 
+
+ The message is harmless unless the recipient opens an attached file. That unleashes a program that can wipe out the contents of documents, spreadsheets, graphic presentations and other important files created by Microsoft programs. 
+
+ It also contaminates a computer's e-mail program and sends a copy of itself as a reply to any incoming e-mail. That is particularly threatening for companies where workers regularly zip e-mails back and forth. 
+
+ ``Once the virus has started within an organization, it embeds itself into the system,'' said Jan Kaminski, president of FastLane Technologies, a Canadian software company. ``There's nothing you can do until you actually remove some files from the machine.'' 
+
+ But, thanks to the run-ins with the Melissa and Chernobyl viruses earlier this spring, computer systems managers reacted more quickly when word of Worm.Explore.Zip began to spread. 
+
+ ``We continue to get direct reports, but they're not increasing at the rate it might have, so we're encouraged by that,'' said Zajicek. 
+
+ Zajicek warned, however, that computer users still need to be cautious about any e-mail with an attachment. 
+
+ ``It's too early to tell how far it's already spread and difficult to tell how far it will spread in the coming days and weeks,'' he said. 
+
+ The FBI issued a warning on its Web site. 
+
+ ``Users should exercise caution when reading their e-mail for the next few days and bring unusual messages to the attention of their system administrator,'' said Michael A. Vatis, director of the FBI's National Infrastructure Protection Center. ``The transmission of a virus can be a criminal matter, and the FBI is investigating.'' 
+
+ Worm.Explore.Zip is the third major bug to sweep across the Internet since late March, when the Melissa virus overwhelmed systems with floods of e-mail. A more damaging virus named Chernobyl struck in late April, but did most of its harm overseas. 
+
+ The new bug is only known to attack computers using Microsoft operating systems Windows 95, Windows 98, and Windows NT. Rival operating systems such as Macintosh and Unix apparently are not vulnerable. 
+
+ Early warnings helped AT&T, Compaq and GE contain the damage Thursday when their computer systems were infected, while Microsoft said it shut down its corporate e-mail system for two hours as a precaution.
+
+ At Boeing, the company shut down an e-mail system that links 160,000 computers. 
+
+ ``We're hopeful we got things shut down fast enough so it will minimize the loss of any documents,'' said spokesman Dave Suffia. 
+
+ At Lucent Technologies, which makes telecommunications equipment, strange messages began appearing on computers on Thursday morning, said spokesman John Skalko, who inadvertently activated Worm.Explore.Zip on his computer. 
+
+ ``That was enough. I lost all my (Microsoft Word) files,'' said Skalko, estimating that 150 documents were destroyed. At least 20 to 30 other computers were stricken by the virus before Lucent technicians shut down the e-mail system and inoculated it. 
+
+ ``I think we nipped it in the bud,'' said Skalko. 
+
+ Because of the way it works, Worm.Explore.Zip actually does not fit the technical definition of a computer virus. 
+
+ Instead, software experts said, the bug should be classified as a ``Trojan Horse'' -- a name borrowed from an ancient battle in which Greek soldiers hid inside a wooden horse to launch a surprise attack on the city of Troy.  
+

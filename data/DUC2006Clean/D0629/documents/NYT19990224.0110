@@ -1,0 +1,38 @@
+As physicians are wont to tell us when we drag ourselves to the infirmary suffering from something they can't diagnose, there's a nasty bug going around. 
+
+ It got into my computer's sinus cavities numerous times in the past week or two, and eventually caused me considerable grief. 
+
+ This particular infection arrives via the Internet in a program called Happy99.exe. If you spend much time in cyberspace, you've almost certainly heard about it even if you haven't contracted it. It generally gets into your computer by way of an attachment to an e-mail. 
+
+ It is not technically a virus, but a worm. Most of us don't care whether it's a virus or a worm or a garter snake; to non-technical weenies it's basically a problem. 
+
+ Theoretically at least, it can't hurt you unless you execute it. If you do execute it, it quietly insinuates itself amongst your Internet programs and attaches itself to every message you send. You don't know it's doing this, of course. 
+
+ Happy99 is not, apparently, destructive, but it has certainly created a ruckus on some mailing lists to which I belong. Folks kept passing it back and forth. Joe had no sooner got his system free of the thing than Phil sent it to him. Joe got enraged with Phil, who of course didn't know he had the thing in the first place, let alone had passed it on. Joe didn't know he had gotten it from Phil until he received an outraged message from Howard. 
+
+ My mail program, Eudora Pro, downloads attachments into a specified directory automatically. It got to where I went to that directory immediately after closing Eudora and looked for ol' Happy. Sometimes I found two or three iterations of it. I simply deleted them and went on my way. After a while, though, things got more sinister. 
+
+ One evening Eudora was downloading a boatload of mail and I was watching the process, slack-jawed and half asleep. I had barely noticed it was downloading Happy when half my monitor went to black and the rest to a gaudy pinstriped pattern and the entire machine seized up like a rusty engine. 
+
+ Annoyed, I rebooted, started up Windows Explorer and went to my download directory to find Happy and delete it. The instant the program scrolled into view, the machine seized up again. Rebooting again, I tried the Quickfind feature. No sooner did it find Happy99.exe than the machine froze. 
+
+ I've never heard of such a thing. After the next reboot, I turned Norton Antivirus loose on it. When it found Happy99, it singled the thing out as a virus, but could not repair it. It was able to delete the thing. 
+
+ The agony was not over, however. It seems Eudora, having been abruptly thwarted in its download, decided it hadn't downloaded anything. It started from the top again, and when it got to that infernal file, it seized up the computer. 
+
+ Tech support at my ISP, MindSpring, could look into my mailbox, but they couldn't tell which message had Happy attached to it. Rather than dump the entire box full of mail, the tech rep steered me to http://www.mailstart.com. 
+
+ If you provide this site your mail address and password, it will go to your mailbox and present you with a list of your mail. It doesn't download any of it, however, until told to do so. Thus I was able to poke around and get whatever mail looked like it might be of interest, and then dump the whole lot of it. 
+
+ If you slog around on the Internet and indulge in e-mail, you might want to make a note of www.mailstart.com. In the meantime, I'm going to see about updating Eudora. 
+
+ E-mail: jwarner(at)ajc.com 
+
+ Warner writes for the Atlanta Journal-Constitution 
+
+ Story Filed By Cox Newspapers 
+
+ For Use By Clients of the New York Times News Service 
+
+ &QL; NYT-02-22-99 1101EST &QL; 
+

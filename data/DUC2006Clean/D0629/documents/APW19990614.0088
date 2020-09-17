@@ -1,0 +1,42 @@
+NEW YORK (AP) -- Proving even more virulent than first believed, the computer virus Worm.Explore.Zip sprang back from a deceptively quiet weekend amid warnings that it uses more than just e-mail trickery to spread. 
+
+ Computer support lines were inundated Monday with calls about new outbreaks of the file-killing virus, which experts now say was also designed to spread within an organization through computer network links that enable co-workers to share files on each others' machines. 
+
+ As the epidemic first picked up steam last week, infecting tens of thousands of computers at major corporations, the primary mode of transmission had seemed to be a friendly e-mail that tricks the recipient into opening a contaminated file. 
+
+ By eliminating the need for a helping human hand, the Worm.Explore.Zip could prove more difficult to irradicate than the Melissa and Chernobyl viruses that struck earlier this spring by e-mail only. 
+
+ ``As time goes on, the programs intruders are using are becoming more complex,'' said Mark Zajicek, a member of the government-chartered Computer Emergency Response Team at Carnegie Mellon University in Pittsburgh. 
+
+ Over the weekend, the team found during tests that the virus would reappear seconds after being removed from a computer -- if that machine was linked by a network to another machine that was still infected. 
+
+ Most major corporations, universities and government agencies link thousands of personal computers in networks, helping people work together, but also making their machines vulnerable to the bug. 
+
+ ``It only takes one opening, one infected computer within a company, to rapidly spread within that company,'' said Zajicek. ``That helps explain what we've been seeing -- that the program wasn't spreading from site to site as quickly as it was within a site.'' 
+
+ The additional mode of contamination may also render some of the cures posted on the Internet by software companies last week less effective, said Zajicek 
+
+ ``Based on the symptoms we've seen in our own test lab, we have seen cases where such fixes would not be effective,'' he said. 
+
+ Although nervous calls to computer support lines dropped off sharply over the weekend, a support technician for the anti-virus software maker Network Associates said Monday's call volume was even heavier than on Thursday and Friday, with 30 to 40 callers waiting on hold at any one time. 
+
+ The Federal Bureau of Investigation was trying to track down the author of the virus, but the agency declined to provide any updates on the probe over the weekend. It took only days earlier this spring for authorities to trace the digital footprints of Melissa and the Chernobyl virus that struck in late April. 
+
+ Worm.Explore.Zip, first detected in Israel about a week ago, began spreading rapidly on Thursday and Friday, infecting computer systems at many big corporations including AT&T, Boeing, General Electric and even Microsoft.
+
+ On Monday, the crafty bug's victims even included one maker of anti-virus software. 
+
+ ``It happened here to our chief operating officer, who was running anti-virus software, practicing safe computing,'' said Dan Schrader, vice president of new technology at Trend Micro, noting that the executive had forgotten about a single link he'd established months ago to share his files with another worker. ``He went to open a PowerPoint (slide) presentation and it was empty.'' 
+
+ Worm.Explore.Zip targets computers using Microsoft Windows operating systems. 
+
+ The virus arrives in a person's e-mail box as a timely reply from an acquaintance. It then invites the recipient to open an attached file that will unleash a two-pronged attack, sending a copy of itself to the address of any arriving e-mail and destroying files stored on a person's machine. 
+
+ Among the files destroyed are those created by the writing program Microsoft Word, the spreadsheet program Excel and PowerPoint, which is used to create graphic presentations. 
+
+ Monday's new revelation about the way the bug works also fueled more debate about what terms to use to describe it. Because of the way it replicates, Worm.Explore.Zip actually does not fit the technical definition of a computer virus. 
+
+ Based on the e-mail mode of contamination, it best would classified as a ``Trojan Horse'' -- a name borrowed from an ancient battle in which Greek soldiers hid inside a wooden horse to launch a surprise attack on the city of Troy. 
+
+ But based on the file-sharing method of infection, it would more aptly be described as a ``worm.''  
+

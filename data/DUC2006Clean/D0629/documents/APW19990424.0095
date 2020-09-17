@@ -1,0 +1,28 @@
+WASHINGTON (AP) -- A virus that can erase a computer's hard-drive and prevent the equipment from restarting is poised to strike on Monday, but experts say off-the-shelf antivirus software can prevent infection, and several companies are offering free inoculation tools on their Web sites. 
+
+ The virus has been dubbed Chernobyl because its most common version was programmed to activate on computers using Windows 95 and Windows 98 on Monday, the 13th anniversary of the nuclear disaster in Ukraine. 
+
+ Another, less common, version, strikes computers on the 26th day of any month. 
+
+ ``It's pretty much just another virus. It's been around for quite a while,'' said Kathy Fithen, manager of the Computer Emergency Response Team, or CERT, at Carnegie Mellon University in Pittsburgh. ``As long as people stay current with their antivirus software, they should be in good shape.'' 
+
+ The viruses, believed to originate in Taiwan, attempt to erase a computer's hard-drive and write gibberish to the computer's system settings, called its Bios, preventing the machine from being restarted. 
+
+ But warnings from many experts lacked any sense of panic or impending doom because the virus was discovered last summer, giving antivirus companies many months to develop free software updates to identify and destroy it. 
+
+ Users of those products will be protected only if they've retrieved the free updates. 
+
+ Network Associates Inc., for example, said its popular McAfee software recognized Chernobyl as early as June 1998, and Symantec Corp. said its Norton Antivirus program identified Chernobyl before August. 
+
+ CERT issued a warning this week about the virus because of questions from computer users. 
+
+ ``We're getting requests for information about it rather than reports of machines infected with it,'' Fithen said. ``This has been around so long that the antivirus vendors have picked this up.'' 
+
+ Unlike the recent ``Melissa'' scare, which automatically propagated via e-mail, this virus doesn't spread as quickly because it requires a person to launch an infected program file to contaminate a computer. 
+
+ Carey Nachenberg, chief researcher at Symantec's Antivirus Research Center, said one big risk stems from a potential infection on a company's computer network, which could then spread to individual computers. 
+
+ ``If it gets on a corporate network and the volumes are not protected, it could spread very, very rapidly,'' Nachenberg said. 
+
+ Gene Hodges, a vice president for security at Network Associates, said the company was hoping for the best but bracing for the worse. ``It can be fairly significant,'' he said. ``You don't know until the bomb actually goes off.''  
+

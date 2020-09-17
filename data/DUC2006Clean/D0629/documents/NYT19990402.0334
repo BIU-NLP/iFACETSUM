@@ -1,0 +1,38 @@
+On Monday, Richard Smith, president of Phar Lap Software Inc. in Cambridge, Mass., made a phone call to the FBI. Smith thought he'd figured out the identity of an electronic criminal _ the malevolent hacker who'd created the notorious Melissa computer virus. 
+
+ Smith wasn't absolutely certain of the virus writer's identity, but after long hours of investigation he'd come up with two names. One of them was that of a man he'd never met and certainly wasn't related to _ David L. Smith. 
+
+ Late Thursday night, the FBI reached the same conclusion, arresting 30-year-old computer programmer David L. Smith of Aberdeen, N.J., and alleging that he distributed the Melissa virus. 
+
+ Federal agents and New Jersey State Police tracked David Smith to his brother's house in Eatontown, New Jersey, and charged him Friday with interruption of public communications, conspiracy, and third-degree theft of computer service. After his arrest, David Smith was released on $100,000 bond. He is scheduled for arraignment on Monday. If convicted, Smith could receive up to 40 years in prison. 
+
+ ``If he is tried and successfully convicted, he will do hard time,'' said New Jersey Attorney General Peter Verniero. That should sit well with computer network administrators across the country who've spend the past week scrambling to stave off the effects of Melissa. 
+
+ Disguised as a list of pornographic Internet sites and allegedly named after a stripper David Smith once knew, Melissa is a ``macro virus,'' a document with a malignant computer program built in. People who read the document using Microsoft Word, the popular word-processing program made by Microsoft Corp., could infect their computers. If the infected machine had a copy of Microsoft's Outlook e-mail program, Melissa would send a copy of itself to the first 50 people in the Outlook address book. 
+
+ Since both Word and Outlook are so widely used, the Melissa virus spread with shocking speed. It first appeared on a sex-related Internet bulletin board last Friday. By Saturday, major corporations such as Intel Corp. and Microsoft Corp. were shutting down their Internet access to cope with torrents of unwanted mail, or simply to ensure their machines didn't get infected. 
+
+ Driven by sheer curiosity, Richard Smith has spent the last week in the hunt for Melissa's author. But the FBI apparently didn't need his help. The agency tracked down David Smith with the aid of America Online, the nation's largest Internet service provider, computer network, and with old-fashioned police procedure. 
+
+ Richard Smith had hoped to use a more radical approach. Last month, Smith shocked privacy advocates by finding a secret serial number, called a GUID, embedded in documents created by Microsoft Word. Since the Melissa virus lurks inside a Microsoft Word document, Smith hoped he could identify its author by reading Melissa's serial number. 
+
+ A tip from a Swedish computer expert sent Richard Smith to a Web site run by a virus writer who identified himself with the screen name of VicodenES. Smith downloaded copies of the viruses posted on the site. Then he used a ``hex editor,'' a piece of software that lets programmers read the raw data hidden inside a computer file. Smith planned to use the ``hex dumps'' of the VicodenES files to check for the file's GUID. Sure enough, he found that some of these files had the same serial number as Melissa. But along the way, he also checked a feature of Microsoft Word that stores the names of people who create or modify files. 
+
+ A number of names appeared again and again. Some were plainly phony ones, like Ben Dover. But others seemed more believable. And in three separate files, he found the name David Smith, or the initials DLS. 
+
+ A spokeswoman for the New Jersey attorney general's office said Friday that David Smith was ``definitely not'' VicodenES. Investigators believe he took one virus from VicodinES and combined it with another virus to create Melissa. Richard Smith's examination of the Microsoft GUID serial number led him to the same conclusion. 
+
+ Richard Smith got an e-mail Wednesday from Rishi Khan, a 19-year-old senior in computer engineering at the University of Delaware. Khan told him that the contents of the Melissa file were nearly identical to a virus called Shiver that was released sometime last year by someone calling himself Alt-F11. Smith and Khan found that Shiver and Melissa had the same Microsoft serial number, and even the same list of pornographic Web sites. 
+
+ The implication was obvious to Smith. Melissa's creator started out with Shiver, then modified it _ a common practice among virus writers. ``He wrote the Melissa virus in a separate file,'' said Richard Smith. ``When it was all written, he needed some bait to catch people with.'' 
+
+ Richard Smith believes that the virus writer merely removed the polluted code in Shiver and replaced it with his own. Richard Smith has no idea whether Alt-F11 and the creator of Melissa worked together, or if they're only connected by their love of virus-writing. But he hopes the FBI will try to find out. ``There's someone else running around who may be material to this case,'' Smith said. 
+
+ Smith says he neglected his successful software business and stayed up into the wee hours in an effort to track down the author of Melissa. The FBI had it somewhat easier _ it had more manpower and the cooperation of America Online. The Melissa virus had been posted onto the Internet using an AOL account belonging to Scott Steinmetz, a civil engineer in Lynnwood, Wash. Steinmetz proclaimed his innocence and AOL concluded that someone had stolen access to his account. Together AOL, the FBI, and New Jersey law enforcement officials traced the identity theft back to David Smith. FBI and AOL officials won't say how they did it, but Richard Smith suspects that AOL uses a Caller ID system that tracks the source of all incoming calls. 
+
+ Richard Smith wasn't quite able to nail down the identity of Melissa's creator, but he got pretty close. Now Smith hopes the information he's gathered will enable the government to build an airtight case against David Smith. 
+
+ Meanwhile, Richard Smith's company is trying to get some new industrial control software out the door, and he plans to focus on that for awhile. ``I've got a real day job, which has been sadly neglected this week,'' he said. 
+
+ &QL; (Wire service material was used to prepare this report.) 
+

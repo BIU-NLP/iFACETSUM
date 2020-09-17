@@ -1,0 +1,36 @@
+NEW YORK (AP) -- Several mutations of the fast-moving computer virus called Melissa surfaced in cyberspace Tuesday, but researchers said none seems to be as effective as the original in clogging e-mail systems. 
+
+ Separately, an executive of a small software company in Cambridge, Mass., said he had found clues linking the virus to a still-unidentified writer who uses the computer handle ``VicodinES''. 
+
+ Richard Smith, president of Phar Lap Software, a firm that makes operating systems and software tools, said he thinks the virus writer distributed it using an account stolen from America Online 15 months ago. 
+
+ Melissa showed up Friday and spread rapidly around the world on Monday like a malicious chain letter, causing affected computers to fire off dozens of infected messages to friends and colleagues and swamping e-mail systems. While there have been no reports of permanent damage from the virus, it disrupted the operations of thousands of companies and government agencies whose employees were temporarily unable to communicate by e-mail. 
+
+ The virus arrives to its victims disguised as an e-mail from a friend, with a note in the subject line saying that an important document is attached. 
+
+ The attachment is a document in Microsoft's Word format that lists Internet pornography sites. Once the user opens that file, the virus digs into the user's address book and sends infected documents to the first 50 addresses. 
+
+ One of the variations that appeared Tuesday -- carrying the name Melissa.A -- leaves the subject line blank, a change that can foil electronic filters that are designed to detect and delete the original message, said Dan Schrader, director of product marketing for Trend Micro Inc., an anti-virus company in Cupertino, Calif. 
+
+ Another variant, ``Papa,'' appeared Monday afternoon. It attaches a Microsoft Excel spreadsheet document which, when opened, sends out 60 e-mails, however Papa has bugs that sometimes prevent it from working. 
+
+ ``From our analysis we don't feel it's anywhere near the threat that Melissa is,'' said Steve Trilling, a director of research at Symantec, a maker of virus detection software. 
+
+ A third virus, called ``Mad Cow Joke'' has also appeared, Schrader said, and works like Melissa, sending itself to 20 people in the victim's e-mail address book. 
+
+ The danger of all the variants is that virus writers will find them on the Internet, correct the bugs and distribute them further. 
+
+ Smith, the amateur cybersleuth who has apparently gotten close to finding the author, is the same man who a month ago revealed that the popular Microsoft Office software applications place a secret serial number in documents that can be used to identify a particular computer user. 
+
+ Smith theorized that this ``digital fingerprint'' might be useful in finding the author of the virus. 
+
+ Smith posted this theory on an Internet discussion group Friday and received an e-mail from a Stockholm University student, who pointed out similarities between the work of a known virus writer who used the computer name VicodinES and Melissa. 
+
+ Smith also discovered that in December 1997, the same America Online account that sent out Melissa had posted a similar virus. Smith found digital fingerprints linking the virus writer called VicodinES to that virus. 
+
+ He directed reporters to call the owner of the VicodinES Web site, who have since told him they may have actually talked to VicodinES and who described him as a teenage boy. 
+
+ Smith passed his information onto the FBI, which has declined to comment, although it is investigating the case. 
+
+ VicodinES also is the name of a narcotic painkiller made by Knoll Laboratories. At company headquarters in Mount Olive, N.J., spokeswoman Linda Mayer said Tuesday that all she knows about Melissa is what she's read in newspapers.  
+

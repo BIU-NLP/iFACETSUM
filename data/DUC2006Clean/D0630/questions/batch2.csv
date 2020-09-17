@@ -1,0 +1,65 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0630,0,"Mail-order books and book club sales have been hurt from online book sales.",Y,A3CMWYLWMENHLZ,D0630.M.250.C.C,1
+D0630,1,"Online competition led barnesandnoble.com to sell shares to the public.",Y,A3CWW9DIL73I14,D0630.M.250.C.C,0
+D0630,2,"Bookselling is changing dramatically.",Y,AC5UD8N187QD6,D0630.M.250.C.C,0
+D0630,3,"Big chains are proliferating and squeezing out independent bookstores.",Y,AC5UD8N187QD6,D0630.M.250.C.C,0
+D0630,4,"Independents lost half their market share in six years and many have closed.",Y,AC5UD8N187QD6,D0630.M.250.C.C,1
+D0630,5,"Most books are now sold in nontraditional outlets, including discount stores and the internet.",Y,AC5UD8N187QD6,D0630.M.250.C.C,0
+D0630,6,"The American Bookseller Association represents private bookstore owners.",Y,AC5UD8N187QD6,D0630.M.250.C.C,0
+D0630,7,"The American Bookseller Association sponsors Book Expo, an annual convention.",Y,AC5UD8N187QD6,D0630.M.250.C.C,1
+D0630,8,"The American Bookseller Association censured author Frank McCourt for participating in chainstore advertising.",Y,AC5UD8N187QD6,D0630.M.250.C.C,0
+D0630,9,"Online book sales captured 2% of the market in 1999.",Y,AC5UD8N187QD6,D0630.M.250.C.C,1
+D0630,10,"Independent booksellers struggle to compete against the big chain bookstores.",Y,AC5UD8N187QD6,D0630.M.250.C.I,0
+D0630,11,"The major chain bookstores are Barnes & Noble, Borders, and the online retailer Amazon.",Y,AC5UD8N187QD6,D0630.M.250.C.I,0
+D0630,12,"Membership in the American Bookseller Association dropped by almost half in the 1990s.",Y,AC5UD8N187QD6,D0630.M.250.C.I,1
+D0630,13,"Independent booksellers held a 17 percent market share by 1999.",Y,AC5UD8N187QD6,D0630.M.250.C.I,0
+D0630,14,"In 1998, Barnes & Noble acquired Ingram Book Group.",Y,AC5UD8N187QD6,D0630.M.250.C.I,0
+D0630,15,"Many independent bookstores were forced to close their doors in the 1990s.",Y,AC5UD8N187QD6,D0630.M.250.C.I,0
+D0630,16,"Ingram Book Group is the nation's largest distributor of books.",Y,AC5UD8N187QD6,D0630.M.250.C.I,1
+D0630,17,"Independent booksellers held 17% of the market in 1999.",Y,A1L3937MY09J3I,D0630.M.250.C.I,0
+D0630,18,"Book Sense is an online store for independent booksellers.",Y,A1L3937MY09J3I,D0630.M.250.C.I,0
+D0630,19,"Book Sense was created by the American Bookseller Association.",Y,A1L3937MY09J3I,D0630.M.250.C.I,0
+D0630,20,"Barnes & Noble attempted to acquired Ingram Book Group in 1998.",Y,A1L3937MY09J3I,D0630.M.250.C.I,0
+D0630,21,"The American Book Association lost almost half of it's membership in the 1990s.",Y,A1L3937MY09J3I,D0630.M.250.C.I,0
+D0630,22,"Independent booksellers have had great difficulty competing against the major chain stores.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,1
+D0630,23,"In the 1990s, membership in the American Bookseller Association dropped by almost half.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,0
+D0630,24,"The remaining membership has been devising strategies to keep businesses solvent.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,0
+D0630,25,"The overall sale of adult trade books fell.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,1
+D0630,26,"In 1998, Barnes & Nobel announced acquisition of  the nation's largest distributor of books.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,0
+D0630,27,"They began an opposition campaign with appeals to the FTC, accusing Barnes & Noble of unfair trade practices.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,0
+D0630,28,"The FTC concluded that the planned merger violated antitrust law.",Y,AOGFK82SQRJY7,D0630.M.250.C.I,0
+D0630,29,"Independent booksellers have been the hardest hit by changes to the bookselling industry in the 1990s.",Y,AC5UD8N187QD6,D0630.M.250.C.H,0
+D0630,30,"The American Booksellers Association (ABA) represents the independent booksellers of the U.S.",Y,AC5UD8N187QD6,D0630.M.250.C.H,1
+D0630,31,"The ABA saw its membership drop from 5,200 to less than 3,500.",Y,AC5UD8N187QD6,D0630.M.250.C.H,0
+D0630,32,"The ABA established its own national online store, Book Sense.",Y,AC5UD8N187QD6,D0630.M.250.C.H,0
+D0630,33,"Bookfinder.com is a site created by the ABA to permit online browsing of inventories of thousands of independent bookshops.",Y,AC5UD8N187QD6,D0630.M.250.C.H,1
+D0630,34,"In 1991 independents claimed nearly a third of adult book purchases.",Y,ABLP1KUWW46S6,D0630.M.250.C.H,0
+D0630,35,"In 1997 the independents market share was down to 17%.",Y,ABLP1KUWW46S6,D0630.M.250.C.H,0
+D0630,36,"By 1997 The American Booksellers Association saw its membership drop from 5,200 to less than 3,500.",Y,ABLP1KUWW46S6,D0630.M.250.C.H,0
+D0630,37,"By 1997 large chain booksellers like Barnes & Noble and Borders increased their market share by 3%",Y,ABLP1KUWW46S6,D0630.M.250.C.H,0
+D0630,38,"The ABA filed suit against Barnes&Noble when it made a bid to acquire Ingram Book Group.",Y,ABLP1KUWW46S6,D0630.M.250.C.H,1
+D0630,39,"Online bookselling continued to increase its share of the book market.",Y,ABLP1KUWW46S6,D0630.M.250.C.H,0
+D0630,40,"The Independents also formed Bookfinder.com.",Y,ABLP1KUWW46S6,D0630.M.250.C.H,0
+D0630,41,"Bookselling in the United States changed dramatically in the 1990s.",Y,A3QAETE7C7Z4R3,D0630.M.250.C.H,0
+D0630,42,"The ABA was formed to represent and promote the independent booksellers.",Y,A3QAETE7C7Z4R3,D0630.M.250.C.H,1
+D0630,43,"Barnes&Noble established an online venture that in at least one year lost money.",Y,A3QAETE7C7Z4R3,D0630.M.250.C.H,0
+D0630,44,"Independents market share was nearly cut in half, down to 17%.",Y,A3QAETE7C7Z4R3,D0630.M.250.C.H,0
+D0630,45,"An industry study of the bookselling business was conducted in early 1999.",Y,AC5UD8N187QD6,D0630.M.250.C.G,0
+D0630,46,"The popular market for literature declined almost three percent in the 1990s.",Y,AC5UD8N187QD6,D0630.M.250.C.G,0
+D0630,47,"Independent bookstores have been seriously damaged by superstore chains.",Y,AC5UD8N187QD6,D0630.M.250.C.G,0
+D0630,48,"Independent bookstores' market sales dropped from 16.6 percent to 15.2 percent in 1999.",Y,AC5UD8N187QD6,D0630.M.250.C.G,0
+D0630,49,"Book clubs are being revived by a merger between Time, Inc. and the German-owned Bartelsmann Doubleday Direct.",Y,AC5UD8N187QD6,D0630.M.250.C.G,0
+D0630,50,"Books sells declined in 1999 by 3 percent.",Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,0
+D0630,51,"30 million fewer books were purchased in 1998.",Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,1
+D0630,52,"The 1999 book decline was the first in several years.",Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,0
+D0630,53,"Major chains and electronic bookstores made up about 50 percent of the market.",Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,1
+D0630,54,"Time, Inc and Bartelsman Doubleday Direct revived book clubs.",Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,0
+D0630,55,"Booksense.com and Contenville were introduce by the ABA.",Y,A2N2GFB33ZMYGF,D0630.M.250.C.G,0
+D0630,56,"A total of $1.04 billion books were purchased with retail sales.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,1
+D0630,57,"Americans bought 30 million fewer books in 1998.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,0
+D0630,58,"One-half of the book sales were generated by major chain stores and electronic bookstores.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,0
+D0630,59,"Books sold online tripled their market share between 1998 and 1999.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,0
+D0630,60,"Adults purchased over 50 million titles online.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,1
+D0630,61,"Booksense.com is a 'hub site' for hundreds of individual sites.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,0
+D0630,62,"Contentville is a website in which about 40 of the most respected booksellers will provide editorial comment.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,0
+D0630,63,"Time, Inc. and Bartelsmann Doubleday Direct are merging.",Y,AYSG3J2U3UF1Y,D0630.M.250.C.G,0
