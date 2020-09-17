@@ -1,0 +1,7 @@
+As early as 1968 scientists suggested that global warming might cause disintegration of the West Antarctic Ice Sheet.
+Greenhouse gas emissions created by burning of coal, gas and oil were believed by most atmospheric scientists to cause warming of the Earth's surface which could result in increased frequency and intensity of storms, floods, heat waves, droughts, increase in malaria zones, rise in sea levels, northward movement of some species and extinction of others.
+Some scientists, however, argued that there was no real evidence of global warming and others accepted it as a fact but attributed it to natural causes rather than human activity.
+In 1998 a petition signed by 17,000 U.S. scientists concluded that there is no basis for believing (1) that atmospheric CO2 is causing a dangerous climb in global temperatures, (2) that greater concentrations of CO2 would be harmful, or (3) that human activity leads to global warming in the first place.
+By 1999 an intermediate position emerged attributing global warming to a shift in atmospheric circulation patterns that could be caused by either natural influences such as solar radiation or human activity such as CO2 emissions.
+By 2000 opponents of programs to cut back greenhouse emissions admitted that there was evidence of global warming but questioned its cause and dire consequences.
+Proponents of plans to control emissions to a large extent admitted that the size of the human contribution to global warming is not yet known.

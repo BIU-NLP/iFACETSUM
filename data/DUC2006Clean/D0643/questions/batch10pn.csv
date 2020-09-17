@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0643,66_0,El Nino is a disruptive weather phenomenon.,Y,AJQGWGESKQT4Y,D0643.M.250.G.G,1
+D0643,pos_D0643_0,,,,,1
+D0620,neg_D0643_0,Hot lines and tip boxes have been established to identify students with problems that could lead to violence.,Y,AC5UD8N187QD6,D0620.M.250.B.H,1
+D0643,58,El Nino can cause storms and flooding in South America and Africa.,Y,AJQGWGESKQT4Y,D0643.M.250.G.D,1
+D0643,56,This warming changes the winds and atmospheric pressure.,Y,AJQGWGESKQT4Y,D0643.M.250.G.D,1
+D0627,neg_D0643_1,Some US legislators proposed implementing legislation that would preclude those with 'promiscuous lifestyles' from adopting children.,Y,A2Q3FS9G8ITCN7,D0627.M.250.I.H,1
+D0643,66_1,El Nino is a disruptive weather phenomenon.,Y,AJQGWGESKQT4Y,D0643.M.250.G.G,1
+D0643,59,"Scientists in the United States, Australia, Israel, and Germany are using sophisticated computer simulations.",Y,AJQGWGESKQT4Y,D0643.M.250.G.D,1
+D0643,48,El Nino causes reversals of normal weather patterns worldwide.,Y,A3GWRDHAURRNK6,D0643.M.250.G.C,1
+D0643,pos_D0643_1,,,,,1
