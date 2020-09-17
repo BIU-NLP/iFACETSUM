@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0601,261_1,Half of Native American Indian on reservation live in poverty.,Y,A2YKW761AK4ZGY,D0601.M.250.A.C,1
+D0601,245,Indian death rate is 35 times higher then the rest of the population,Y,A1G331HUXOSJAM,D0601.M.250.A.E,1
+D0601,277,Indians working on reservations pay no state income tax.,Y,A2YKW761AK4ZGY,D0601.M.250.A.B,1
+D0640,neg_D0601_1,President Putin stayed on his vacation from August 19 to August 21.,Y,A2YO837C0O1E91,D0640.M.250.D.F,1
+D0601,pos_D0601_0,,,,,1
+D0601,pos_D0601_1,,,,,1
+D0614,neg_D0601_0,Jean Chretien declared that unilateral secession was illegal.,Y,A249LDVPG27XCE,D0614.M.250.E.B,1
+D0601,248,The reservation system does recognize the Indian fishing and hunting rights.,Y,A1G331HUXOSJAM,D0601.M.250.A.E,1
+D0601,261_0,Half of Native American Indian on reservation live in poverty.,Y,A2YKW761AK4ZGY,D0601.M.250.A.C,1
+D0601,253,Tribal burocracies are scattered and ineffective.,Y,A1DUH3RLI00YQM,D0601.M.250.A.A,1
