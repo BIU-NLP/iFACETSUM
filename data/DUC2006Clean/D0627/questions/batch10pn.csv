@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0627,174_0,Chinese law restricts foreigner adoptions.,Y,A22VACRM9GC73M,D0627.M.250.I.F,1
+D0627,169,Abortion was legalized in 1973.,Y,A2YKW761AK4ZGY,D0627.M.250.I.F,1
+D0627,174_1,Chinese law restricts foreigner adoptions.,Y,A22VACRM9GC73M,D0627.M.250.I.F,1
+D0627,pos_D0627_1,,,,,1
+D0627,pos_D0627_0,,,,,1
+D0627,196,Cultural awareness events and support groups are being formed in the US for adoptive parents.,Y,A2IU5TX5S0FA1C,D0627.M.250.I.H,1
+D0624,neg_D0627_0,Lawrence was stabbed at a bus stop in London.,Y,A2Q3FS9G8ITCN7,D0624.M.250.F.F,1
+D0627,184,"In 1999, 16,396 adopted children came to the US from abroad.",Y,A2IU5TX5S0FA1C,D0627.M.250.I.I,1
+D0608,neg_D0627_1,Side airbags can be deactivated.,Y,AJQGWGESKQT4Y,D0608.M.250.H.D,1
+D0627,178,The UN Hague Convention treaty was approved by US Congress in 2000.,Y,A2YKW761AK4ZGY,D0627.M.250.I.I,1

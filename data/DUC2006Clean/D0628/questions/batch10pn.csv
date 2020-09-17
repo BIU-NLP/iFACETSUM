@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0628,219_0,"Outward symptoms generally include impulsiveness, inability to concentrate, difficulty in learning, and restlessness.",Y,AJQGWGESKQT4Y,D0628.M.250.A.A,1
+D0630,neg_D0628_0,Bookselling in the United States changed dramatically in the 1990s.,Y,A3QAETE7C7Z4R3,D0630.M.250.C.H,1
+D0628,183,Onset of ADHD does not occur in adulthood except through trauma.,Y,AJQGWGESKQT4Y,D0628.M.250.A.H,1
+D0628,pos_D0628_0,,,,,1
+D0628,pos_D0628_1,,,,,1
+D0628,219_1,"Outward symptoms generally include impulsiveness, inability to concentrate, difficulty in learning, and restlessness.",Y,AJQGWGESKQT4Y,D0628.M.250.A.A,1
+D0643,neg_D0628_1,Sunspot activity has been linked to El Nino.,Y,A3GWRDHAURRNK6,D0643.M.250.G.C,1
+D0628,192,"Attention Deficit Disorder, ADHD, has become increasingly common in American children.",Y,A2IU5TX5S0FA1C,D0628.M.250.A.I,1
+D0628,221,Type B by hyperactivity and impulsive behavior.,Y,AJQGWGESKQT4Y,D0628.M.250.A.A,1
+D0628,222,Type C a combination of the two.,Y,AJQGWGESKQT4Y,D0628.M.250.A.A,1
