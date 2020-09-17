@@ -1,0 +1,11 @@
+eventId,questionId,questionText,answer,author,sourceSummaryId,forUse
+D0602,1006,There are many harmful side effects to the body with steroid use.,Y,oriFake,D0602.M.250.B.A,1
+D0602,1005_0,Steroids increase the amount of testosterone.,Y,oriFake,D0602.M.250.B.A,1
+D0602,1000,Steroids have first observed in international competitions in 1956.,Y,oriFake,D0602.M.250.B.A,1
+D0602,1007,"Steroids may cause abnormal incidences of cancer, birth defects, and depression.",Y,oriFake,D0602.M.250.B.A,1
+D0602,pos_D0602_1,,,,,1
+D0602,1005_1,Steroids increase the amount of testosterone.,Y,oriFake,D0602.M.250.B.A,1
+D0602,pos_D0602_0,,,,,1
+D0645,neg_D0602_1,"Hardest hit are single mothers, elderly, immigrants and working poor.",Y,AJQGWGESKQT4Y,D0645.M.250.I.I,1
+D0617,neg_D0602_0,Both engines had been switched off from the cockpit.,Y,A2Q3FS9G8ITCN7,D0617.M.250.H.A,1
+D0602,1009,Coaches and doctors who administer steroids to unknowing athletes risk fines or prison.,Y,oriFake,D0602.M.250.B.A,1
