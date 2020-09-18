@@ -2,6 +2,8 @@
 
 The InterExp project code and data. Includes the evaluation framework for session collection and measurement, the QFSE baseline systems (server and web application), data files, and crowdsourcing resources.
 
+Resources for the paper: [Evaluating Interactive Summarization: an Expansion-Based Framework](https://arxiv.org/abs/2009.08380)
+
 ## General Info
 Purpose of Interactive Expansion-Based Summarization:
 
