@@ -1,0 +1,9 @@
+tornado
+pytextrank==2.1.0
+spacy==2.3.5
+sentence-transformers
+matplotlib
+pyrouge
+rouge
+Levenshtein
+dataclasses_json
