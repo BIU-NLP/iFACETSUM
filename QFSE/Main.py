@@ -56,12 +56,12 @@ def main(corpusName, queriesList, SummarizerClass, SuggestedQueriesClass, repres
         print('--- {} : Query: {} ---'.format(time.time() - startTime, queryText))
 
         if queryNum == 0:
-            summarySentenceList, summaryLength = summarizer.summarizeGeneric(desiredSummLen)
+            summary = summarizer.summarizeGeneric(desiredSummLen)
         else:
-            summarySentenceList, summaryLength = summarizer.summarizeByQuery(queryText, 2, "free_text")
+            summary = summarizer.summarizeByQuery(queryText, 2, "free_text")
 
-        print('\n'.join(summarySentenceList))
-        print('--- Length: {}'.format(summaryLength))
+        print('\n'.join([x.sent for x in summary.summary_sents]))
+        print('--- Length: {}'.format(summary.length_in_words))
 
         # show suggested queries:
         if queryNum == 0:

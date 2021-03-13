@@ -22,14 +22,14 @@ function onInitFunc() {
     var algorithmVal = url.searchParams.get("algorithm");
     var summWordlenVal = url.searchParams.get("summWordlen");
     var isPractiveTaskVal = url.searchParams.get("isPractice");
-    
+
     if (timeAllowedVal != null) {
         timeAllowed = parseInt(timeAllowedVal);
         if (isNaN(timeAllowed)) {
             timeAllowed = -1;
         }
     }
-    
+
     if (assignmentIdVal == 'ASSIGNMENT_ID_NOT_AVAILABLE') {
         topicIdVal = 'Steroid Use';
         //topicName = 'Steroid Use';
@@ -47,7 +47,7 @@ function onInitFunc() {
     if (summWordlenVal != null) {
         initialSummWordLen = parseInt(summWordlenVal)
     }
-    
+
     if (questionnaireBatchVal != null) { //} && needQuestionnaireVal == "true") {
         questionnaireBatchInd = parseInt(questionnaireBatchVal);
         if (isNaN(questionnaireBatchInd)) {
@@ -68,7 +68,7 @@ function onInitFunc() {
             isPracticeTask = true;
         }
     }
-    
+
     // if this is a AMT task, we need the user to click "start":
     if (assignmentIdVal != null)
     {
@@ -82,31 +82,31 @@ function onInitFunc() {
         startButton.style.display = "block";
         startButton.addEventListener("click", startButtonClick);
     }
-    
+
     setAMTvalues(assignmentIdVal, hitIdVal, workerIdVal, turkSubmitToVal)
-    
+
     // hide the navigation bar if needed (e.g. for mechanical turk external question):
     if (allowNavigate == "0") {
         //var navigationBar = document.getElementById("navigationBar");
         //navigationBar.style.display = "none";
         document.getElementById("backToIndex").style.display = "none";
         document.getElementById("topicsDropdown").style.display = "none";
-        
+
     }
     else {
         getAndShowTopicsList();
     }
-    
+
     initializeTopic(topicIdVal)//, topicName)
 }
 
 function showPageToAnnotator() {
     // we need that the topic intialization complete and that the start button be clicked:
     if (isWaitingForInitial == false && document.getElementById("startButton").style.display == "none") {
-        
+
         // start the progess bar if a timer is needed:
         startStopwatch(timeAllowed);
-        
+
         //// if no time limit is given, but a questionnaire is needed, show the "done exploring" button:
         //if (timeAllowed == -1 && questionnaireBatchInd > -1) {
         // if a questionnaire is needed, show the "done exploring" button:
@@ -123,7 +123,7 @@ function showPageToAnnotator() {
                 moveOnMessage.style.display = "block";
             }
         }
-        
+
         // tell the server to start counting time now:
         sendRequest({"clientId": clientId, "request_set_start": {}});
 
@@ -137,7 +137,7 @@ function startButtonClick() {
     document.getElementById("startButton").style.display = "none";
     document.getElementById("directionsMessage").style.display = "none";
     window.scrollTo(0, 0);
-    
+
     // make the page visible to the annotator and show relevant functionalities:
     showPageToAnnotator();
 }
@@ -168,12 +168,12 @@ function setAMTvalues(assignmentIdVal, hitIdVal, workerIdVal, turkSubmitToVal) {
     else {
         givenTurkSubmitTo = '';
     }
-    
-    
+
+
     document.getElementById('assignmentId').value = assignmentId;
     document.getElementById('hitId').value = hitId;
     document.getElementById('workerId').value = workerId;
-    
+
     var turkSubmitToturkSubmitTo = '';
     if (givenTurkSubmitTo == 'https://workersandbox.mturk.com' || givenTurkSubmitTo == 'https://workersandbox.mturk.com/')
         turkSubmitTo = 'https://workersandbox.mturk.com/mturk/externalSubmit';
@@ -182,7 +182,7 @@ function setAMTvalues(assignmentIdVal, hitIdVal, workerIdVal, turkSubmitToVal) {
     else
         turkSubmitTo = givenTurkSubmitTo + 'externalSubmit/index.html';
     document.getElementById('turkSubmitTo').value = turkSubmitTo;
-    
+
     document.getElementById('turkSubmit').action = turkSubmitTo;
 }
 
@@ -223,15 +223,15 @@ function initializeTopic(topicId) { //, topicName) {
     else {
         var name = topicId;
         m_topicId = topicId;
-        
+
         // show that it is loading:
         document.getElementById("topicNameHeader").innerHTML = "Loading \"" + name + "\"...";
         document.getElementById("numDocumentsHeader").innerHTML = "";
-        insertLoadingIndicatorInExplorationPane();
-        
+        insertLoadingIndicatorInExplorationPane(exploreList);
+
         // set that the request is now being sent to the server:
         isWaitingForInitial = true;
-        
+
         // get topic info from the server:
         sendRequest({"clientId": clientId, "request_get_initial_summary": {"topicId":topicId, "summaryType":summaryType, "algorithm": algorithm, "summaryWordLength":initialSummWordLen, "questionnaireBatchIndex":questionnaireBatchInd, "timeAllowed": timeAllowed, "assignmentId": assignmentId, "hitId": hitId, "workerId": workerId, "turkSubmitTo": turkSubmitTo}});
     }
@@ -240,25 +240,37 @@ function initializeTopic(topicId) { //, topicName) {
 function setQueryResponse(queryResultInfo) {
     var summary = queryResultInfo['summary'];
     var textLength = queryResultInfo['textLength'];
-    
+
     // remove the loading ellipsis:
     if (curLoadingInicatorElement != null) {
         exploreList.removeChild(curLoadingInicatorElement);//exploreList.lastChild);
         curLoadingInicatorElement = null;
     }
-    
+
     insertSummaryItemInExplorationPane(summary);
     // scroll to bottom:
     exploreList.scrollTop = exploreList.scrollHeight;
-    
+
     // keep the text length so far:
     totalTextLength += textLength;
-    
+
     lastQueryType = '';
 
     if (iterationNum == 2) {
         practiceTaskMessage("<u><b>Rate</b></u><br>After you read the response to your query, rate <span style='font-size:30px;'>&#x2B50;</span> its <i>novelty and usefulness</i>.<br>If you already saw all this information in the previously presented text, or none of it would interest the general reader, then give a low score.<br>The more new and generally interesting facts, the better.<br><br>Notice that in this rating, you should <u>disregard the relevance to the query</u>. You will get a chance to rate the relevance to the query at the end of the task.", function(){});
     }
+}
+
+function setDocumentResponse(docResult) {
+    const doc = docResult['doc'];
+
+    // remove the loading ellipsis:
+    if (curLoadingInicatorElement != null) {
+        $documentsPane[0].removeChild(curLoadingInicatorElement);//exploreList.lastChild);
+        curLoadingInicatorElement = null;
+    }
+
+    insertDocInDocumentsPane(doc);
 }
 
 function submitFinal(successfulSave) {
@@ -348,6 +360,9 @@ function handleJsonReply(jsonObj) {
     else if ("reply_query" in jsonObj) {
         setQueryResponse(jsonObj["reply_query"])
     }
+    else if ("reply_document" in jsonObj) {
+        setDocumentResponse(jsonObj["reply_document"])
+    }
     else if ("reply_set_question_answer" in jsonObj) {
         // nothing to do
     }
@@ -374,17 +389,17 @@ function handleJsonReply(jsonObj) {
 }
 
 
-function insertLoadingIndicatorInExplorationPane() {
+function insertLoadingIndicatorInExplorationPane(pane) {
     var listElement = document.createElement("div");
     //listElement.classList.add("floatright");
     var li = document.createElement("li"); // create an li element
     li.classList.add("exploreItem");
     li.classList.add("loadingParent");
-    
+
     var loadingDiv = document.createElement("div");
     loadingDiv.classList.add("loading");
     loadingDiv.appendChild(document.createTextNode("Loading "));
-    
+
 	var eleDot1 = document.createElement("div");
     eleDot1.classList.add("dot");
     eleDot1.classList.add("one");
@@ -400,13 +415,13 @@ function insertLoadingIndicatorInExplorationPane() {
     eleDot3.classList.add("three");
     eleDot3.appendChild(document.createTextNode("."));
     loadingDiv.appendChild(eleDot3);
-    
+
     li.appendChild(loadingDiv);
-    
+
 	listElement.appendChild(li);
-    
-    exploreList.appendChild(listElement); //add to exploration list
-    
+
+    pane.appendChild(listElement); //add to exploration list
+
     curLoadingInicatorElement = listElement;
 }
 

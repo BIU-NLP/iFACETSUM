@@ -43,6 +43,7 @@ TYPE_SUBMIT = 4
 TYPE_SET_START_TIME = 5
 TYPE_ITERATION_RATING = 6
 TYPE_QUESTIONNAIRE_RATING = 7
+TYPE_REQUEST_DOCUMENT = 8
 # summary types
 SUMMARY_TYPES = {'qfse_cluster':SummarizerClustering, 'increment_cluster':SummarizerAddMore, 'qfse_textrank':SummarizerTextRankPlusLexical}
 SUGGESTED_QUERIES_TYPES = {'qfse_cluster':SuggestedQueriesNgramCount, 'increment_cluster':SuggestedQueriesNgramCount, 'qfse_textrank':SuggestedQueriesTextRank}
@@ -58,15 +59,15 @@ class IntSummHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Headers", "*")
         #self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-    
+
     def options(self):
         # no body
         logging.debug('Received OPTIONS request')
         self.set_status(204)
-    
+
     def post(self):
         # Protocol implemented here based on the client messages.
-    
+
         try:
             # load the json received from the client:
             clientJson = json.loads(self.request.body.decode('utf-8'))
@@ -95,9 +96,11 @@ class IntSummHandler(tornado.web.RequestHandler):
                     returnJson = self.getIterationRatingJson(clientJson)
                 elif requestType == TYPE_QUESTIONNAIRE_RATING:
                     returnJson = self.getQuestionnaireRatingJson(clientJson)
+                elif requestType == TYPE_REQUEST_DOCUMENT:
+                    returnJson = self.get_document(clientJson)
                 else:
                     returnJson = self.getErrorJson('Undefined JSON received.')
-                                    
+
         except Exception as e:
             logging.error('Caught error from unknown location: ' + str(e))
             logging.error(traceback.format_exc())
@@ -124,6 +127,8 @@ class IntSummHandler(tornado.web.RequestHandler):
             requestType = TYPE_ITERATION_RATING
         elif 'request_set_questionnaire_rating' in clientJson:
             requestType = TYPE_QUESTIONNAIRE_RATING
+        elif 'request_document' in clientJson:
+            requestType = TYPE_REQUEST_DOCUMENT
         else:
             requestType = TYPE_ERROR
 
@@ -178,30 +183,29 @@ class IntSummHandler(tornado.web.RequestHandler):
             return self.getErrorJson('Summary type not supported: {}'.format(summaryAlgorithm))
 
         # generate the initial summary info:
-        initialSummarySentenceList, summaryTextLength = m_infoManager.getSummarizer(clientId).summarizeGeneric(summaryWordLength)
-        initialSummarySentenceList = [sent.replace('"', '\\"').replace('\n', ' ') for sent in initialSummarySentenceList]
+        summary = m_infoManager.getSummarizer(clientId).summarizeGeneric(summaryWordLength)
+        for x in summary.summary_sents:
+            formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
+            x.sent = formatted_sent
         keyPhraseList = suggestedQueriesGenerator.getSuggestionsFromToIndices(0, NUM_SUGG_QUERIES_PRESENTED[summaryAlgorithm] - 1)
         topicName = topicId
 
-        summarySentenceListStr = ', '.join('"{}"'.format(sent) for sent in initialSummarySentenceList)
-        keyPhraseListStr = ', '.join('"{}"'.format(kp) for kp in keyPhraseList)
-        questionnaireListStr = ', '.join(
-            '{{"id":"{}","str":"{}"}}'.format(qId, qStr) for qId, qStr in
-            m_infoManager.getQuestionnaire(clientId).items())
-        jsonReply = \
-            "{\"reply_get_initial_summary\": {" + \
-            "  \"summary\": [" + summarySentenceListStr + "]," + \
-            "  \"keyPhraseList\": [" + keyPhraseListStr + "]," + \
-            "  \"topicName\": \"" + topicName + "\"," + \
-            "  \"topicId\": \"" + topicId + "\"," + \
-            "  \"numDocuments\": " + str(len(corpus.documents)) + ","+ \
-            "  \"questionnaire\": [" + questionnaireListStr + "]," + \
-            "  \"timeAllowed\": " + str(timeAllowed) + "," + \
-            "  \"textLength\": " + str(summaryTextLength) + \
-            "}}"
-        # "  \"summary\": \"" + initialSummary.replace('"', '\\"').replace('\n', ' ') + "\"," + \
-        # TODO: set the timeAllowed according to the assignment, if relevant
-        return jsonReply
+        questionnaireList = {{"id": qId,"str": qStr} for qId, qStr in m_infoManager.getQuestionnaire(clientId).items()}
+
+        reply = {
+            "reply_get_initial_summary": {
+                "summary": [x.to_dict() for x in summary.summary_sents],
+                "keyPhraseList": keyPhraseList,
+                "topicName": topicName,
+                "topicId": topicId,
+                "documentsMetas": [{"id": x.id} for x in corpus.documents],
+                "numDocuments": str(len(corpus.documents)),
+                "questionnaire": list(questionnaireList),
+                "timeAllowed": str(timeAllowed),
+                "textLength": str(summary.length_in_words)
+            }
+        }
+        return json.dumps(reply)
 
     def getQuerySummaryJson(self, clientJson):
         clientId = clientJson['clientId']
@@ -216,21 +220,39 @@ class IntSummHandler(tornado.web.RequestHandler):
         if topicId != m_infoManager.getTopicId(clientId):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
-        summarySentenceListForQuery, summaryLen = m_infoManager.getSummarizer(clientId).summarizeByQuery(query, numSentences, queryType)
-        summarySentenceListForQuery = [sent.replace('"', '\\"').replace('\n', ' ') for sent in
-                                       summarySentenceListForQuery]
+        summary = m_infoManager.getSummarizer(clientId).summarizeByQuery(query, numSentences, queryType)
+        for x in summary.summary_sents:
+            formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
+            x.sent = formatted_sent
 
-        summarySentenceListStr = ', '.join('"{}"'.format(sent) for sent in summarySentenceListForQuery)
+        reply = {
+            "reply_query": {
+                "summary": [x.to_dict() for x in summary.summary_sents],
+                "textLength": summary.length_in_words
+            }
+        }
 
-        jsonReply = \
-            "{\"reply_query\": {" + \
-            "  \"summary\": [" + summarySentenceListStr + "]," + \
-            "  \"textLength\": " + str(summaryLen) + \
-            "}}"
+        return json.dumps(reply)
 
-        # "  \"summary\": \"" + summaryForQuery.replace('"', '\\"').replace('\n', ' ') + "\"" + \
+    def get_document(self, client_json):
+        client_id = client_json['clientId']
+        doc_id = client_json['request_document']['docId']
 
-        return jsonReply
+        found_docs = [x for x in m_infoManager.getSummarizer(client_id).corpus.documents if x.id == doc_id]
+        if any(found_docs):
+            doc = found_docs[0]
+        else:
+            raise ValueError(f"Doc not found ; doc_id {doc_id}")
+
+        reply = {
+            "reply_document": {
+                "doc": {
+                    "text": doc.text.split('   ')
+                }
+            }
+        }
+
+        return json.dumps(reply)
 
     def getQuestionAnswerJson(self, clientJson):
         clientId = clientJson['clientId']
@@ -324,12 +346,10 @@ class IntSummHandler(tornado.web.RequestHandler):
         m_infoManager.setQuestionnaireRatings(clientId, {questionId: {'text':questionText, 'rating': rating}})
 
     def getErrorJson(self, msg):
-        jsonReply = "{\"error\": \"" + msg + "\" }"
+        reply = {"error": msg}
         logging.info("Sending Error JSON: " + msg)
-        return jsonReply
-        
-        
-    
+        return json.dumps(reply)
+
 
 if __name__ == '__main__':
     app = tornado.web.Application([tornado.web.url(r'/', IntSummHandler)])
