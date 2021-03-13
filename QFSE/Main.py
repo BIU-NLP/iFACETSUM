@@ -25,7 +25,7 @@ from QFSE.SuggestedQueriesTextRank import SuggestedQueriesTextRank
 SUMMARIZER_CLASS = SummarizerClustering #SummarizerTextRankPlusLexical #SummarizerAddMore
 SUGGESTED_QUERIES_CLASS = SuggestedQueriesNgramCount #SuggestedQueriesTextRank
 DEFAULT_FIRST_SUMMARY_LENGTH = 75
-EVALUATE_ON_THE_FLY = True
+EVALUATE_ON_THE_FLY = False
 
 def main(corpusName, queriesList, SummarizerClass, SuggestedQueriesClass, representationStyle):
     startTime = time.time()

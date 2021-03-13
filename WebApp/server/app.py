@@ -172,7 +172,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         # make sure the summary type is valid:
         summaryAlgorithm = '{}_{}'.format(summaryType, algorithm)
         if summaryAlgorithm in SUMMARY_TYPES:
-            summarizer = SUMMARY_TYPES[summaryAlgorithm](corpus, evaluateOnTheFly=True)
+            summarizer = SUMMARY_TYPES[summaryAlgorithm](corpus, evaluateOnTheFly=False)
             if SUGGESTED_QUERIES_TYPES[summaryAlgorithm] == SuggestedQueriesTextRank:
                 suggestedQueriesGenerator = SUGGESTED_QUERIES_TYPES[summaryAlgorithm](corpus, summarizer)
             else:
