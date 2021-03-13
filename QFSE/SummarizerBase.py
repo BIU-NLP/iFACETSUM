@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import logging
-import evaluation.RougeEvaluator
 import time
 import threading
 
