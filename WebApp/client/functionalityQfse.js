@@ -1,3 +1,4 @@
+const e = React.createElement;
 var enterQueryButton = document.getElementById("enterQueryButton");
 const $queryArea = $('#queryArea');
 const $documentsListArea = $('#documentsListArea');
@@ -251,32 +252,121 @@ function insertSummaryItemInExplorationPane(txtList) {
     iterationNum++;
 }
 
+class ListItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            minimized: true
+        };
+    }
+
+    expand = () => {
+        this.setState({
+            "minimized": false
+        });
+    }
+
+    minimize = () => {
+        this.setState({
+            "minimized": true
+        });
+    }
+
+    render() {
+        const txtList = this.props.txtList;
+        const sentences = [];
+
+        // put the list of sentences sepatately line by line with a small margin in between:
+        for (var i = 0; i < txtList.length; i++) {
+            if (i < 1 || !this.state.minimized) {
+                const sentenceText = txtList[i];
+
+                const sentencePar = e(
+                    'p',
+                    {
+                        style: {
+                            "marginTop": "10px",
+                            "marginBottom": "10px"
+                        },
+                       "tabIndex": "0",
+                       "role": "button",
+                       "data-toggle": "popover",
+                       "data-trigger": "focus",
+                       "title": "Exploration",
+                       "data-html": true,
+                       "data-content": "<span>hello</span>"
+                    },
+                    sentenceText
+                  );
+                  sentences.push(sentencePar);
+            }
+        }
+
+        if (this.state.minimized) {
+            const readMoreBtn = e(
+                'button',
+                {
+                    style: {
+                        "marginTop": "10px",
+                        "marginBottom": "10px"
+                    },
+                    onClick: this.expand
+                },
+                "Read more sentences"
+            );
+            sentences.push(readMoreBtn);
+        } else {
+            const readLessBtn = e(
+                'button',
+                {
+                    style: {
+                        "marginTop": "10px",
+                        "marginBottom": "10px"
+                    },
+                    onClick: this.minimize
+                },
+                "Read less sentences"
+            );
+            sentences.push(readLessBtn);
+        }
+
+        const minimizedClass = this.state.minimized ? " minimized" : "";
+
+        return e(
+           "li",
+           {
+               "className": "exploreItem" + minimizedClass,
+               "onMouseUp": onTextMouseUp // to enable copying text to the query box when highlighting it
+           },
+           sentences
+       );
+    }
+}
+
 function insertDocInDocumentsPane(doc) {
     const txtList = doc.text;
 
     // a div is used to align the li item right:
     var listElementResult = document.createElement("div");
     listElementResult.classList.add("floatright");
-    var li = document.createElement("li");
-    li.classList.add("exploreItem");
-    li.onmouseup = onTextMouseUp; // to enable copying text to the query box when highlighting it
 
-    // put the list of sentences sepatately line by line with a small margin in between:
-    for (var i = 0; i < txtList.length; i++) {
-        var sentencePar = document.createElement("p");
-        sentencePar.style.marginTop = "10px";
-        sentencePar.style.marginBottom = "10px";
-        var textNode = document.createTextNode(txtList[i]);
-        sentencePar.appendChild(textNode);
-        sentencePar.classList.add("highlighterCursor");
-        li.appendChild(sentencePar);
-    }
+    const liReact = e(
+        ListItem,
+        {
+            "txtList": txtList
+        }
+    );
 
-    listElementResult.appendChild(li);
+    ReactDOM.render(liReact, listElementResult);
+
     $documentsPane.append(listElementResult); //add to exploration list
 
     // scroll to more or less the headline of the document:
     $documentsPane[0].scrollTop = $documentsPane[0].scrollTop + $documentsPane[0].offsetHeight - 200;
+    $(listElementResult).find('p').popover({
+          trigger: 'focus'
+      });
+
 }
 
 function addStarRatingWidget(parentElement, numStarsInRating, iterationNum, displayCharacter, instructionsTxt, instructionsExplanation, starLabelClass) {
