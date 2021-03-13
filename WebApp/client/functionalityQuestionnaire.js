@@ -16,7 +16,7 @@ function initQuestionnaire(questionList, allTextsInSession) {
             shortestSent = null;
             shortestSentLen = 99999;
             for (var sentIdx = 0; sentIdx < allTextsInSession.length; sentIdx++) {
-                sent = allTextsInSession[sentIdx];
+                sent = allTextsInSession[sentIdx]['sent'];
                 // try it out only if it wasn't used yet for a previous open-slot question:
                 if (usedSentencesForQuestions.indexOf(sent) == -1) {
                     sentLen = sent.length;

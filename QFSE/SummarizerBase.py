@@ -1,8 +1,14 @@
+from typing import List
+
 import matplotlib.pyplot as plt
 import logging
 import evaluation.RougeEvaluator
 import time
 import threading
+
+
+from QFSE.models import Summary, SummarySent
+
 
 class SummarizerBase:
 
@@ -30,7 +36,7 @@ class SummarizerBase:
         # this should be overridden by the inheriting classes
         return False
 
-    def summarizeGeneric(self, desiredWordCount):
+    def summarizeGeneric(self, desiredWordCount) -> Summary:
         summaryTextList, summarySentenceIdsList, summaryLengthInWords = self._getGenericSummaryText(desiredWordCount)
         if len(summarySentenceIdsList) > 0:
             self.summaries.append(summarySentenceIdsList)
@@ -41,13 +47,14 @@ class SummarizerBase:
             threadCalculateRouge = threading.Thread(target=self._keepRougeCurrent, args=())
             threadCalculateRouge.start()
         self.haveChanges = True
-        return summaryTextList, summaryLengthInWords
+        summary_sents = [SummarySent(sent_id, sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
+        return Summary(summary_sents, summaryLengthInWords)
 
     def _getGenericSummaryText(self, desiredWordCount):
         # this should be overridden by the inheriting classes
         return '', [], 0
 
-    def summarizeByQuery(self, query, numSentencesNeeded, queryType):
+    def summarizeByQuery(self, query, numSentencesNeeded, queryType) -> Summary:
         summaryTextList, summarySentenceIdsList, summaryLengthInWords = self._getQuerySummaryText(query, numSentencesNeeded)
         #if len(summarySentenceIdsList) > 0:
         # even if the summary is empty, keep it (otherwise there is a sync bug between the iteration and the summaries):
@@ -61,7 +68,8 @@ class SummarizerBase:
             threadCalculateRouge = threading.Thread(target=self._keepRougeCurrent, args=())
             threadCalculateRouge.start()
         self.haveChanges = True
-        return summaryTextList, summaryLengthInWords
+        summary_sents = [SummarySent(sent_id, sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
+        return Summary(summary_sents, summaryLengthInWords)
 
     def _getQuerySummaryText(self, query, numSentencesNeeded):
         # this should be overridden by the inheriting classes
