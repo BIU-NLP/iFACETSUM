@@ -4,6 +4,11 @@ import re
 nlp = None
 bert_embedder = None
 
+
+def sent_id_to_doc_id(sent_id):
+    return sent_id.split("::")[0]
+
+
 def loadSpacy():
     global nlp
 
@@ -20,6 +25,7 @@ def loadSpacy():
     # allow keeping the number of significant words in a span for quick access later:
     numSignificantWords_getter = lambda span: len([token for token in span if not token.is_stop and not token.is_punct])
     Span.set_extension("num_significant_words", getter=numSignificantWords_getter)
+
 
 def loadBert():
     global bert_embedder

@@ -85,10 +85,10 @@ function insertSummaryItemInExplorationPane(txtList) {
         var sentencePar = document.createElement("p");
         sentencePar.style.marginTop = "10px";
         sentencePar.style.marginBottom = "10px";
-        sentencePar.appendChild(document.createTextNode(txtList[i]));
+        sentencePar.appendChild(document.createTextNode(txtList[i]['sent']));
         li.appendChild(sentencePar);
     }
-    
+
 	listElementResult.appendChild(li);
     exploreList.appendChild(listElementResult); //add to exploration list
 
@@ -108,26 +108,26 @@ function showQuestionnaire() {
     questionnaireArea = document.getElementById("questionnaireArea");
     rightSide = document.getElementById("rightSide");
     leftSide = document.getElementById("leftSide");
-    
+
     // hide the query area
     add1MoreButton.style.display = "none";
     add2MoreButton.style.display = "none";
     add3MoreButton.style.display = "none";
     add4MoreButton.style.display = "none";
     add5MoreButton.style.display = "none";
-    
+
     // the right and left sides were unbalanced until now to give more room for the summary area
     // now we split the two sides in half:
     rightSide.style.width = "50%";
     leftSide.style.width = "50%";
     leftSide.style.left = "0px";
-    
+
     // show the questionnaire area:
     questionnaireArea.style.display = "inline-table";
-    
+
     // hide the "stop exploring" button in case it's showing
     stopExploringButton.style.display = "none";
-    
+
 }
 
 
@@ -135,7 +135,7 @@ function showQuestionnaire() {
 function addMoreInfo(numSentences) {
     if (canSendRequest()) {
         // put a loading ellipsis:
-        insertLoadingIndicatorInExplorationPane();
+        insertLoadingIndicatorInExplorationPane(exploreList);
         
         // scroll to bottom:
         exploreList.scrollTop = exploreList.scrollHeight;

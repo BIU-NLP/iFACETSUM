@@ -36,7 +36,7 @@ class InfoManager:
 
 
     def initClientFunc(self, clientId, corpus, suggQuerGen, numSuggQueries, summarizer, topicId, questionnaireBatchIndex, timeAllowed, assignmentId,
-                   hitId, workerId, turkSubmitTo):
+                       hitId, workerId, turkSubmitTo):
         self.m_clientsInfo[clientId]['corpus'] = corpus
         self.m_clientsInfo[clientId]['suggQuerGen'] = suggQuerGen
         self.m_clientsInfo[clientId]['summarizer'] = summarizer
@@ -101,7 +101,7 @@ class InfoManager:
 
     def setQuestionnaireAnswers(self, clientId, questionAnswersDict):
         return self.handleRequest(clientId, self.setQuestionnaireAnswersFunc, [clientId, questionAnswersDict],
-                           'Failed to set questionnaire answers for client {}'.format(clientId))
+                                  'Failed to set questionnaire answers for client {}'.format(clientId))
 
     def setIterationRatingsFunc(self, clientId, iterationRatingsDict):
         self.m_clientsInfo[clientId]['summarizer'].setIterationRatings(iterationRatingsDict)
@@ -124,7 +124,7 @@ class InfoManager:
 
     def setEndTime(self, clientId):
         return self.handleRequest(clientId, self.setEndTimeFunc, [clientId],
-                           'Failed to set end time for client {}'.format(clientId))
+                                  'Failed to set end time for client {}'.format(clientId))
 
     def saveDataBackgroundFunc(self):
         while True:
@@ -161,7 +161,7 @@ class InfoManager:
         :return:
         '''
         if 'assignmentId' in self.m_clientsInfo[clientId] and \
-                        self.m_clientsInfo[clientId]['assignmentId'] != 'ASSIGNMENT_ID_NOT_AVAILABLE':
+                self.m_clientsInfo[clientId]['assignmentId'] != 'ASSIGNMENT_ID_NOT_AVAILABLE':
             return True
         else:
             # mark this client that it shouldn't be saved:

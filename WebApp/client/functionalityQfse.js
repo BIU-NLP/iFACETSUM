@@ -1,4 +1,10 @@
 var enterQueryButton = document.getElementById("enterQueryButton");
+const $queryArea = $('#queryArea');
+const $documentsListArea = $('#documentsListArea');
+const $documentsList = $('#documentsList');
+const $explorationPage = $('#explorationPage');
+var $toolbarNavigationItems = $('.toolbar-navigation-item');
+var $documentsPane = $('#documentsPane');
 var repeatQueryButton = document.getElementById("repeatQueryButton");
 //var moreInfoButton = document.getElementById("addMoreButton");
 var queryInputBox = document.getElementById("userInput");
@@ -82,10 +88,11 @@ function setTopic(topicInfo) {
     var topicId = topicInfo['topicId'];
     var initialSummaryList = topicInfo['summary'];
     var numDocuments = topicInfo['numDocuments'];
+    const documentsMetas = topicInfo['documentsMetas'];
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
-    
+
     resetPage();
     curTopicId = topicId;
     // set the event name and keyphrases of the event:
@@ -101,21 +108,22 @@ function setTopic(topicInfo) {
         ' on';
 
     createKeywordListElement(keyPhrasesList);
+    createDocumentsListElement(documentsMetas);
     insertSummaryItemInExplorationPane(initialSummaryList);
-    
+
     // keep the text length so far:
     totalTextLength = textLength;
-    
+
     // show the keywords area and search box in case they were hidden:
     keywordsArea.style.display = "block";
     queryInputBox.removeAttribute("disabled");
-    
+
     // put focus on the query box:
     queryInputBox.focus();
 
     // set that the request has been responded to:
     isWaitingForInitial = false;
-    
+
     // make the page visible to the annotator and show relevant functionalities:
     showPageToAnnotator();
 }
@@ -135,7 +143,7 @@ function createKeywordListElement(keyPhrasesList) {
         li.appendChild(document.createTextNode(keyPhrasesList[i]));
         li.classList.add("keywordItem");
         keywordList.appendChild(li);
-        
+
         // create the event when the keyword is clicked:
         function keywordChosen(keywordLi) {
             // if it was not already used, search this keyphrase:
@@ -157,8 +165,35 @@ function createKeywordListElement(keyPhrasesList) {
     }
 }
 
+function createDocumentsListElement(documentsMetas) {
+    for (const [i, documentMeta] of documentsMetas.entries()) {
+        var liId = "li_document_"+i
+        var li = document.createElement("li");
+        li.setAttribute("id", liId);
+        li.appendChild(document.createTextNode(documentMeta['id']));
+        li.classList.add("keywordItem");
+        $documentsList.append(li);
 
-function insertQueryItemInExplorationPane(txt) {
+        function documentChosen(documentLi) {
+
+            if (canSendRequest()) {
+                var text = documentLi.innerText;
+                if (text != "") {
+                    text = text.trim();
+                }
+                documentLi.classList.add("keywordUsed"); // put the keyword in "used" state
+                lastQueryType = 'keyword';
+                fetchDocument(text);
+            }
+        }
+        // bind the event to the keyword list item (we use bind because of the loop - see: https://stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values )
+        li.addEventListener("click", documentChosen.bind(this, li), false);
+    }
+
+}
+
+
+function insertQueryItemInExplorationPane(txt, paneItem) {
     // a div is used to align the li item left:
     var listElementQuery = document.createElement("div");
     listElementQuery.classList.add("floatleft");
@@ -170,7 +205,7 @@ function insertQueryItemInExplorationPane(txt) {
     }
     li.appendChild(document.createTextNode(txt));
     listElementQuery.appendChild(li);
-    exploreList.appendChild(listElementQuery); //add to exploration list
+    paneItem.appendChild(listElementQuery); //add to exploration list
 }
 
 function insertSummaryItemInExplorationPane(txtList) {
@@ -180,13 +215,13 @@ function insertSummaryItemInExplorationPane(txtList) {
     var li = document.createElement("li");
     li.classList.add("exploreItem");
     li.onmouseup = onTextMouseUp; // to enable copying text to the query box when highlighting it
-    
+
     // put the list of sentences sepatately line by line with a small margin in between:
     for (var i = 0; i < txtList.length; i++) {
         var sentencePar = document.createElement("p");
         sentencePar.style.marginTop = "10px";
         sentencePar.style.marginBottom = "10px";
-        var textNode = document.createTextNode(txtList[i]);
+        var textNode = document.createTextNode(txtList[i]['sent']);
         sentencePar.appendChild(textNode);
         sentencePar.classList.add("highlighterCursor");
         li.appendChild(sentencePar);
@@ -214,6 +249,34 @@ function insertSummaryItemInExplorationPane(txtList) {
 
     // iteration done
     iterationNum++;
+}
+
+function insertDocInDocumentsPane(doc) {
+    const txtList = doc.text;
+
+    // a div is used to align the li item right:
+    var listElementResult = document.createElement("div");
+    listElementResult.classList.add("floatright");
+    var li = document.createElement("li");
+    li.classList.add("exploreItem");
+    li.onmouseup = onTextMouseUp; // to enable copying text to the query box when highlighting it
+
+    // put the list of sentences sepatately line by line with a small margin in between:
+    for (var i = 0; i < txtList.length; i++) {
+        var sentencePar = document.createElement("p");
+        sentencePar.style.marginTop = "10px";
+        sentencePar.style.marginBottom = "10px";
+        var textNode = document.createTextNode(txtList[i]);
+        sentencePar.appendChild(textNode);
+        sentencePar.classList.add("highlighterCursor");
+        li.appendChild(sentencePar);
+    }
+
+    listElementResult.appendChild(li);
+    $documentsPane.append(listElementResult); //add to exploration list
+
+    // scroll to more or less the headline of the document:
+    $documentsPane[0].scrollTop = $documentsPane[0].scrollTop + $documentsPane[0].offsetHeight - 200;
 }
 
 function addStarRatingWidget(parentElement, numStarsInRating, iterationNum, displayCharacter, instructionsTxt, instructionsExplanation, starLabelClass) {
@@ -303,29 +366,29 @@ function showQuestionnaire() {
     questionnaireArea = document.getElementById("questionnaireArea");
     rightSide = document.getElementById("rightSide");
     leftSide = document.getElementById("leftSide");
-    
+
     // hide the query area
     queryArea.style.display = "none";
     repeatQueryButton.style.display = "none";
     //moreInfoButton.style.display = "none";
-    
+
     // the right and left sides were unbalanced until now to give more room for the summary area
     // now we split the two sides in half:
     rightSide.style.width = "50%";
     leftSide.style.width = "50%";
-    
+
     // change the cursor of the text areas in the exploration pane to the auto text cursor instead of the highlighter:
     var textAreas = document.getElementsByClassName("highlighterCursor");
     for (var i = 0; i < textAreas.length ; i++) {
         textAreas[i].style.cursor = "auto";
     }
-    
+
     // hide the highlighting tip message div:
     document.getElementById("highlightTipMessage").style.display = "none";
 
     // show the questionnaire area:
     questionnaireArea.style.display = "inline-table";
-    
+
     // hide the "stop exploring" button in case it's showing
     stopExploringButton.style.display = "none";
 
@@ -344,7 +407,7 @@ function onTextMouseUp() {
     } else if (document.selection && document.selection.type != "Control") {
         text = document.selection.createRange().text;
     }
-    
+
     // add a space at the end of the highlighted text if there isn't one:
     if (text != "") {
         text = text.trim();
@@ -354,7 +417,7 @@ function onTextMouseUp() {
     if (queryInputBox.value != "" && !queryInputBox.value.endsWith(' ')) {
         text = ' ' + text;
     }
-    
+
     // put the selected text in the query box, and focus on the query box:
     queryInputBox.value += text; // set the search query to the highlighted text (append text)
     lastQueryType = 'highlight'
@@ -363,29 +426,45 @@ function onTextMouseUp() {
 
 /* Handle a query string. */
 function query(queryStr) {
-    
+
     // create the query list item in the exploration pane:
-    insertQueryItemInExplorationPane(queryStr);
-    
+    insertQueryItemInExplorationPane(queryStr, exploreList);
+
     // put a loading ellipsis:
-    insertLoadingIndicatorInExplorationPane();
-    
+    insertLoadingIndicatorInExplorationPane(exploreList);
+
     // scroll to bottom:
     exploreList.scrollTop = exploreList.scrollHeight;
-    
+
     // if no query type was set until now ('freetext' or 'highlight' or 'keyword'), then it must be that some text was copy-pasted into the query box:
     if (lastQueryType == '') {
         lastQueryType = 'copypaste';
     }
-    
+
     // if the new query is not a "more info" query, then keep remember it:
     if (queryStr != '') {
         lastQueryStr = queryStr;
     }
-    
+
     // get query response info from the server:
     sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
     // the response will be sent to function setQueryResponse asynchronously
+}
+
+function fetchDocument(documentId) {
+    insertQueryItemInExplorationPane(documentId, $documentsPane[0]);
+
+    insertLoadingIndicatorInExplorationPane(documentsPane);
+
+    // scroll to bottom:
+    $documentsPane[0].scrollTop = $documentsPane[0].scrollHeight;
+
+    sendRequest({
+        "clientId": clientId,
+        "request_document": {
+            "docId": documentId
+        }
+    });
 }
 
 function queryOnButtonClick(){
@@ -444,10 +523,37 @@ function canSendRequest() {
     return !isWaitingForResponse && curTopicId != null;
 }
 
+function changeScreen(event) {
+    const $targetClicked = $(event.currentTarget);
+    for (toolbarNavigationItem of $toolbarNavigationItems) {
+        $(toolbarNavigationItem).removeClass('active');
+    }
+    $targetClicked.addClass('active');
+    if ($targetClicked.attr('id') === "navigationSummaryButton") {
+        $explorationPage.removeClass('hidden');
+        $queryArea.removeClass('hidden');
+    } else {
+        $explorationPage.addClass('hidden');
+        $queryArea.addClass('hidden');
+    }
+
+    if ($targetClicked.attr('id') === "navigationDocumentsButton") {
+        $documentsPane.removeClass('hidden');
+        $documentsListArea.removeClass('hidden');
+    } else {
+        $documentsPane.addClass('hidden');
+        $documentsListArea.addClass('hidden');
+    }
+
+}
+
 enterQueryButton.addEventListener("click",queryOnButtonClick);
 queryInputBox.addEventListener("keyup", queryOnKeyUp);
 repeatQueryButton.addEventListener("click", queryRepeatOnButtonClick);
 //moreInfoButton.addEventListener("click", moreInfoOnButtonClick);
 stopExploringButton.addEventListener("click", stopExploringButtonOnClick);
+for (toolbarNavigationItem of $toolbarNavigationItems) {
+    toolbarNavigationItem.addEventListener("click", changeScreen);
+}
 
 window.onload = onInitFunc;
