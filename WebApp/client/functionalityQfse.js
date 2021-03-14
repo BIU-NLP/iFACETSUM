@@ -20,6 +20,7 @@ var isWaitingForResponse = false;
 var isWaitingForInitial = false;
 var questionnaireBatchInd = -1;
 var totalTextLength = 0;
+let globalDocumentsMetas = null;
 var pageBaseUrl = "qfse.html";
 var summaryType = "qfse";
 var timeAllowed = -1;
@@ -90,6 +91,7 @@ function setTopic(topicInfo) {
     var initialSummaryList = topicInfo['summary'];
     var numDocuments = topicInfo['numDocuments'];
     const documentsMetas = topicInfo['documentsMetas'];
+    globalDocumentsMetas = documentsMetas;
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
@@ -110,7 +112,7 @@ function setTopic(topicInfo) {
 
     createKeywordListElement(keyPhrasesList);
     createDocumentsListElement(documentsMetas);
-    insertSummaryItemInExplorationPane(initialSummaryList);
+    insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
 
     // keep the text length so far:
     totalTextLength = textLength;
@@ -167,7 +169,7 @@ function createKeywordListElement(keyPhrasesList) {
 }
 
 function createDocumentsListElement(documentsMetas) {
-    for (const [i, documentMeta] of documentsMetas.entries()) {
+    for (const [i, documentMeta] of Object.values(documentsMetas).entries()) {
         var liId = "li_document_"+i
         var li = document.createElement("li");
         li.setAttribute("id", liId);
@@ -209,41 +211,44 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
     paneItem.appendChild(listElementQuery); //add to exploration list
 }
 
-function insertSummaryItemInExplorationPane(txtList) {
+function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
     // a div is used to align the li item right:
     var listElementResult = document.createElement("div");
     listElementResult.classList.add("floatright");
-    var li = document.createElement("li");
-    li.classList.add("exploreItem");
-    li.onmouseup = onTextMouseUp; // to enable copying text to the query box when highlighting it
 
-    // put the list of sentences sepatately line by line with a small margin in between:
-    for (var i = 0; i < txtList.length; i++) {
-        var sentencePar = document.createElement("p");
-        sentencePar.style.marginTop = "10px";
-        sentencePar.style.marginBottom = "10px";
-        var textNode = document.createTextNode(txtList[i]['sent']);
-        sentencePar.appendChild(textNode);
-        sentencePar.classList.add("highlighterCursor");
-        li.appendChild(sentencePar);
-    }
-
-    // if needed, put the star rating widget within the summary item:
-    //if (needIterationStarRating) {
-    if (iterationStarRatingType != 0) {
-        var instructionsTxt = RATING_PARAMS[iterationStarRatingType]['instructionsRest'];
-        var instructionsExplanation = RATING_PARAMS[iterationStarRatingType]['explanationRest'];
-        var instructionsExplanationStarLabelClass = RATING_PARAMS[iterationStarRatingType]['starLabelClassRest'];
-        if (iterationNum == 0) { // for the initial summary
-            instructionsTxt = RATING_PARAMS[iterationStarRatingType]['instructionsInitial'];
-            instructionsExplanation = RATING_PARAMS[iterationStarRatingType]['explanationInitial'];
-            instructionsExplanationStarLabelClass = RATING_PARAMS[iterationStarRatingType]['starLabelClassInitial'];
+    const liReact = e(
+        ListItem,
+        {
+            "txtList": txtList,
+            "docsMetas": documentsMetas,
+            "numSentToShow": 3
         }
-        addStarRatingWidget(li, RATING_PARAMS[iterationStarRatingType]['numStars'], iterationNum, RATING_PARAMS[iterationStarRatingType]['signCharacter'], instructionsTxt, instructionsExplanation, instructionsExplanationStarLabelClass)
-    }
+    );
 
-    listElementResult.appendChild(li);
+    ReactDOM.render(liReact, listElementResult);
+    $(listElementResult).find('p').popover({
+          trigger: 'focus',
+          'data-placement': "right"
+      });
+
     exploreList.appendChild(listElementResult); //add to exploration list
+
+
+//        var textNode = document.createTextNode(txtList[i]['sent']);
+
+//    // if needed, put the star rating widget within the summary item:
+//    //if (needIterationStarRating) {
+//    if (iterationStarRatingType != 0) {
+//        var instructionsTxt = RATING_PARAMS[iterationStarRatingType]['instructionsRest'];
+//        var instructionsExplanation = RATING_PARAMS[iterationStarRatingType]['explanationRest'];
+//        var instructionsExplanationStarLabelClass = RATING_PARAMS[iterationStarRatingType]['starLabelClassRest'];
+//        if (iterationNum == 0) { // for the initial summary
+//            instructionsTxt = RATING_PARAMS[iterationStarRatingType]['instructionsInitial'];
+//            instructionsExplanation = RATING_PARAMS[iterationStarRatingType]['explanationInitial'];
+//            instructionsExplanationStarLabelClass = RATING_PARAMS[iterationStarRatingType]['starLabelClassInitial'];
+//        }
+//        addStarRatingWidget(li, RATING_PARAMS[iterationStarRatingType]['numStars'], iterationNum, RATING_PARAMS[iterationStarRatingType]['signCharacter'], instructionsTxt, instructionsExplanation, instructionsExplanationStarLabelClass)
+//    }
 
     // extend the list of all texts:
     Array.prototype.push.apply(allTextsInSession, txtList);
@@ -251,6 +256,14 @@ function insertSummaryItemInExplorationPane(txtList) {
     // iteration done
     iterationNum++;
 }
+
+function openDocument(e) {
+    const docId = e.target.textContent;
+    $('#navigationDocumentsButton').click();
+    fetchDocument(docId);
+
+}
+$(document).on('click', '.open-document', openDocument);
 
 class ListItem extends React.Component {
     constructor(props) {
@@ -274,27 +287,37 @@ class ListItem extends React.Component {
 
     render() {
         const txtList = this.props.txtList;
+        const numSentToShow = this.props.numSentToShow || 1;
+        const docsMetas = this.props.docsMetas;
         const sentences = [];
 
         // put the list of sentences sepatately line by line with a small margin in between:
         for (var i = 0; i < txtList.length; i++) {
-            if (i < 1 || !this.state.minimized) {
-                const sentenceText = txtList[i];
+            if (i < numSentToShow || !this.state.minimized) {
+                const sentenceText = txtList[i]['sent'];
+                const docId = txtList[i]['doc_id'];
+                const sentIdx = txtList[i]['sent_idx'];
+                const docMeta = docsMetas[docId];
 
                 const sentencePar = e(
                     'p',
                     {
                         style: {
                             "marginTop": "10px",
-                            "marginBottom": "10px"
+                            "marginBottom": "10px",
+                            "cursor": "pointer"
                         },
                        "tabIndex": "0",
                        "role": "button",
                        "data-toggle": "popover",
                        "data-trigger": "focus",
-                       "title": "Exploration",
+                       "data-placement": "right",
+                       "title": "Sentence exploration",
                        "data-html": true,
-                       "data-content": "<span>hello</span>"
+                       "data-content": "<span>" +
+                         "<div>Document id: <button type='button' class='btn btn-link open-document'>" + docId + "</button></div>" +
+                         "<div>Sentence #" + sentIdx + "</div>" +
+                         "</span>"
                     },
                     sentenceText
                   );
@@ -302,32 +325,36 @@ class ListItem extends React.Component {
             }
         }
 
-        if (this.state.minimized) {
-            const readMoreBtn = e(
-                'button',
-                {
-                    style: {
-                        "marginTop": "10px",
-                        "marginBottom": "10px"
+        if (numSentToShow < txtList.length) {
+            if (this.state.minimized) {
+                const readMoreBtn = e(
+                    'button',
+                    {
+                        style: {
+                            "marginTop": "10px",
+                            "marginBottom": "10px",
+                            "cursor": "pointer"
+                        },
+                        onClick: this.expand
                     },
-                    onClick: this.expand
-                },
-                "Read more sentences"
-            );
-            sentences.push(readMoreBtn);
-        } else {
-            const readLessBtn = e(
-                'button',
-                {
-                    style: {
-                        "marginTop": "10px",
-                        "marginBottom": "10px"
+                    "Read more (" + txtList.length + " sentences)"
+                );
+                sentences.push(readMoreBtn);
+            } else {
+                const readLessBtn = e(
+                    'button',
+                    {
+                        style: {
+                            "marginTop": "10px",
+                            "marginBottom": "10px",
+                            "cursor": "pointer"
+                        },
+                        onClick: this.minimize
                     },
-                    onClick: this.minimize
-                },
-                "Read less sentences"
-            );
-            sentences.push(readLessBtn);
+                    "Read less"
+                );
+                sentences.push(readLessBtn);
+            }
         }
 
         const minimizedClass = this.state.minimized ? " minimized" : "";
@@ -335,8 +362,7 @@ class ListItem extends React.Component {
         return e(
            "li",
            {
-               "className": "exploreItem" + minimizedClass,
-               "onMouseUp": onTextMouseUp // to enable copying text to the query box when highlighting it
+               "className": "exploreItem" + minimizedClass
            },
            sentences
        );
@@ -344,28 +370,41 @@ class ListItem extends React.Component {
 }
 
 function insertDocInDocumentsPane(doc) {
-    const txtList = doc.text;
+    const txtList = [];
+
+    for (const sent of doc.sentences) {
+        txtList.push({
+            "doc_id": doc.id,
+            "sent": sent.text,
+            "sent_idx": sent.idx
+        });
+    }
 
     // a div is used to align the li item right:
     var listElementResult = document.createElement("div");
     listElementResult.classList.add("floatright");
 
+    const documentsMetas = globalDocumentsMetas;
+
     const liReact = e(
         ListItem,
         {
-            "txtList": txtList
+            "txtList": txtList,
+            "docsMetas": documentsMetas,
+            "numSentToShow": 2
         }
     );
 
     ReactDOM.render(liReact, listElementResult);
+    $(listElementResult).find('p').popover({
+          trigger: 'focus',
+          "data-placement": "right"
+      });
 
     $documentsPane.append(listElementResult); //add to exploration list
 
     // scroll to more or less the headline of the document:
     $documentsPane[0].scrollTop = $documentsPane[0].scrollTop + $documentsPane[0].offsetHeight - 200;
-    $(listElementResult).find('p').popover({
-          trigger: 'focus'
-      });
 
 }
 
@@ -489,30 +528,30 @@ function showQuestionnaire() {
 }
 
 
-function onTextMouseUp() {
-    // get the currently selected text on the page:
-    var text = "";
-    if (window.getSelection) {
-        text = window.getSelection().toString();
-    } else if (document.selection && document.selection.type != "Control") {
-        text = document.selection.createRange().text;
-    }
-
-    // add a space at the end of the highlighted text if there isn't one:
-    if (text != "") {
-        text = text.trim();
-        text += ' ';
-    }
-    // if there's no space before the newly added text, add one:
-    if (queryInputBox.value != "" && !queryInputBox.value.endsWith(' ')) {
-        text = ' ' + text;
-    }
-
-    // put the selected text in the query box, and focus on the query box:
-    queryInputBox.value += text; // set the search query to the highlighted text (append text)
-    lastQueryType = 'highlight'
-    queryInputBox.focus();
-}
+//function onTextMouseUp() {
+//    // get the currently selected text on the page:
+//    var text = "";
+//    if (window.getSelection) {
+//        text = window.getSelection().toString();
+//    } else if (document.selection && document.selection.type != "Control") {
+//        text = document.selection.createRange().text;
+//    }
+//
+//    // add a space at the end of the highlighted text if there isn't one:
+//    if (text != "") {
+//        text = text.trim();
+//        text += ' ';
+//    }
+//    // if there's no space before the newly added text, add one:
+//    if (queryInputBox.value != "" && !queryInputBox.value.endsWith(' ')) {
+//        text = ' ' + text;
+//    }
+//
+//    // put the selected text in the query box, and focus on the query box:
+//    queryInputBox.value += text; // set the search query to the highlighted text (append text)
+//    lastQueryType = 'highlight'
+//    queryInputBox.focus();
+//}
 
 /* Handle a query string. */
 function query(queryStr) {

@@ -9,6 +9,10 @@ def sent_id_to_doc_id(sent_id):
     return sent_id.split("::")[0]
 
 
+def sent_id_to_sent_idx(sent_id):
+    return sent_id.split("::")[1]
+
+
 def loadSpacy():
     global nlp
 
