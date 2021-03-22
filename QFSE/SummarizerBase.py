@@ -5,7 +5,7 @@ import logging
 import time
 import threading
 
-
+from QFSE.Utilities import sent_id_to_doc_id, sent_id_to_sent_idx
 from QFSE.models import Summary, SummarySent
 
 
@@ -46,7 +46,7 @@ class SummarizerBase:
             threadCalculateRouge = threading.Thread(target=self._keepRougeCurrent, args=())
             threadCalculateRouge.start()
         self.haveChanges = True
-        summary_sents = [SummarySent(sent_id, sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
+        summary_sents = [SummarySent(sent_id_to_doc_id(sent_id), sent_id, sent_id_to_sent_idx(sent_id), sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
         return Summary(summary_sents, summaryLengthInWords)
 
     def _getGenericSummaryText(self, desiredWordCount):
@@ -67,7 +67,7 @@ class SummarizerBase:
             threadCalculateRouge = threading.Thread(target=self._keepRougeCurrent, args=())
             threadCalculateRouge.start()
         self.haveChanges = True
-        summary_sents = [SummarySent(sent_id, sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
+        summary_sents = [SummarySent(sent_id_to_doc_id(sent_id), sent_id, sent_id_to_sent_idx(sent_id), sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
         return Summary(summary_sents, summaryLengthInWords)
 
     def _getQuerySummaryText(self, query, numSentencesNeeded):
