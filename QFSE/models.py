@@ -7,7 +7,9 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class SummarySent:
+    doc_id: str
     sent_id: str
+    sent_idx: int
     sent: str
 
 

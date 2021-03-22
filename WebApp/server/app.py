@@ -198,7 +198,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 "keyPhraseList": keyPhraseList,
                 "topicName": topicName,
                 "topicId": topicId,
-                "documentsMetas": [{"id": x.id} for x in corpus.documents],
+                "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences), "mentions": x.tokens} for x in corpus.documents},
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": list(questionnaireList),
                 "timeAllowed": str(timeAllowed),
@@ -247,7 +247,8 @@ class IntSummHandler(tornado.web.RequestHandler):
         reply = {
             "reply_document": {
                 "doc": {
-                    "text": doc.text.split('   ')
+                    "id": doc_id,
+                    "sentences": [{"id": x.sentId, "text": x.text, "idx": x.sentIndex} for x in doc.sentences]
                 }
             }
         }

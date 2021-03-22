@@ -247,7 +247,7 @@ function setQueryResponse(queryResultInfo) {
         curLoadingInicatorElement = null;
     }
 
-    insertSummaryItemInExplorationPane(summary);
+    insertSummaryItemInExplorationPane(summary, globalDocumentsMetas);
     // scroll to bottom:
     exploreList.scrollTop = exploreList.scrollHeight;
 
