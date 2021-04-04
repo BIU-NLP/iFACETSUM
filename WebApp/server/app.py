@@ -1,6 +1,12 @@
 # set the sys path to three directories up so that imports are relative to the qfse directory:
 import sys
 import os
+from collections import defaultdict
+from typing import List
+
+from QFSE.Sentence import Sentence
+from QFSE.models import SummarySent, Summary
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
 import json
@@ -8,14 +14,13 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import logging
-logging.basicConfig(filename='intSumm.log', level=logging.DEBUG, format='%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s') # must be placed here due to import ordering
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s') # must be placed here due to import ordering
 import traceback
-import datetime
 import ssl
 import WebApp.server.params as params
 
 from QFSE.Utilities import loadSpacy, loadBert
-from QFSE.Utilities import REPRESENTATION_STYLE_W2V, REPRESENTATION_STYLE_SPACY, REPRESENTATION_STYLE_BERT
+from QFSE.Utilities import REPRESENTATION_STYLE_SPACY, REPRESENTATION_STYLE_BERT
 
 # The SpaCy and BERT objects must be loaded before anything else, so that classes using them get the initialized objects.
 # The SpaCy and BERT objects are initialized only when needed since these init processes take a long time.
@@ -32,6 +37,8 @@ from QFSE.Corpus import Corpus
 from QFSE.SuggestedQueriesNgramCount import SuggestedQueriesNgramCount
 from QFSE.SuggestedQueriesTextRank import SuggestedQueriesTextRank
 from WebApp.server.InfoManager import InfoManager
+
+from QFSE.coref.utils import convert_corpus_to_coref_input_format, get_coref_clusters
 
 # request types
 TYPE_ERROR = -1
@@ -169,6 +176,9 @@ class IntSummHandler(tornado.web.RequestHandler):
         else:
             return self.getErrorJson('Topic ID not supported: {}'.format(topicId))
 
+        formatted_topics = convert_corpus_to_coref_input_format(corpus, topicId)
+        get_coref_clusters(formatted_topics, corpus)
+
         # make sure the summary type is valid:
         summaryAlgorithm = '{}_{}'.format(summaryType, algorithm)
         if summaryAlgorithm in SUMMARY_TYPES:
@@ -192,13 +202,16 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         questionnaireList = {{"id": qId,"str": qStr} for qId, qStr in m_infoManager.getQuestionnaire(clientId).items()}
 
+        corpus_sents = self._summary_sents_to_corpus_sents(corpus, summary)
+        response_sents = self._corpus_sents_to_response_sents(corpus_sents)
+
         reply = {
             "reply_get_initial_summary": {
-                "summary": [x.to_dict() for x in summary.summary_sents],
+                "summary": response_sents,
                 "keyPhraseList": keyPhraseList,
                 "topicName": topicName,
                 "topicId": topicId,
-                "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences), "mentions": x.tokens} for x in corpus.documents},
+                "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences)} for x in corpus.documents},
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": list(questionnaireList),
                 "timeAllowed": str(timeAllowed),
@@ -206,6 +219,54 @@ class IntSummHandler(tornado.web.RequestHandler):
             }
         }
         return json.dumps(reply)
+
+    def _summary_sents_to_corpus_sents(self, corpus, summary: Summary) -> List[Sentence]:
+        sentences_used = []
+        document_by_id = {doc.id: doc for doc in corpus.documents}
+        for summary_sent in summary.summary_sents:
+            doc = document_by_id[summary_sent.doc_id]
+            sent = doc.sentences[summary_sent.sent_idx]
+            sentences_used.append(sent)
+        return sentences_used
+
+    def _corpus_sents_to_response_sents(self, corpus_sents: List[Sentence]) -> List[dict]:
+        return [{
+            "text": corpus_sent.text,
+            "idx": corpus_sent.sentIndex,
+            "id": corpus_sent.sentId,
+            "doc_id": corpus_sent.docId,
+            "coref_clusters": corpus_sent.coref_clusters,
+            "tokens": self._split_sent_text_to_tokens(corpus_sent)
+        } for corpus_sent in corpus_sents]
+
+    def _split_sent_text_to_tokens(self, sent: Sentence):
+        # TODO: Do this split earlier and send it also to the other services
+        tokens = sent.text.split(" ")
+
+        token_to_mention = defaultdict(list)
+        for mention in sent.coref_clusters:
+            for token_idx in range(mention['start'], mention['end'] + 1):
+                token_to_mention[token_idx].append(mention)
+
+        tokens_groups = []
+        open_mentions = []
+        for token_idx, token in enumerate(tokens):
+            if token_idx in token_to_mention:
+                mention = token_to_mention[token_idx]
+                if len(open_mentions) == 0:
+                    open_mentions.append({"tokens": [], "cluster_idx": mention[0]['cluster_idx']})
+                open_mentions[-1]['tokens'].append([token])
+            else:
+                if len(open_mentions) > 0:
+                    curr_tokens = open_mentions.pop()
+                    tokens_groups.append({
+                        "tokens": curr_tokens['tokens'],
+                        "group_id": curr_tokens['cluster_idx']
+                    })
+                else:
+                    tokens_groups.append([token])
+
+        return tokens_groups
 
     def getQuerySummaryJson(self, clientJson):
         clientId = clientJson['clientId']
@@ -248,7 +309,7 @@ class IntSummHandler(tornado.web.RequestHandler):
             "reply_document": {
                 "doc": {
                     "id": doc_id,
-                    "sentences": [{"id": x.sentId, "text": x.text, "idx": x.sentIndex} for x in doc.sentences]
+                    "sentences": self._corpus_sents_to_response_sents(doc.sentences)
                 }
             }
         }

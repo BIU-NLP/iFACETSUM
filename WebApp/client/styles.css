@@ -719,7 +719,83 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 /* Make documentsList scrollable because there are a lot of documents */
-#documentsList {
+#documentsList, #mentionsList {
     overflow-y: scroll;
     height: 400px;
 }
+
+.sentence-paragraph {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+}
+
+.sentence-span {
+    /* line-height: 42px; */
+    display: flex;
+    flex-wrap: wrap;
+    white-space: pre;
+    cursor: default;
+    -webkit-box-align: center;
+    align-items: center;
+}
+
+/* start - highlight css */
+
+.highlight-blue.highlight-blue {
+    border-color: var(--blue);
+}
+
+.highlight-blue.highlight-icon {
+    background: var(--blue);
+}
+
+.highlight-blue.highlight-hover {
+    background: var(--blue);
+}
+
+.highlight-pink.highlight-pink {
+   border-color: var(--pink);
+}
+
+.highlight-pink.highlight-icon {
+    background: var(--pink);
+}
+
+.highlight-pink.highlight-hover {
+    background: var(--pink);
+}
+
+.highlight-icon {
+    padding: 0px 8px;
+    font-size: 0.8125rem;
+    margin-right: 4px;
+}
+
+.highlight-icon.highlight-icon {
+    color: var(--light);
+}
+
+.highlight-hover {
+    border: 2px solid;
+    position: relative;
+    line-height: 22px;
+    display: flex;
+    color: var(--gray-dark);
+    background: var(--light);
+    cursor: pointer;
+}
+
+.highlight-no-hover {
+    border: 2px solid;
+    margin: 4px 8px 4px 4px;
+    position: relative;
+    line-height: 22px;
+    display: flex;
+    color: var(--gray-dark);
+    background: var(--light);
+    cursor: pointer;
+}
+
+/* end - highlight css */

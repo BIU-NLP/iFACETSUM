@@ -3,9 +3,12 @@ var enterQueryButton = document.getElementById("enterQueryButton");
 const $queryArea = $('#queryArea');
 const $documentsListArea = $('#documentsListArea');
 const $documentsList = $('#documentsList');
+const $mentionsListArea = $('#mentionsListArea');
+const $mentionsList = $('#mentionsList');
 const $explorationPage = $('#explorationPage');
-var $toolbarNavigationItems = $('.toolbar-navigation-item');
-var $documentsPane = $('#documentsPane');
+const $toolbarNavigationItems = $('.toolbar-navigation-item');
+const $documentsPane = $('#documentsPane');
+const $mentionsPane = $('#mentionsPane');
 var repeatQueryButton = document.getElementById("repeatQueryButton");
 //var moreInfoButton = document.getElementById("addMoreButton");
 var queryInputBox = document.getElementById("userInput");
@@ -112,6 +115,7 @@ function setTopic(topicInfo) {
 
     createKeywordListElement(keyPhrasesList);
     createDocumentsListElement(documentsMetas);
+    createMentionsListElement(documentsMetas);
     insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
 
     // keep the text length so far:
@@ -168,14 +172,43 @@ function createKeywordListElement(keyPhrasesList) {
     }
 }
 
+class PaneNavListItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
+
+    render() {
+        const listItemId = this.props.i;
+        const text = this.props.text;
+        const listType = this.props.listType;
+
+        return e(
+            "li",
+            {
+                "id": `li_${listType}_${listItemId}`,
+                "className": "keywordItem"
+            },
+            text
+       );
+    }
+}
+
 function createDocumentsListElement(documentsMetas) {
     for (const [i, documentMeta] of Object.values(documentsMetas).entries()) {
-        var liId = "li_document_"+i
-        var li = document.createElement("li");
-        li.setAttribute("id", liId);
-        li.appendChild(document.createTextNode(documentMeta['id']));
-        li.classList.add("keywordItem");
-        $documentsList.append(li);
+       var listElementResult = document.createElement("div");
+
+        const liReact = e(
+            PaneNavListItem,
+            {
+                "i": i,
+                "text": documentMeta['id'],
+                "listType": "document"
+            }
+        );
+
+        ReactDOM.render(liReact, listElementResult);
+        $documentsList.append(listElementResult);
 
         function documentChosen(documentLi) {
 
@@ -189,11 +222,45 @@ function createDocumentsListElement(documentsMetas) {
                 fetchDocument(text);
             }
         }
-        // bind the event to the keyword list item (we use bind because of the loop - see: https://stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values )
-        li.addEventListener("click", documentChosen.bind(this, li), false);
+
+        listElementResult.addEventListener("click", documentChosen.bind(this, listElementResult), false);
     }
 
 }
+
+function createMentionsListElement(documentsMetas) {
+    for (const [i, documentMeta] of Object.values(documentsMetas).entries()) {
+       var listElementResult = document.createElement("div");
+
+        const liReact = e(
+            PaneNavListItem,
+            {
+                "i": i,
+                "text": documentMeta['id'],
+                "listType": "mention"
+            }
+        );
+
+        ReactDOM.render(liReact, listElementResult);
+        $mentionsList.append(listElementResult);
+
+        function documentChosen(documentLi) {
+
+            if (canSendRequest()) {
+                var text = documentLi.innerText;
+                if (text != "") {
+                    text = text.trim();
+                }
+                documentLi.classList.add("keywordUsed"); // put the keyword in "used" state
+                lastQueryType = 'keyword';
+                fetchDocument(text);
+            }
+        }
+
+        listElementResult.addEventListener("click", documentChosen.bind(this, listElementResult), false);
+    }
+}
+
 
 
 function insertQueryItemInExplorationPane(txt, paneItem) {
@@ -265,6 +332,71 @@ function openDocument(e) {
 }
 $(document).on('click', '.open-document', openDocument);
 
+const GROUPS_COLORS = ["blue", "pink", "orange", "red"];
+const group_id_to_color = {};
+for (const [i, color] of GROUPS_COLORS.entries()) {
+    group_id_to_color[i] = color;
+}
+
+class TokensGroup extends React.Component {
+    render() {
+        const groups = this.props.groups;
+        const groupId = this.props.group_id;
+
+        const innerHtml = [];
+
+        let className = "";
+        if (groupId !== undefined) {
+            const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
+            className = "highlight-no-hover highlight-" + groupColor;
+            const groupIcon = e(
+                "span",
+                {
+                    "className": "highlight-hover highlight-icon highlight-" + groupColor
+                },
+                groupId
+            );
+            innerHtml.push(groupIcon);
+        }
+
+        for (const tokensGroup of groups) {
+            let innerTokensGroup;
+
+            if (tokensGroup['group_id'] !== undefined) {
+                innerTokensGroup = e(
+                  TokensGroup,
+                  {
+                    "groups": tokensGroup['tokens'],
+                    "group_id": tokensGroup['group_id']
+                  }
+                );
+                innerHtml.push(innerTokensGroup);
+            } else {
+                let groupClass = "";
+
+                for (const token of tokensGroup) {
+                    innerTokensGroup = e(
+                         "span",
+                         {
+                            "className": groupClass
+                         },
+                         token + " "
+                    );
+                    innerHtml.push(innerTokensGroup);
+                }
+            }
+        }
+
+        return e(
+            "span",
+            {
+                "className": "sentence-span " + className
+            },
+            innerHtml
+        )
+    }
+}
+
 class ListItem extends React.Component {
     constructor(props) {
         super(props);
@@ -294,19 +426,22 @@ class ListItem extends React.Component {
         // put the list of sentences sepatately line by line with a small margin in between:
         for (var i = 0; i < txtList.length; i++) {
             if (i < numSentToShow || !this.state.minimized) {
-                const sentenceText = txtList[i]['sent'];
+                const sentenceText = txtList[i]['text'];
                 const docId = txtList[i]['doc_id'];
-                const sentIdx = txtList[i]['sent_idx'];
+                const sentIdx = txtList[i]['idx'];
                 const docMeta = docsMetas[docId];
+                let mentionsTxt = "None";
+                if (txtList[i]['coref_clusters'].length > 0) {
+                    mentionsTxt = "";
+                    for (const corefCluster of txtList[i]['coref_clusters']) {
+                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['sent_idx'] + ") "
+                    }
+                }
 
                 const sentencePar = e(
                     'p',
                     {
-                        style: {
-                            "marginTop": "10px",
-                            "marginBottom": "10px",
-                            "cursor": "pointer"
-                        },
+                        "className": "sentence-paragraph",
                        "tabIndex": "0",
                        "role": "button",
                        "data-toggle": "popover",
@@ -317,9 +452,15 @@ class ListItem extends React.Component {
                        "data-content": "<span>" +
                          "<div>Document id: <button type='button' class='btn btn-link open-document'>" + docId + "</button></div>" +
                          "<div>Sentence #" + sentIdx + "</div>" +
+                         "<div>Mentions: " + mentionsTxt + "</div>" +
                          "</span>"
                     },
-                    sentenceText
+                    e(
+                      TokensGroup,
+                      {
+                        "groups": txtList[i]['tokens']
+                      }
+                    )
                   );
                   sentences.push(sentencePar);
             }
@@ -370,15 +511,6 @@ class ListItem extends React.Component {
 }
 
 function insertDocInDocumentsPane(doc) {
-    const txtList = [];
-
-    for (const sent of doc.sentences) {
-        txtList.push({
-            "doc_id": doc.id,
-            "sent": sent.text,
-            "sent_idx": sent.idx
-        });
-    }
 
     // a div is used to align the li item right:
     var listElementResult = document.createElement("div");
@@ -389,7 +521,7 @@ function insertDocInDocumentsPane(doc) {
     const liReact = e(
         ListItem,
         {
-            "txtList": txtList,
+            "txtList": doc.sentences,
             "docsMetas": documentsMetas,
             "numSentToShow": 2
         }
@@ -672,6 +804,15 @@ function changeScreen(event) {
     } else {
         $documentsPane.addClass('hidden');
         $documentsListArea.addClass('hidden');
+    }
+
+
+    if ($targetClicked.attr('id') === "navigationMentionsButton") {
+        $mentionsPane.removeClass('hidden');
+        $mentionsListArea.removeClass('hidden');
+    } else {
+        $mentionsPane.addClass('hidden');
+        $mentionsListArea.addClass('hidden');
     }
 
 }

@@ -19,6 +19,8 @@ class Sentence:
         self.lengthInWords = len(self.tokens)
         self.lengthInChars = len(self.text)
 
+        self.coref_clusters = []
+
         if doNotInitRepresentation:
             self.representation = None
             # the spacy object per sentence is time consuming, so set from Document with setRepresentation method

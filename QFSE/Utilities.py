@@ -10,7 +10,7 @@ def sent_id_to_doc_id(sent_id):
 
 
 def sent_id_to_sent_idx(sent_id):
-    return sent_id.split("::")[1]
+    return int(sent_id.split("::")[1])
 
 
 def loadSpacy():

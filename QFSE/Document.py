@@ -12,6 +12,7 @@ class Document:
         self.text = text
         self.representationStyle = representationStyle
         self.spacyDoc = None
+        self.coref_clusters = []
         self._initDoc()
 
     def _initDoc(self):
