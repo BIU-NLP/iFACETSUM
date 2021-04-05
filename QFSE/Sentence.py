@@ -1,4 +1,4 @@
-from QFSE.Utilities import nlp, bert_embedder
+from QFSE.Utilities import nlp, bert_embedder, get_item
 from QFSE.Utilities import REPRESENTATION_STYLE_W2V, REPRESENTATION_STYLE_BERT, REPRESENTATION_STYLE_SPACY
 from QFSE.Utilities import STOP_WORDS, PUNCTUATION, TRANSITION_WORDS
 import sklearn
@@ -28,6 +28,7 @@ class Sentence:
             self.__initRepresentation()
 
     def __initRepresentation(self):
+        nlp = get_item("spacy")
         if self.representationStyle == REPRESENTATION_STYLE_SPACY:
             self.representation = nlp(self.text).vector  # a spacy doc object
         elif self.representationStyle == REPRESENTATION_STYLE_BERT:

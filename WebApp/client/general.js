@@ -261,17 +261,18 @@ function setQueryResponse(queryResultInfo) {
     }
 }
 
-function setDocumentResponse(docResult) {
+function setPaneResponse(docResult, $pane) {
     const doc = docResult['doc'];
 
     // remove the loading ellipsis:
     if (curLoadingInicatorElement != null) {
-        $documentsPane[0].removeChild(curLoadingInicatorElement);//exploreList.lastChild);
+        $pane[0].removeChild(curLoadingInicatorElement);//exploreList.lastChild);
         curLoadingInicatorElement = null;
     }
 
-    insertDocInDocumentsPane(doc);
+    insertDocInPane(doc, $pane);
 }
+
 
 function submitFinal(successfulSave) {
     SubmitToAMT(function(success) {
@@ -361,7 +362,10 @@ function handleJsonReply(jsonObj) {
         setQueryResponse(jsonObj["reply_query"])
     }
     else if ("reply_document" in jsonObj) {
-        setDocumentResponse(jsonObj["reply_document"])
+        setPaneResponse(jsonObj["reply_document"], $documentsPane);
+    }
+    else if ("reply_coref_cluster" in jsonObj) {
+        setPaneResponse(jsonObj["reply_coref_cluster"], $mentionsPane);
     }
     else if ("reply_set_question_answer" in jsonObj) {
         // nothing to do

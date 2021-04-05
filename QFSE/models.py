@@ -26,3 +26,4 @@ class Summary:
 @dataclass
 class CorefClusters:
     doc_name_to_clusters: Dict[str, List[Mention]]
+    cluster_idx_to_mentions: Dict[id, List[Mention]]

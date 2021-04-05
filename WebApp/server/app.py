@@ -19,13 +19,13 @@ import traceback
 import ssl
 import WebApp.server.params as params
 
-from QFSE.Utilities import loadSpacy, loadBert
+from QFSE.Utilities import loadSpacy, loadBert, get_item
 from QFSE.Utilities import REPRESENTATION_STYLE_SPACY, REPRESENTATION_STYLE_BERT
 
 # The SpaCy and BERT objects must be loaded before anything else, so that classes using them get the initialized objects.
 # The SpaCy and BERT objects are initialized only when needed since these init processes take a long time.
 REPRESENTATION_STYLE = REPRESENTATION_STYLE_SPACY #REPRESENTATION_STYLE_W2V REPRESENTATION_STYLE_BERT
-loadSpacy()
+get_item("spacy")
 if REPRESENTATION_STYLE == REPRESENTATION_STYLE_BERT:
     loadBert()
 
@@ -51,6 +51,7 @@ TYPE_SET_START_TIME = 5
 TYPE_ITERATION_RATING = 6
 TYPE_QUESTIONNAIRE_RATING = 7
 TYPE_REQUEST_DOCUMENT = 8
+TYPE_REQUEST_COREF_CLUSTER = 9
 # summary types
 SUMMARY_TYPES = {'qfse_cluster':SummarizerClustering, 'increment_cluster':SummarizerAddMore, 'qfse_textrank':SummarizerTextRankPlusLexical}
 SUGGESTED_QUERIES_TYPES = {'qfse_cluster':SuggestedQueriesNgramCount, 'increment_cluster':SuggestedQueriesNgramCount, 'qfse_textrank':SuggestedQueriesTextRank}
@@ -105,6 +106,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                     returnJson = self.getQuestionnaireRatingJson(clientJson)
                 elif requestType == TYPE_REQUEST_DOCUMENT:
                     returnJson = self.get_document(clientJson)
+                elif requestType == TYPE_REQUEST_COREF_CLUSTER:
+                    returnJson = self.get_coref_cluster(clientJson)
                 else:
                     returnJson = self.getErrorJson('Undefined JSON received.')
 
@@ -136,6 +139,8 @@ class IntSummHandler(tornado.web.RequestHandler):
             requestType = TYPE_QUESTIONNAIRE_RATING
         elif 'request_document' in clientJson:
             requestType = TYPE_REQUEST_DOCUMENT
+        elif 'request_coref_cluster' in clientJson:
+            requestType = TYPE_REQUEST_COREF_CLUSTER
         else:
             requestType = TYPE_ERROR
 
@@ -212,6 +217,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 "topicName": topicName,
                 "topicId": topicId,
                 "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences)} for x in corpus.documents},
+                "corefClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": mentions[0]['token']} for cluster_idx, mentions in corpus.coref_clusters.items()},
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": list(questionnaireList),
                 "timeAllowed": str(timeAllowed),
@@ -281,14 +287,18 @@ class IntSummHandler(tornado.web.RequestHandler):
         if topicId != m_infoManager.getTopicId(clientId):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
+        corpus = m_infoManager.getSummarizer(clientId).corpus
         summary = m_infoManager.getSummarizer(clientId).summarizeByQuery(query, numSentences, queryType)
         for x in summary.summary_sents:
             formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
             x.sent = formatted_sent
 
+        corpus_sents = self._summary_sents_to_corpus_sents(corpus, summary)
+        response_sents = self._corpus_sents_to_response_sents(corpus_sents)
+
         reply = {
             "reply_query": {
-                "summary": [x.to_dict() for x in summary.summary_sents],
+                "summary": response_sents,
                 "textLength": summary.length_in_words
             }
         }
@@ -299,17 +309,58 @@ class IntSummHandler(tornado.web.RequestHandler):
         client_id = client_json['clientId']
         doc_id = client_json['request_document']['docId']
 
-        found_docs = [x for x in m_infoManager.getSummarizer(client_id).corpus.documents if x.id == doc_id]
-        if any(found_docs):
-            doc = found_docs[0]
-        else:
-            raise ValueError(f"Doc not found ; doc_id {doc_id}")
+        doc = self.get_doc_by_id(m_infoManager.getSummarizer(client_id).corpus, doc_id)
 
         reply = {
             "reply_document": {
                 "doc": {
                     "id": doc_id,
                     "sentences": self._corpus_sents_to_response_sents(doc.sentences)
+                }
+            }
+        }
+
+        return json.dumps(reply)
+
+    def get_doc_by_id(self, corpus, doc_id):
+        found_docs = [x for x in corpus.documents if x.id == doc_id]
+        if any(found_docs):
+            doc = found_docs[0]
+        else:
+            raise ValueError(f"Doc not found ; doc_id {doc_id}")
+
+        return doc
+
+    def get_sent_by_id(self, doc, sent_idx):
+        found_sents = [x for x in doc.sentences if x.sentIndex == sent_idx]
+        if any(found_sents):
+            sent = found_sents[0]
+        else:
+            raise ValueError(f"Sentence not found ; sent_idx {sent_idx}")
+
+        return sent
+
+    def get_coref_cluster(self, client_json):
+        client_id = client_json['clientId']
+        coref_cluster_id = int(client_json['request_coref_cluster']['corefClusterId'])
+
+        corpus = m_infoManager.getSummarizer(client_id).corpus
+        found_clusters = [mentions for key, mentions in corpus.coref_clusters.items() if key == coref_cluster_id]
+        if any(found_clusters):
+            mentions = found_clusters[0]
+        else:
+            raise ValueError(f"Clutster not found ; coref_cluster_id {coref_cluster_id}")
+
+        sentences = []
+        for mention in mentions:
+            doc = self.get_doc_by_id(corpus, mention['doc_id'])
+            sentences.append(self.get_sent_by_id(doc, mention['sent_idx']))
+
+        reply = {
+            "reply_coref_cluster": {
+                "doc": {
+                    "id": coref_cluster_id,
+                    "sentences": self._corpus_sents_to_response_sents(sentences)
                 }
             }
         }

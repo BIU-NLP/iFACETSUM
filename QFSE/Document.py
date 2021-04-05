@@ -1,5 +1,5 @@
 from QFSE.Sentence import Sentence
-from QFSE.Utilities import REPRESENTATION_STYLE_SPACY
+from QFSE.Utilities import REPRESENTATION_STYLE_SPACY, get_item
 from QFSE.Utilities import nlp
 from nltk.tokenize import sent_tokenize, word_tokenize
 
@@ -16,6 +16,7 @@ class Document:
         self._initDoc()
 
     def _initDoc(self):
+        nlp = get_item("spacy")
         self.spacyDoc = nlp(self.text)
         self.tokens = [t.text for t in self.spacyDoc]
         self.topSentencesText = [sent.text for sent in self.spacyDoc._.textrank.summary(limit_phrases=20, limit_sentences=NUMBER_OF_TOP_SENTENCES_KEPT)]

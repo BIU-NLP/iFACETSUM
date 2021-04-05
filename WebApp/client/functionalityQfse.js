@@ -95,6 +95,7 @@ function setTopic(topicInfo) {
     var numDocuments = topicInfo['numDocuments'];
     const documentsMetas = topicInfo['documentsMetas'];
     globalDocumentsMetas = documentsMetas;
+    const corefClustersMetas = topicInfo['corefClustersMetas'];
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
@@ -115,7 +116,7 @@ function setTopic(topicInfo) {
 
     createKeywordListElement(keyPhrasesList);
     createDocumentsListElement(documentsMetas);
-    createMentionsListElement(documentsMetas);
+    createMentionsListElement(corefClustersMetas);
     insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
 
     // keep the text length so far:
@@ -179,15 +180,17 @@ class PaneNavListItem extends React.Component {
     }
 
     render() {
-        const listItemId = this.props.i;
+        const listItemIdx = this.props.i;
         const text = this.props.text;
+        const itemId = this.props.itemId;
         const listType = this.props.listType;
 
         return e(
             "li",
             {
-                "id": `li_${listType}_${listItemId}`,
-                "className": "keywordItem"
+                "id": `li_${listType}_${listItemIdx}`,
+                "className": "keywordItem",
+                "data-cluster-idx": itemId
             },
             text
        );
@@ -203,6 +206,7 @@ function createDocumentsListElement(documentsMetas) {
             {
                 "i": i,
                 "text": documentMeta['id'],
+                "itemId": documentMeta['id'],
                 "listType": "document"
             }
         );
@@ -213,13 +217,15 @@ function createDocumentsListElement(documentsMetas) {
         function documentChosen(documentLi) {
 
             if (canSendRequest()) {
-                var text = documentLi.innerText;
-                if (text != "") {
-                    text = text.trim();
+                let itemText = documentLi.innerText;
+                if (itemText != "") {
+                    itemText = itemText.trim();
                 }
-                documentLi.classList.add("keywordUsed"); // put the keyword in "used" state
+                $innerLi = $(documentLi).find('li');
+                const itemId = $innerLi.attr('data-cluster-idx');
+                $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                fetchDocument(text);
+                fetchDocument(itemId, itemText);
             }
         }
 
@@ -228,15 +234,16 @@ function createDocumentsListElement(documentsMetas) {
 
 }
 
-function createMentionsListElement(documentsMetas) {
-    for (const [i, documentMeta] of Object.values(documentsMetas).entries()) {
+function createMentionsListElement(corefClustersMetas) {
+    for (const [i, corefClusterMeta] of Object.values(corefClustersMetas).entries()) {
        var listElementResult = document.createElement("div");
 
         const liReact = e(
             PaneNavListItem,
             {
                 "i": i,
-                "text": documentMeta['id'],
+                "text": corefClusterMeta['display_name'],
+                "itemId": corefClusterMeta['cluster_idx'],
                 "listType": "mention"
             }
         );
@@ -244,20 +251,19 @@ function createMentionsListElement(documentsMetas) {
         ReactDOM.render(liReact, listElementResult);
         $mentionsList.append(listElementResult);
 
-        function documentChosen(documentLi) {
+        function corefClusterChosen(corefClusterLi) {
 
             if (canSendRequest()) {
-                var text = documentLi.innerText;
-                if (text != "") {
-                    text = text.trim();
-                }
-                documentLi.classList.add("keywordUsed"); // put the keyword in "used" state
+                const itemText = corefClusterLi.innerText;
+                $innerLi = $(corefClusterLi).find('li');
+                const itemId = $innerLi.attr('data-cluster-idx');
+                $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                fetchDocument(text);
+                fetchCorefCluster(itemId, itemText);
             }
         }
 
-        listElementResult.addEventListener("click", documentChosen.bind(this, listElementResult), false);
+        listElementResult.addEventListener("click", corefClusterChosen.bind(this, listElementResult), false);
     }
 }
 
@@ -327,7 +333,7 @@ function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
 function openDocument(e) {
     const docId = e.target.textContent;
     $('#navigationDocumentsButton').click();
-    fetchDocument(docId);
+    fetchDocument(docId, docId);
 
 }
 $(document).on('click', '.open-document', openDocument);
@@ -431,7 +437,7 @@ class ListItem extends React.Component {
                 const sentIdx = txtList[i]['idx'];
                 const docMeta = docsMetas[docId];
                 let mentionsTxt = "None";
-                if (txtList[i]['coref_clusters'].length > 0) {
+                if (txtList[i]['coref_clusters'] && txtList[i]['coref_clusters'].length > 0) {
                     mentionsTxt = "";
                     for (const corefCluster of txtList[i]['coref_clusters']) {
                         mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['sent_idx'] + ") "
@@ -510,7 +516,7 @@ class ListItem extends React.Component {
     }
 }
 
-function insertDocInDocumentsPane(doc) {
+function insertDocInPane(doc, $pane) {
 
     // a div is used to align the li item right:
     var listElementResult = document.createElement("div");
@@ -533,11 +539,10 @@ function insertDocInDocumentsPane(doc) {
           "data-placement": "right"
       });
 
-    $documentsPane.append(listElementResult); //add to exploration list
+    $pane.append(listElementResult); //add to exploration list
 
     // scroll to more or less the headline of the document:
-    $documentsPane[0].scrollTop = $documentsPane[0].scrollTop + $documentsPane[0].offsetHeight - 200;
-
+    $pane[0].scrollTop = $pane[0].scrollTop + $pane[0].offsetHeight - 200;
 }
 
 function addStarRatingWidget(parentElement, numStarsInRating, iterationNum, displayCharacter, instructionsTxt, instructionsExplanation, starLabelClass) {
@@ -712,10 +717,10 @@ function query(queryStr) {
     // the response will be sent to function setQueryResponse asynchronously
 }
 
-function fetchDocument(documentId) {
-    insertQueryItemInExplorationPane(documentId, $documentsPane[0]);
+function fetchDocument(documentId, documentName) {
+    insertQueryItemInExplorationPane(documentName, $documentsPane[0]);
 
-    insertLoadingIndicatorInExplorationPane(documentsPane);
+    insertLoadingIndicatorInExplorationPane($documentsPane[0]);
 
     // scroll to bottom:
     $documentsPane[0].scrollTop = $documentsPane[0].scrollHeight;
@@ -724,6 +729,21 @@ function fetchDocument(documentId) {
         "clientId": clientId,
         "request_document": {
             "docId": documentId
+        }
+    });
+}
+function fetchCorefCluster(corefClusterId, corefClusterText) {
+    insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
+
+    insertLoadingIndicatorInExplorationPane($mentionsPane[0]);
+
+    // scroll to bottom:
+    $mentionsPane[0].scrollTop = $mentionsPane[0].scrollHeight;
+
+    sendRequest({
+        "clientId": clientId,
+        "request_coref_cluster": {
+            "corefClusterId": corefClusterId
         }
     });
 }

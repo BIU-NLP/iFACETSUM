@@ -7,6 +7,7 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class Mention:
+    doc_id: str
     sent_idx: int
     start: int
     end: int
@@ -37,6 +38,7 @@ class PartialCluster:
 @dataclass_json
 @dataclass
 class TokenLine:
+    doc_id: str
     token_idx: int
     token: str
     clusters: List[PartialCluster]
