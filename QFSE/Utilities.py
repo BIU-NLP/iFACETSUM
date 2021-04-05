@@ -10,12 +10,24 @@ def sent_id_to_doc_id(sent_id):
 
 
 def sent_id_to_sent_idx(sent_id):
-    return sent_id.split("::")[1]
+    return int(sent_id.split("::")[1])
 
 
+registry = {}
+
+
+def register(registry_key):
+    def inner_register(func):
+        registry[registry_key] = {
+            "func": func,
+            "value": None,
+            "initialized": False
+        }
+    return inner_register
+
+
+@register("spacy")
 def loadSpacy():
-    global nlp
-
     import pytextrank
     tr = pytextrank.TextRank()
 
@@ -29,6 +41,14 @@ def loadSpacy():
     # allow keeping the number of significant words in a span for quick access later:
     numSignificantWords_getter = lambda span: len([token for token in span if not token.is_stop and not token.is_punct])
     Span.set_extension("num_significant_words", getter=numSignificantWords_getter)
+    return nlp
+
+
+def get_item(registry_key: str):
+    if not registry[registry_key]['initialized']:
+        registry[registry_key]['value'] = registry[registry_key]['func']()
+        registry[registry_key]['initialized'] = True
+    return registry[registry_key]['value']
 
 
 def loadBert():
