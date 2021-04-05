@@ -1,7 +1,9 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 from dataclasses_json import dataclass_json
+
+from QFSE.coref.models import Mention
 
 
 @dataclass_json
@@ -18,3 +20,10 @@ class SummarySent:
 class Summary:
     summary_sents: List[SummarySent]
     length_in_words: int
+
+
+@dataclass_json
+@dataclass
+class CorefClusters:
+    doc_name_to_clusters: Dict[str, List[Mention]]
+    cluster_idx_to_mentions: Dict[id, List[Mention]]
