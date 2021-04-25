@@ -20,6 +20,7 @@ class Sentence:
         self.lengthInChars = len(self.text)
 
         self.coref_clusters = []
+        self.proposition_clusters = []
 
         if doNotInitRepresentation:
             self.representation = None

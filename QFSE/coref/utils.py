@@ -2,6 +2,7 @@ import json
 import logging
 from collections import defaultdict
 from typing import List, Dict, Tuple
+import os
 
 import conllu
 
@@ -33,7 +34,9 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
 
 
 def get_coref_clusters(formatted_topics, corpus):
-    with open("sample.conll") as f:
+    path_to_dir = os.getcwd()
+
+    with open(f"{path_to_dir}/data/sample.conll") as f:
         data = f.read()
 
     # TODO: Call external coref API with `formatted_topics`

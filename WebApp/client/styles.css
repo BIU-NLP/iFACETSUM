@@ -161,11 +161,20 @@ ul {
     text-align: left;
 }
 
-.exploreItem:hover {
+.userItem {
+    background: #4ecda4;
+}
+
+.exploreItem p:hover {
 	/*background: #76CFE0;*/
 	/*background: #04A1BF;*/
 	background: #038098;
 }
+
+.userItem:hover {
+    background: #3ecda4;
+}
+
 
 .exploreItem > button {
 	font-weight: normal;
@@ -719,7 +728,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 /* Make documentsList scrollable because there are a lot of documents */
-#documentsList, #mentionsList {
+#documentsList, #mentionsList, #propositionsList {
     overflow-y: scroll;
     height: 400px;
 }
@@ -767,10 +776,37 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     background: var(--pink);
 }
 
+.highlight-orange.highlight-orange {
+   border-color: var(--orange);
+}
+
+.highlight-orange.highlight-icon {
+    background: var(--orange);
+}
+
+.highlight-orange.highlight-hover {
+    background: var(--orange);
+}
+
+.highlight-red.highlight-red {
+   border-color: var(--red);
+}
+
+.highlight-red.highlight-icon {
+    background: var(--red);
+}
+
+.highlight-red.highlight-hover {
+    background: var(--red);
+}
+
 .highlight-icon {
     padding: 0px 8px;
     font-size: 0.8125rem;
     margin-right: 4px;
+    margin-left: -1px;
+    margin-top: -1px;
+    margin-bottom: -1px;
 }
 
 .highlight-icon.highlight-icon {

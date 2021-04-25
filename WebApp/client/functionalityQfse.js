@@ -5,10 +5,13 @@ const $documentsListArea = $('#documentsListArea');
 const $documentsList = $('#documentsList');
 const $mentionsListArea = $('#mentionsListArea');
 const $mentionsList = $('#mentionsList');
+const $propositionsListArea = $('#propositionsListArea');
+const $propositionsList = $('#propositionsList');
 const $explorationPage = $('#explorationPage');
 const $toolbarNavigationItems = $('.toolbar-navigation-item');
 const $documentsPane = $('#documentsPane');
 const $mentionsPane = $('#mentionsPane');
+const $propositionsPane = $('#propositionsPane');
 var repeatQueryButton = document.getElementById("repeatQueryButton");
 //var moreInfoButton = document.getElementById("addMoreButton");
 var queryInputBox = document.getElementById("userInput");
@@ -96,6 +99,7 @@ function setTopic(topicInfo) {
     const documentsMetas = topicInfo['documentsMetas'];
     globalDocumentsMetas = documentsMetas;
     const corefClustersMetas = topicInfo['corefClustersMetas'];
+    const propositionClustersMetas = topicInfo['propositionClustersMetas'];
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
@@ -117,6 +121,7 @@ function setTopic(topicInfo) {
     createKeywordListElement(keyPhrasesList);
     createDocumentsListElement(documentsMetas);
     createMentionsListElement(corefClustersMetas);
+    createPropositionsListElement(propositionClustersMetas);
     insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
 
     // keep the text length so far:
@@ -267,6 +272,40 @@ function createMentionsListElement(corefClustersMetas) {
     }
 }
 
+function createPropositionsListElement(propositionClustersMetas) {
+    for (const [i, propositionClusterMeta] of Object.values(propositionClustersMetas).entries()) {
+       var listElementResult = document.createElement("div");
+
+        const liReact = e(
+            PaneNavListItem,
+            {
+                "i": i,
+                "text": propositionClusterMeta['display_name'],
+                "itemId": propositionClusterMeta['cluster_idx'],
+                "listType": "mention"
+            }
+        );
+
+        ReactDOM.render(liReact, listElementResult);
+        $propositionsList.append(listElementResult);
+
+        function propositionClusterChosen(propositionClusterLi) {
+
+            if (canSendRequest()) {
+                const itemText = propositionClusterLi.innerText;
+                $innerLi = $(propositionClusterLi).find('li');
+                const itemId = $innerLi.attr('data-cluster-idx');
+                $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
+                lastQueryType = 'keyword';
+                fetchPropositionCluster(itemId, itemText);
+            }
+        }
+
+        listElementResult.addEventListener("click", propositionClusterChosen.bind(this, listElementResult), false);
+    }
+}
+
+
 
 
 function insertQueryItemInExplorationPane(txt, paneItem) {
@@ -276,10 +315,11 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
     // the li item that holds the query string:
     var li = document.createElement("li"); // create an li element
     li.classList.add("exploreItem");
+    li.classList.add("userItem");
     if (txt == '') {
         txt = '+';
     }
-    li.appendChild(document.createTextNode(txt));
+    li.appendChild(document.createTextNode("> " + txt));
     listElementQuery.appendChild(li);
     paneItem.appendChild(listElementQuery); //add to exploration list
 }
@@ -337,6 +377,17 @@ function openDocument(e) {
 
 }
 $(document).on('click', '.open-document', openDocument);
+
+function openPropositionCluster(e) {
+    const propositionId = $(e.target).attr('data-proposition-cluster-idx');
+    const text = e.target.textContent;
+    $('#navigationPropositionsButton').click();
+    fetchPropositionCluster(propositionId, text);
+
+}
+$(document).on('click', '.open-proposition-cluster', openPropositionCluster);
+
+
 
 const GROUPS_COLORS = ["blue", "pink", "orange", "red"];
 const group_id_to_color = {};
@@ -429,7 +480,7 @@ class ListItem extends React.Component {
         const docsMetas = this.props.docsMetas;
         const sentences = [];
 
-        // put the list of sentences sepatately line by line with a small margin in between:
+        // put the list of sentences separately line by line with a small margin in between:
         for (var i = 0; i < txtList.length; i++) {
             if (i < numSentToShow || !this.state.minimized) {
                 const sentenceText = txtList[i]['text'];
@@ -437,12 +488,21 @@ class ListItem extends React.Component {
                 const sentIdx = txtList[i]['idx'];
                 const docMeta = docsMetas[docId];
                 let mentionsTxt = "None";
+                let propositionsTxt = "None";
                 if (txtList[i]['coref_clusters'] && txtList[i]['coref_clusters'].length > 0) {
                     mentionsTxt = "";
                     for (const corefCluster of txtList[i]['coref_clusters']) {
                         mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['sent_idx'] + ") "
                     }
                 }
+
+                if (txtList[i]['proposition_clusters'] && txtList[i]['proposition_clusters'].length > 0) {
+                    propositionsTxt = "";
+                    for (const propositionCluster of txtList[i]['proposition_clusters']) {
+                        propositionsTxt += `<button type='button' data-proposition-cluster-idx='${propositionCluster['cluster_idx']}' class='btn btn-link open-proposition-cluster'>[${propositionCluster['cluster_idx']}]</button>`
+                    }
+                }
+
 
                 const sentencePar = e(
                     'p',
@@ -459,6 +519,7 @@ class ListItem extends React.Component {
                          "<div>Document id: <button type='button' class='btn btn-link open-document'>" + docId + "</button></div>" +
                          "<div>Sentence #" + sentIdx + "</div>" +
                          "<div>Mentions: " + mentionsTxt + "</div>" +
+                         "<div>Propositions: " + propositionsTxt + "</div>" +
                          "</span>"
                     },
                     e(
@@ -748,6 +809,22 @@ function fetchCorefCluster(corefClusterId, corefClusterText) {
     });
 }
 
+function fetchPropositionCluster(propositionClusterId, propositionClusterText) {
+    insertQueryItemInExplorationPane(propositionClusterText, $propositionsPane[0]);
+
+    insertLoadingIndicatorInExplorationPane($propositionsPane[0]);
+
+    // scroll to bottom:
+    $propositionsPane[0].scrollTop = $propositionsPane[0].scrollHeight;
+
+    sendRequest({
+        "clientId": clientId,
+        "request_proposition_cluster": {
+            "propositionClusterId": propositionClusterId
+        }
+    });
+}
+
 function queryOnButtonClick(){
 	if (queryInputLength() > 0 && canSendRequest()) { //makes sure that an empty queryInputBox field doesn't create a li
         query(queryInputBox.value); //makes text from queryInputBox field the li text
@@ -826,13 +903,20 @@ function changeScreen(event) {
         $documentsListArea.addClass('hidden');
     }
 
-
     if ($targetClicked.attr('id') === "navigationMentionsButton") {
         $mentionsPane.removeClass('hidden');
         $mentionsListArea.removeClass('hidden');
     } else {
         $mentionsPane.addClass('hidden');
         $mentionsListArea.addClass('hidden');
+    }
+
+    if ($targetClicked.attr('id') === "navigationPropositionsButton") {
+        $propositionsPane.removeClass('hidden');
+        $propositionsListArea.removeClass('hidden');
+    } else {
+        $propositionsPane.addClass('hidden');
+        $propositionsListArea.addClass('hidden');
     }
 
 }

@@ -367,6 +367,9 @@ function handleJsonReply(jsonObj) {
     else if ("reply_coref_cluster" in jsonObj) {
         setPaneResponse(jsonObj["reply_coref_cluster"], $mentionsPane);
     }
+    else if ("reply_proposition_cluster" in jsonObj) {
+        setPaneResponse(jsonObj["reply_proposition_cluster"], $propositionsPane);
+    }
     else if ("reply_set_question_answer" in jsonObj) {
         // nothing to do
     }
