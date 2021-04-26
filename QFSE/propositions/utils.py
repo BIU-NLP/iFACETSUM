@@ -29,32 +29,40 @@ def parse_line(line):
         line['pred_prob'])
 
 
-def find_indices_by_char_idx(doc_file, sent_char_idx, sent_text, span_text, corpus):
-    """
-    The data is in a format where we have only the char index, but we have a unit of a sentence / token so we need to know
-    how to map between them
-    """
-
-    found_docs = [doc for doc in corpus.documents if doc_file in doc.id]
+def get_sentences_by_doc_id(doc_id, corpus):
+    found_docs = [doc for doc in corpus.documents if doc_id in doc.id]
     if len(found_docs) != 1:
         raise ValueError("# of found docs is different than 1")
 
     doc = found_docs[0]
 
-    for sent_idx, sent in enumerate(doc.spacyDoc.sents):
-        # if sent.start_char > sent_char_idx:
-        if sent_text in sent.text:
-            span_tokenized = nltk.word_tokenize(span_text)
-            span_start_word = span_tokenized[0]
-            span_end_word = span_tokenized[-1]
+    return doc.spacyDoc.sents
+
+
+def find_indices_by_char_idx(sentences, sent_text, span_text):
+    """
+    The data is in a format where we have only the char index, but we have a unit of a sentence / token so we need to know
+    how to map between them
+    """
+
+    for sent_idx, curr_sent_text in enumerate(sentences):
+        if sent_text in curr_sent_text:
+            span_text_split = span_text.split("...")
+
+            def find_index_of_subsequence(a, b):
+                return [(i, i+len(b)) for i in range(len(a)) if a[i:i+len(b)] == b]
+
             span_start_word_idx = None
             span_end_word_idx = None
 
-            for token in sent:
-                if token.text == span_start_word:
-                    span_start_word_idx = token.i - sent.start
-                elif token.text == span_end_word:
-                    span_end_word_idx = token.i - sent.start
+            start_char_idx = curr_sent_text.index(span_text_split[0])
+            end_char_idx = curr_sent_text.index(span_text_split[-1]) + len(span_text_split[-1]) - 1
+
+            sent_split_lengths = [len(x) + 1 for x in curr_sent_text.split(" ")]  # plus one for the space
+            sent_split_accumulated = [sent_split_lengths[i] + sum(sent_split_lengths[:i]) for i in range(len(sent_split_lengths))]
+
+            span_start_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if start_char_idx < word_accumulated][0]
+            span_end_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if end_char_idx < word_accumulated][0]
 
             if span_start_word_idx is None or span_end_word_idx is None:
                 logging.warning("Skipping proposition because couldn't find text")
@@ -113,11 +121,12 @@ def parse_lines(df, corpus):
         # sent_start = span_offsets[0][0]
         # sent_end = span_offsets[-1][-1]
 
-        sent_idx, span_start_idx, span_end_idx = find_indices_by_char_idx(doc_file, sent_char_idx, sent_text, span_text, corpus)
+        sentences = get_sentences_by_doc_id(doc_file, corpus)
+        sent_idx, span_start_idx, span_end_idx = find_indices_by_char_idx([sent.text for sent in sentences], sent_text, span_text)
 
         if sent_idx is None:
             return None
-        return Mention(doc_file, sent_idx, span_start_idx, span_end_idx, sent_text, cluster_idx)
+        return Mention(doc_file, sent_idx, span_start_idx, span_end_idx, span_text, cluster_idx)
 
     def dedup_seq_keep_order(seq):
         seen = set()
