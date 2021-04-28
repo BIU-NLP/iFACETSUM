@@ -339,10 +339,6 @@ function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
     );
 
     ReactDOM.render(liReact, listElementResult);
-    $(listElementResult).find('p').popover({
-          trigger: 'focus',
-          'data-placement': "right"
-      });
 
     exploreList.appendChild(listElementResult); //add to exploration list
 
@@ -466,12 +462,33 @@ class ListItem extends React.Component {
         this.setState({
             "minimized": false
         });
+
+        $('p').popover({
+              trigger: 'focus',
+              'data-placement': "right"
+          });
     }
 
     minimize = () => {
         this.setState({
             "minimized": true
         });
+    }
+
+    initializePopOver = () => {
+        const $this = $(ReactDOM.findDOMNode(this));
+        $this.find('p').popover({
+              trigger: 'focus',
+              'data-placement': "right"
+          });
+    }
+
+    componentDidMount = () => {
+        this.initializePopOver()
+    }
+
+    componentDidUpdate = () => {
+        this.initializePopOver()
     }
 
     render() {
@@ -595,10 +612,6 @@ function insertDocInPane(doc, $pane) {
     );
 
     ReactDOM.render(liReact, listElementResult);
-    $(listElementResult).find('p').popover({
-          trigger: 'focus',
-          "data-placement": "right"
-      });
 
     $pane.append(listElementResult); //add to exploration list
 

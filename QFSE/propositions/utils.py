@@ -49,9 +49,6 @@ def find_indices_by_char_idx(sentences, sent_text, span_text):
         if sent_text in curr_sent_text:
             span_text_split = span_text.split("...")
 
-            def find_index_of_subsequence(a, b):
-                return [(i, i+len(b)) for i in range(len(a)) if a[i:i+len(b)] == b]
-
             span_start_word_idx = None
             span_end_word_idx = None
 
