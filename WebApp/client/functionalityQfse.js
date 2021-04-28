@@ -27,6 +27,8 @@ var isWaitingForInitial = false;
 var questionnaireBatchInd = -1;
 var totalTextLength = 0;
 let globalDocumentsMetas = null;
+let globalCorefClustersMetas = null;
+let globalPropositionClustersMetas = null;
 var pageBaseUrl = "qfse.html";
 var summaryType = "qfse";
 var timeAllowed = -1;
@@ -99,7 +101,9 @@ function setTopic(topicInfo) {
     const documentsMetas = topicInfo['documentsMetas'];
     globalDocumentsMetas = documentsMetas;
     const corefClustersMetas = topicInfo['corefClustersMetas'];
+    globalCorefClustersMetas = topicInfo['corefClustersMetas'];
     const propositionClustersMetas = topicInfo['propositionClustersMetas'];
+    globalPropositionClustersMetas = topicInfo['propositionClustersMetas'];
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
@@ -264,7 +268,7 @@ function createMentionsListElement(corefClustersMetas) {
                 const itemId = $innerLi.attr('data-cluster-idx');
                 $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                fetchCorefCluster(itemId, itemText);
+                fetchCorefCluster(itemId);
             }
         }
 
@@ -297,7 +301,7 @@ function createPropositionsListElement(propositionClustersMetas) {
                 const itemId = $innerLi.attr('data-cluster-idx');
                 $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                fetchPropositionCluster(itemId, itemText);
+                fetchPropositionCluster(itemId);
             }
         }
 
@@ -378,7 +382,7 @@ function openPropositionCluster(e) {
     const propositionId = $(e.target).attr('data-proposition-cluster-idx');
     const text = e.target.textContent;
     $('#navigationPropositionsButton').click();
-    fetchPropositionCluster(propositionId, text);
+    fetchPropositionCluster(propositionId);
 
 }
 $(document).on('click', '.open-proposition-cluster', openPropositionCluster);
@@ -806,7 +810,8 @@ function fetchDocument(documentId, documentName) {
         }
     });
 }
-function fetchCorefCluster(corefClusterId, corefClusterText) {
+function fetchCorefCluster(corefClusterId) {
+    const corefClusterText = globalCorefClustersMetas[corefClusterId]['display_name'];
     insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
 
     insertLoadingIndicatorInExplorationPane($mentionsPane[0]);
@@ -822,7 +827,8 @@ function fetchCorefCluster(corefClusterId, corefClusterText) {
     });
 }
 
-function fetchPropositionCluster(propositionClusterId, propositionClusterText) {
+function fetchPropositionCluster(propositionClusterId) {
+    const propositionClusterText = globalPropositionClustersMetas[propositionClusterId]['display_name'];
     insertQueryItemInExplorationPane(propositionClusterText, $propositionsPane[0]);
 
     insertLoadingIndicatorInExplorationPane($propositionsPane[0]);
