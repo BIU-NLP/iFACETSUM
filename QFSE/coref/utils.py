@@ -34,7 +34,7 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
 def get_coref_clusters(formatted_topics, corpus):
     path_to_dir = os.getcwd()
 
-    with open(f"{path_to_dir}/data/sample.conll") as f:
+    with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
         data = f.read()
 
     # TODO: Call external coref API with `formatted_topics`
@@ -55,9 +55,21 @@ def get_coref_clusters(formatted_topics, corpus):
     return coref_clusters
 
 
+def filter_clusters(parsed, all_clusters):
+    singleton_clusters = [cluster_idx for cluster_idx, mentions in all_clusters.items() if len(mentions) == 1]
+
+    for doc_clusters in parsed.values():
+        for cluster_to_remove in singleton_clusters:
+            if cluster_to_remove in doc_clusters:
+                doc_clusters.pop(cluster_to_remove)
+    [all_clusters.pop(cluster_to_remove) for cluster_to_remove in singleton_clusters]
+
+
+
 def parse_conll_coref_file(data) -> Tuple[Dict[str, List[Mention]], Dict[str, List[Mention]]]:
     lines = data.splitlines()
     parsed, all_clusters = parse_lines(lines)
+    filter_clusters(parsed, all_clusters)
     return parsed, all_clusters
 
 
@@ -69,12 +81,15 @@ def parse_line(line):
             return DocumentLine(doc_name, True)
         if line.startswith("#end document"):
             return DocumentLine(None, False)
-    elif len(items) == 4:
-        doc_id = items[0]
-        token_idx = int(items[1])
-        token = items[2]
-        clusters = parse_clusters(items[3])
-        return TokenLine(doc_id, token_idx, token, clusters)
+    elif len(items) == 8:
+        row_id_splitted = items[2].split("_")
+        topic_id = row_id_splitted[0]
+        doc_id = "_".join(row_id_splitted[1:])
+        sent_idx = int(items[3])
+        token_idx = int(items[4])
+        token = items[5]
+        clusters = parse_clusters(items[7])
+        return TokenLine(topic_id, doc_id, sent_idx, token_idx, token, clusters)
     else:
         return None
 
@@ -95,7 +110,7 @@ def parse_clusters(clusters_str):
     for char in clusters_str:
         if char == "(":
             partial_cluster_type = PartialClusterType.BEGIN
-        elif char == "_" or char == ")":
+        elif char == "_" or char == "|" or char == ")":
             # Skip cases like `)_` where the cluster was already closed
             if idx_str != "":
                 if char == ")" and partial_cluster_type == PartialClusterType.BEGIN:
@@ -124,51 +139,55 @@ def parse_clusters(clusters_str):
 def parse_lines(lines):
     parsed = {}
     all_clusters = defaultdict(list)
-    mentions = None
-    curr_topic_name = None
-    curr_doc_name = None
     open_clusters = defaultdict(list)
-    curr_sent_idx = -1
+    prev_sent_idx = 0
+    tokens_in_doc_before_curr_sent = 0  # Will be used to change token_idx to be per sentence instead of per document
+    def get_fixed_token_idx(token_idx, tokens_in_doc_before_curr_sent):
+        return token_idx - tokens_in_doc_before_curr_sent - 1  # minus 1 because we later start from 0 not 1
+
+
     for line in lines:
         parsed_line = parse_line(line)
         if line is None:
             continue
 
-        if curr_topic_name is None:
-            if type(parsed_line) == DocumentLine and parsed_line.is_begin_document:
-                curr_topic_name = parsed_line.document_name
-        else:
-            if type(parsed_line) == DocumentLine and not parsed_line.is_begin_document:
-                curr_doc_name = None
-            elif type(parsed_line) == TokenLine:
-                if parsed_line.token_idx == 0:
-                    curr_sent_idx += 1
-                    curr_doc_name = parsed_line.doc_id
-                    mentions = parsed.setdefault(curr_doc_name, defaultdict(list))
-                for cluster in parsed_line.clusters:
-                    if cluster.partial_cluster_type == PartialClusterType.BEGIN_AND_END:
-                        mentions_list = mentions[cluster.cluster_idx]
-                        mention = Mention(curr_doc_name, curr_sent_idx, parsed_line.token_idx, parsed_line.token_idx, parsed_line.token, cluster.cluster_idx)
-                        mentions_list.append(mention)
-                        all_clusters[cluster.cluster_idx].append(mention)
-                    elif cluster.partial_cluster_type == PartialClusterType.BEGIN:
-                        open_clusters[cluster.cluster_idx].append(parsed_line)
-                    elif cluster.partial_cluster_type == PartialClusterType.END:
-                        open_cluster = open_clusters.pop(cluster.cluster_idx)
-                        open_cluster.append(parsed_line)
+        if type(parsed_line) == TokenLine:
 
-                        token_str = " ".join([line.token for line in open_cluster])
+            sent_changed = prev_sent_idx != parsed_line.sent_idx
+            if sent_changed:
+                tokens_in_doc_before_curr_sent = parsed_line.token_idx - 1
 
-                        mentions_list = mentions[cluster.cluster_idx]
-                        mention = Mention(curr_doc_name, curr_sent_idx, open_cluster[0].token_idx, parsed_line.token_idx, token_str, cluster.cluster_idx)
-                        mentions_list.append(mention)
-                        all_clusters[cluster.cluster_idx].append(mention)
+            curr_token_idx_per_sent = get_fixed_token_idx(parsed_line.token_idx, tokens_in_doc_before_curr_sent)
 
-                # If there are open clusters, all the entities in between are part of it
-                for open_cluster in open_clusters.values():
-                    # If it wasn't just added
-                    if open_cluster[-1] != parsed_line:
-                        open_cluster.append(parsed_line)
+            curr_sent_idx = parsed_line.sent_idx
+            curr_doc_name = parsed_line.doc_id
+            mentions = parsed.setdefault(curr_doc_name, defaultdict(list))
+            for cluster in parsed_line.clusters:
+                if cluster.partial_cluster_type == PartialClusterType.BEGIN_AND_END:
+                    mentions_list = mentions[cluster.cluster_idx]
+                    mention = Mention(curr_doc_name, curr_sent_idx, curr_token_idx_per_sent, curr_token_idx_per_sent, parsed_line.token, cluster.cluster_idx)
+                    mentions_list.append(mention)
+                    all_clusters[cluster.cluster_idx].append(mention)
+                elif cluster.partial_cluster_type == PartialClusterType.BEGIN:
+                    open_clusters[cluster.cluster_idx].append(parsed_line)
+                elif cluster.partial_cluster_type == PartialClusterType.END:
+                    open_cluster = open_clusters.pop(cluster.cluster_idx)
+                    open_cluster.append(parsed_line)
+
+                    token_str = " ".join([line.token for line in open_cluster])
+
+                    mentions_list = mentions[cluster.cluster_idx]
+                    mention = Mention(curr_doc_name, curr_sent_idx, get_fixed_token_idx(open_cluster[0].token_idx, tokens_in_doc_before_curr_sent), curr_token_idx_per_sent, token_str, cluster.cluster_idx)
+                    mentions_list.append(mention)
+                    all_clusters[cluster.cluster_idx].append(mention)
+
+            # If there are open clusters, all the entities in between are part of it
+            for open_cluster in open_clusters.values():
+                # If it wasn't just added
+                if open_cluster[-1] != parsed_line:
+                    open_cluster.append(parsed_line)
+
+            prev_sent_idx = parsed_line.sent_idx
 
     return parsed, all_clusters
 

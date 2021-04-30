@@ -12,6 +12,7 @@ const $toolbarNavigationItems = $('.toolbar-navigation-item');
 const $documentsPane = $('#documentsPane');
 const $mentionsPane = $('#mentionsPane');
 const $propositionsPane = $('#propositionsPane');
+const globalListItemCallbacks = [];
 var repeatQueryButton = document.getElementById("repeatQueryButton");
 //var moreInfoButton = document.getElementById("addMoreButton");
 var queryInputBox = document.getElementById("userInput");
@@ -45,6 +46,7 @@ var hitId = '';
 var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
+let showCoref = false;
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
 var RATING_PARAMS = {
@@ -338,7 +340,8 @@ function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
         {
             "txtList": txtList,
             "docsMetas": documentsMetas,
-            "numSentToShow": 3
+            "numSentToShow": 3,
+            "showCoref": showCoref
         }
     );
 
@@ -396,6 +399,10 @@ for (const [i, color] of GROUPS_COLORS.entries()) {
 }
 
 class TokensGroup extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
     render() {
         const groups = this.props.groups;
         const groupId = this.props.group_id;
@@ -403,9 +410,21 @@ class TokensGroup extends React.Component {
         const innerHtml = [];
 
         let className = "";
+        let onMouseEnterFunc;
+        let onMouseLeaveFunc;
         if (groupId !== undefined) {
             const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
-            className = "highlight-no-hover highlight-" + groupColor;
+            className = "highlight-" + groupColor;
+            onMouseEnterFunc = () => this.props.startHighlightCluster(groupId);
+            onMouseLeaveFunc = () => this.props.stopHighlightCluster(groupId);
+
+            if (this.props.highlightedClusters.includes(groupId)) {
+                className += " highlight-hover";
+            } else {
+                className += " highlight-no-hover";
+            }
+
+
             const groupIcon = e(
                 "span",
                 {
@@ -424,7 +443,10 @@ class TokensGroup extends React.Component {
                   TokensGroup,
                   {
                     "groups": tokensGroup['tokens'],
-                    "group_id": tokensGroup['group_id']
+                    "group_id": tokensGroup['group_id'],
+                    "highlightedClusters": this.props.highlightedClusters,
+                    "startHighlightCluster": this.props.startHighlightCluster,
+                    "stopHighlightCluster": this.props.stopHighlightCluster
                   }
                 );
                 innerHtml.push(innerTokensGroup);
@@ -447,7 +469,9 @@ class TokensGroup extends React.Component {
         return e(
             "span",
             {
-                "className": "sentence-span " + className
+                "className": "sentence-span " + className,
+                "onMouseEnter": onMouseEnterFunc,
+                "onMouseLeave": onMouseLeaveFunc
             },
             innerHtml
         )
@@ -458,9 +482,26 @@ class ListItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            minimized: true
+            minimized: true,
+            highlightedClusters: [],
+            showCoref: props.showCoref
         };
     }
+
+    startHighlightCluster = (clusterIdx) => {
+        this.setState({
+            "highlightedClusters": this.state.highlightedClusters.concat(clusterIdx)
+        });
+    }
+
+    stopHighlightCluster = (clusterIdx) => {
+        this.setState({
+            "highlightedClusters": this.state.highlightedClusters.filter(function(x) {
+                return x !== clusterIdx
+            })
+        });
+    }
+
 
     expand = () => {
         this.setState({
@@ -488,10 +529,16 @@ class ListItem extends React.Component {
     }
 
     componentDidMount = () => {
+        // allows overriding a component outside of react
+        globalListItemCallbacks.push((data) => {
+            this.setState(data);
+        });
+
         this.initializePopOver()
     }
 
     componentDidUpdate = () => {
+        // handles when clicking "read more"
         this.initializePopOver()
     }
 
@@ -513,7 +560,7 @@ class ListItem extends React.Component {
                 if (txtList[i]['coref_clusters'] && txtList[i]['coref_clusters'].length > 0) {
                     mentionsTxt = "";
                     for (const corefCluster of txtList[i]['coref_clusters']) {
-                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['sent_idx'] + ") "
+                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['cluster_idx'] + ") "
                     }
                 }
 
@@ -546,7 +593,10 @@ class ListItem extends React.Component {
                     e(
                       TokensGroup,
                       {
-                        "groups": txtList[i]['tokens']
+                        "groups": this.state.showCoref ? txtList[i]['coref_tokens'] : txtList[i]['proposition_tokens'],
+                        "startHighlightCluster": this.startHighlightCluster,
+                        "stopHighlightCluster": this.stopHighlightCluster,
+                        "highlightedClusters": this.state.highlightedClusters
                       }
                     )
                   );
@@ -611,7 +661,8 @@ function insertDocInPane(doc, $pane) {
         {
             "txtList": doc.sentences,
             "docsMetas": documentsMetas,
-            "numSentToShow": 2
+            "numSentToShow": 2,
+            "showCoref": showCoref
         }
     );
 
@@ -940,6 +991,22 @@ function changeScreen(event) {
 
 }
 
+function changeGroup(event) {
+    const $targetClicked = $(event.currentTarget);
+
+    if ($targetClicked.find('input').attr('id') == "togglePropositionsButton") {
+        showCoref = false;
+    }
+
+    if ($targetClicked.find('input').attr('id') == "toggleMentionsButton") {
+        showCoref = true;
+    }
+
+    for (globalListItemCallback of globalListItemCallbacks) {
+        globalListItemCallback({"showCoref": showCoref});
+    }
+}
+
 enterQueryButton.addEventListener("click",queryOnButtonClick);
 queryInputBox.addEventListener("keyup", queryOnKeyUp);
 repeatQueryButton.addEventListener("click", queryRepeatOnButtonClick);
@@ -948,5 +1015,11 @@ stopExploringButton.addEventListener("click", stopExploringButtonOnClick);
 for (toolbarNavigationItem of $toolbarNavigationItems) {
     toolbarNavigationItem.addEventListener("click", changeScreen);
 }
+
+const $groupToggleButtons = $('#groups-toggle label');
+for (groupToggleButton of $groupToggleButtons) {
+    groupToggleButton.addEventListener("click", changeGroup);
+}
+
 
 window.onload = onInitFunc;
