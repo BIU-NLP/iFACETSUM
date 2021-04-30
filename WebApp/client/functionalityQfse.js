@@ -513,7 +513,7 @@ class ListItem extends React.Component {
                 if (txtList[i]['coref_clusters'] && txtList[i]['coref_clusters'].length > 0) {
                     mentionsTxt = "";
                     for (const corefCluster of txtList[i]['coref_clusters']) {
-                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['sent_idx'] + ") "
+                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['cluster_idx'] + ") "
                     }
                 }
 

@@ -38,7 +38,9 @@ class PartialCluster:
 @dataclass_json
 @dataclass
 class TokenLine:
+    topic_id: str
     doc_id: str
+    sent_idx: int
     token_idx: int
     token: str
     clusters: List[PartialCluster]
