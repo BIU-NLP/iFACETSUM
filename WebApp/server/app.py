@@ -6,6 +6,7 @@ from typing import List
 
 from QFSE.Sentence import Sentence
 from QFSE.models import SummarySent, Summary
+from QFSE.propositions.utils import get_proposition_clusters
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
@@ -52,6 +53,7 @@ TYPE_ITERATION_RATING = 6
 TYPE_QUESTIONNAIRE_RATING = 7
 TYPE_REQUEST_DOCUMENT = 8
 TYPE_REQUEST_COREF_CLUSTER = 9
+TYPE_REQUEST_PROPOSITION_CLUSTER = 10
 # summary types
 SUMMARY_TYPES = {'qfse_cluster':SummarizerClustering, 'increment_cluster':SummarizerAddMore, 'qfse_textrank':SummarizerTextRankPlusLexical}
 SUGGESTED_QUERIES_TYPES = {'qfse_cluster':SuggestedQueriesNgramCount, 'increment_cluster':SuggestedQueriesNgramCount, 'qfse_textrank':SuggestedQueriesTextRank}
@@ -108,6 +110,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                     returnJson = self.get_document(clientJson)
                 elif requestType == TYPE_REQUEST_COREF_CLUSTER:
                     returnJson = self.get_coref_cluster(clientJson)
+                elif requestType == TYPE_REQUEST_PROPOSITION_CLUSTER:
+                    returnJson = self.get_proposition_cluster(clientJson)
                 else:
                     returnJson = self.getErrorJson('Undefined JSON received.')
 
@@ -141,6 +145,8 @@ class IntSummHandler(tornado.web.RequestHandler):
             requestType = TYPE_REQUEST_DOCUMENT
         elif 'request_coref_cluster' in clientJson:
             requestType = TYPE_REQUEST_COREF_CLUSTER
+        elif 'request_proposition_cluster' in clientJson:
+            requestType = TYPE_REQUEST_PROPOSITION_CLUSTER
         else:
             requestType = TYPE_ERROR
 
@@ -183,6 +189,8 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         formatted_topics = convert_corpus_to_coref_input_format(corpus, topicId)
         get_coref_clusters(formatted_topics, corpus)
+        get_proposition_clusters(None, corpus)
+
 
         # make sure the summary type is valid:
         summaryAlgorithm = '{}_{}'.format(summaryType, algorithm)
@@ -218,6 +226,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 "topicId": topicId,
                 "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences)} for x in corpus.documents},
                 "corefClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": mentions[0]['token']} for cluster_idx, mentions in corpus.coref_clusters.items()},
+                "propositionClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": mentions[0]['token']} for cluster_idx, mentions in corpus.proposition_clusters.items()},
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": list(questionnaireList),
                 "timeAllowed": str(timeAllowed),
@@ -242,6 +251,7 @@ class IntSummHandler(tornado.web.RequestHandler):
             "id": corpus_sent.sentId,
             "doc_id": corpus_sent.docId,
             "coref_clusters": corpus_sent.coref_clusters,
+            "proposition_clusters": corpus_sent.proposition_clusters,
             "tokens": self._split_sent_text_to_tokens(corpus_sent)
         } for corpus_sent in corpus_sents]
 
@@ -250,9 +260,17 @@ class IntSummHandler(tornado.web.RequestHandler):
         tokens = sent.text.split(" ")
 
         token_to_mention = defaultdict(list)
-        for mention in sent.coref_clusters:
+        for mention in sent.proposition_clusters:
             for token_idx in range(mention['start'], mention['end'] + 1):
                 token_to_mention[token_idx].append(mention)
+
+        def flush_open_mention(tokens_groups, open_mentions):
+            if len(open_mentions) > 0:
+                curr_tokens = open_mentions.pop()
+                tokens_groups.append({
+                    "tokens": curr_tokens['tokens'],
+                    "group_id": curr_tokens['cluster_idx']
+                })
 
         tokens_groups = []
         open_mentions = []
@@ -263,14 +281,11 @@ class IntSummHandler(tornado.web.RequestHandler):
                     open_mentions.append({"tokens": [], "cluster_idx": mention[0]['cluster_idx']})
                 open_mentions[-1]['tokens'].append([token])
             else:
-                if len(open_mentions) > 0:
-                    curr_tokens = open_mentions.pop()
-                    tokens_groups.append({
-                        "tokens": curr_tokens['tokens'],
-                        "group_id": curr_tokens['cluster_idx']
-                    })
-                else:
-                    tokens_groups.append([token])
+                flush_open_mention(tokens_groups, open_mentions)
+                tokens_groups.append([token])
+
+        flush_open_mention(tokens_groups, open_mentions)
+
 
         return tokens_groups
 
@@ -323,7 +338,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         return json.dumps(reply)
 
     def get_doc_by_id(self, corpus, doc_id):
-        found_docs = [x for x in corpus.documents if x.id == doc_id]
+        found_docs = [x for x in corpus.documents if doc_id in x.id]
         if any(found_docs):
             doc = found_docs[0]
         else:
@@ -349,7 +364,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         if any(found_clusters):
             mentions = found_clusters[0]
         else:
-            raise ValueError(f"Clutster not found ; coref_cluster_id {coref_cluster_id}")
+            raise ValueError(f"Cluster not found ; coref_cluster_id {coref_cluster_id}")
 
         sentences = []
         for mention in mentions:
@@ -360,6 +375,33 @@ class IntSummHandler(tornado.web.RequestHandler):
             "reply_coref_cluster": {
                 "doc": {
                     "id": coref_cluster_id,
+                    "sentences": self._corpus_sents_to_response_sents(sentences)
+                }
+            }
+        }
+
+        return json.dumps(reply)
+
+    def get_proposition_cluster(self, client_json):
+        client_id = client_json['clientId']
+        proposition_cluster_id = int(client_json['request_proposition_cluster']['propositionClusterId'])
+
+        corpus = m_infoManager.getSummarizer(client_id).corpus
+        found_clusters = [mentions for key, mentions in corpus.proposition_clusters.items() if key == proposition_cluster_id]
+        if any(found_clusters):
+            mentions = found_clusters[0]
+        else:
+            raise ValueError(f"Cluster not found ; proposition_cluster_id {proposition_cluster_id}")
+
+        sentences = []
+        for mention in mentions:
+            doc = self.get_doc_by_id(corpus, mention['doc_id'])
+            sentences.append(self.get_sent_by_id(doc, mention['sent_idx']))
+
+        reply = {
+            "reply_proposition_cluster": {
+                "doc": {
+                    "id": proposition_cluster_id,
                     "sentences": self._corpus_sents_to_response_sents(sentences)
                 }
             }

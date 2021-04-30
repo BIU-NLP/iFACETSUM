@@ -2,6 +2,7 @@ import json
 import logging
 from collections import defaultdict
 from typing import List, Dict, Tuple
+import os
 
 import conllu
 
@@ -13,27 +14,27 @@ from QFSE.models import CorefClusters
 
 
 def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
-    sentences_formatted = []
-    token_idx = 1
-    for sentence in corpus.allSentences:
-        for token in sentence.tokens:
-            sentences_formatted.append([sentence.sentIndex, token_idx, token, True])
-            token_idx += 1
+    docs_formatted = {}
+    for doc in corpus.documents:
+        token_idx = 1
+        sentences_formatted = []
+        for sentence in doc.sentences:
+            for token in sentence.tokens:
+                sentences_formatted.append([sentence.sentIndex, token_idx, token, True])
+                token_idx += 1
 
-    topic_idx = 0
+        docs_formatted[f"0_{doc.id}"] = sentences_formatted
 
-    formatted_topics = {
-        f"{topic_idx}_{topic_id.replace(' ', '_')}": sentences_formatted
-    }
+    # with open("docs_formatted.json", "w") as f:
+    #     f.write(json.dumps(docs_formatted))
 
-    # with open("formatted_topic.json", "w") as f:
-    #     f.write(json.dumps(formatted_topics))
-
-    return formatted_topics
+    return docs_formatted
 
 
 def get_coref_clusters(formatted_topics, corpus):
-    with open("sample.conll") as f:
+    path_to_dir = os.getcwd()
+
+    with open(f"{path_to_dir}/data/sample.conll") as f:
         data = f.read()
 
     # TODO: Call external coref API with `formatted_topics`

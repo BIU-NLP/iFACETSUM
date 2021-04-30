@@ -7,3 +7,4 @@ pyrouge
 rouge
 Levenshtein
 dataclasses_json
+pandas==1.*
