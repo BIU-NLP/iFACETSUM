@@ -251,15 +251,21 @@ class IntSummHandler(tornado.web.RequestHandler):
             "doc_id": corpus_sent.docId,
             "coref_clusters": corpus_sent.coref_clusters,
             "proposition_clusters": corpus_sent.proposition_clusters,
-            "tokens": self._split_sent_text_to_tokens(corpus_sent)
+            "coref_tokens": self._split_sent_text_to_tokens(corpus_sent, show_coref=True),
+            "proposition_tokens": self._split_sent_text_to_tokens(corpus_sent, show_coref=False),
         } for corpus_sent in corpus_sents]
 
-    def _split_sent_text_to_tokens(self, sent: Sentence):
+    def _split_sent_text_to_tokens(self, sent: Sentence, show_coref):
         # TODO: Do this split earlier and send it also to the other services
-        tokens = sent.tokens
+        if show_coref:
+            tokens = sent.tokens
+            clusters = sent.coref_clusters
+        else:
+            tokens = sent.text.split(" ")
+            clusters = sent.proposition_clusters
 
         token_to_mention = defaultdict(list)
-        for mention in sent.coref_clusters:
+        for mention in clusters:
             for token_idx in range(mention['start'], mention['end'] + 1):
                 token_to_mention[token_idx].append(mention)
 

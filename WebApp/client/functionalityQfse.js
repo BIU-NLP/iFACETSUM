@@ -12,6 +12,7 @@ const $toolbarNavigationItems = $('.toolbar-navigation-item');
 const $documentsPane = $('#documentsPane');
 const $mentionsPane = $('#mentionsPane');
 const $propositionsPane = $('#propositionsPane');
+const globalListItemCallbacks = [];
 var repeatQueryButton = document.getElementById("repeatQueryButton");
 //var moreInfoButton = document.getElementById("addMoreButton");
 var queryInputBox = document.getElementById("userInput");
@@ -45,6 +46,7 @@ var hitId = '';
 var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
+let showCoref = false;
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
 var RATING_PARAMS = {
@@ -338,7 +340,8 @@ function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
         {
             "txtList": txtList,
             "docsMetas": documentsMetas,
-            "numSentToShow": 3
+            "numSentToShow": 3,
+            "showCoref": showCoref
         }
     );
 
@@ -444,7 +447,6 @@ class TokensGroup extends React.Component {
                     "highlightedClusters": this.props.highlightedClusters,
                     "startHighlightCluster": this.props.startHighlightCluster,
                     "stopHighlightCluster": this.props.stopHighlightCluster
-
                   }
                 );
                 innerHtml.push(innerTokensGroup);
@@ -481,7 +483,8 @@ class ListItem extends React.Component {
         super(props);
         this.state = {
             minimized: true,
-            highlightedClusters: []
+            highlightedClusters: [],
+            showCoref: props.showCoref
         };
     }
 
@@ -526,10 +529,16 @@ class ListItem extends React.Component {
     }
 
     componentDidMount = () => {
+        // allows overriding a component outside of react
+        globalListItemCallbacks.push((data) => {
+            this.setState(data);
+        });
+
         this.initializePopOver()
     }
 
     componentDidUpdate = () => {
+        // handles when clicking "read more"
         this.initializePopOver()
     }
 
@@ -584,7 +593,7 @@ class ListItem extends React.Component {
                     e(
                       TokensGroup,
                       {
-                        "groups": txtList[i]['tokens'],
+                        "groups": this.state.showCoref ? txtList[i]['coref_tokens'] : txtList[i]['proposition_tokens'],
                         "startHighlightCluster": this.startHighlightCluster,
                         "stopHighlightCluster": this.stopHighlightCluster,
                         "highlightedClusters": this.state.highlightedClusters
@@ -652,7 +661,8 @@ function insertDocInPane(doc, $pane) {
         {
             "txtList": doc.sentences,
             "docsMetas": documentsMetas,
-            "numSentToShow": 2
+            "numSentToShow": 2,
+            "showCoref": showCoref
         }
     );
 
@@ -981,6 +991,22 @@ function changeScreen(event) {
 
 }
 
+function changeGroup(event) {
+    const $targetClicked = $(event.currentTarget);
+
+    if ($targetClicked.find('input').attr('id') == "togglePropositionsButton") {
+        showCoref = false;
+    }
+
+    if ($targetClicked.find('input').attr('id') == "toggleMentionsButton") {
+        showCoref = true;
+    }
+
+    for (globalListItemCallback of globalListItemCallbacks) {
+        globalListItemCallback({"showCoref": showCoref});
+    }
+}
+
 enterQueryButton.addEventListener("click",queryOnButtonClick);
 queryInputBox.addEventListener("keyup", queryOnKeyUp);
 repeatQueryButton.addEventListener("click", queryRepeatOnButtonClick);
@@ -989,5 +1015,11 @@ stopExploringButton.addEventListener("click", stopExploringButtonOnClick);
 for (toolbarNavigationItem of $toolbarNavigationItems) {
     toolbarNavigationItem.addEventListener("click", changeScreen);
 }
+
+const $groupToggleButtons = $('#groups-toggle label');
+for (groupToggleButton of $groupToggleButtons) {
+    groupToggleButton.addEventListener("click", changeGroup);
+}
+
 
 window.onload = onInitFunc;
