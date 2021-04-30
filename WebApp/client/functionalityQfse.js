@@ -396,6 +396,10 @@ for (const [i, color] of GROUPS_COLORS.entries()) {
 }
 
 class TokensGroup extends React.Component {
+    constructor(props) {
+        super(props);
+    }
+
     render() {
         const groups = this.props.groups;
         const groupId = this.props.group_id;
@@ -403,9 +407,21 @@ class TokensGroup extends React.Component {
         const innerHtml = [];
 
         let className = "";
+        let onMouseEnterFunc;
+        let onMouseLeaveFunc;
         if (groupId !== undefined) {
             const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
-            className = "highlight-no-hover highlight-" + groupColor;
+            className = "highlight-" + groupColor;
+            onMouseEnterFunc = () => this.props.startHighlightCluster(groupId);
+            onMouseLeaveFunc = () => this.props.stopHighlightCluster(groupId);
+
+            if (this.props.highlightedClusters.includes(groupId)) {
+                className += " highlight-hover";
+            } else {
+                className += " highlight-no-hover";
+            }
+
+
             const groupIcon = e(
                 "span",
                 {
@@ -424,7 +440,11 @@ class TokensGroup extends React.Component {
                   TokensGroup,
                   {
                     "groups": tokensGroup['tokens'],
-                    "group_id": tokensGroup['group_id']
+                    "group_id": tokensGroup['group_id'],
+                    "highlightedClusters": this.props.highlightedClusters,
+                    "startHighlightCluster": this.props.startHighlightCluster,
+                    "stopHighlightCluster": this.props.stopHighlightCluster
+
                   }
                 );
                 innerHtml.push(innerTokensGroup);
@@ -447,7 +467,9 @@ class TokensGroup extends React.Component {
         return e(
             "span",
             {
-                "className": "sentence-span " + className
+                "className": "sentence-span " + className,
+                "onMouseEnter": onMouseEnterFunc,
+                "onMouseLeave": onMouseLeaveFunc
             },
             innerHtml
         )
@@ -458,9 +480,25 @@ class ListItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            minimized: true
+            minimized: true,
+            highlightedClusters: []
         };
     }
+
+    startHighlightCluster = (clusterIdx) => {
+        this.setState({
+            "highlightedClusters": this.state.highlightedClusters.concat(clusterIdx)
+        });
+    }
+
+    stopHighlightCluster = (clusterIdx) => {
+        this.setState({
+            "highlightedClusters": this.state.highlightedClusters.filter(function(x) {
+                return x !== clusterIdx
+            })
+        });
+    }
+
 
     expand = () => {
         this.setState({
@@ -546,7 +584,10 @@ class ListItem extends React.Component {
                     e(
                       TokensGroup,
                       {
-                        "groups": txtList[i]['tokens']
+                        "groups": txtList[i]['tokens'],
+                        "startHighlightCluster": this.startHighlightCluster,
+                        "stopHighlightCluster": this.stopHighlightCluster,
+                        "highlightedClusters": this.state.highlightedClusters
                       }
                     )
                   );
