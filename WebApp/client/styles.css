@@ -838,4 +838,14 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     cursor: pointer;
 }
 
+.sentence-span.highlight-hover {
+    margin: 4px 8px 4px 4px;
+    color: var(--light);
+}
+
 /* end - highlight css */
+
+
+#groups-toggle {
+    margin-top: 15px;
+}

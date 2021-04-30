@@ -191,7 +191,6 @@ class IntSummHandler(tornado.web.RequestHandler):
         get_coref_clusters(formatted_topics, corpus)
         get_proposition_clusters(None, corpus)
 
-
         # make sure the summary type is valid:
         summaryAlgorithm = '{}_{}'.format(summaryType, algorithm)
         if summaryAlgorithm in SUMMARY_TYPES:
@@ -252,15 +251,21 @@ class IntSummHandler(tornado.web.RequestHandler):
             "doc_id": corpus_sent.docId,
             "coref_clusters": corpus_sent.coref_clusters,
             "proposition_clusters": corpus_sent.proposition_clusters,
-            "tokens": self._split_sent_text_to_tokens(corpus_sent)
+            "coref_tokens": self._split_sent_text_to_tokens(corpus_sent, show_coref=True),
+            "proposition_tokens": self._split_sent_text_to_tokens(corpus_sent, show_coref=False),
         } for corpus_sent in corpus_sents]
 
-    def _split_sent_text_to_tokens(self, sent: Sentence):
+    def _split_sent_text_to_tokens(self, sent: Sentence, show_coref):
         # TODO: Do this split earlier and send it also to the other services
-        tokens = sent.text.split(" ")
+        if show_coref:
+            tokens = sent.tokens
+            clusters = sent.coref_clusters
+        else:
+            tokens = sent.text.split(" ")
+            clusters = sent.proposition_clusters
 
         token_to_mention = defaultdict(list)
-        for mention in sent.proposition_clusters:
+        for mention in clusters:
             for token_idx in range(mention['start'], mention['end'] + 1):
                 token_to_mention[token_idx].append(mention)
 
@@ -277,15 +282,19 @@ class IntSummHandler(tornado.web.RequestHandler):
         for token_idx, token in enumerate(tokens):
             if token_idx in token_to_mention:
                 mention = token_to_mention[token_idx]
+                while len(open_mentions) != 0 and any(curr_mention for curr_mention in mention if open_mentions[-1]['cluster_idx'] != curr_mention['cluster_idx']):
+                    flush_open_mention(tokens_groups, open_mentions)
+
                 if len(open_mentions) == 0:
                     open_mentions.append({"tokens": [], "cluster_idx": mention[0]['cluster_idx']})
                 open_mentions[-1]['tokens'].append([token])
             else:
-                flush_open_mention(tokens_groups, open_mentions)
+                while len(open_mentions) != 0:
+                    flush_open_mention(tokens_groups, open_mentions)
                 tokens_groups.append([token])
 
-        flush_open_mention(tokens_groups, open_mentions)
-
+        while len(open_mentions) != 0:
+            flush_open_mention(tokens_groups, open_mentions)
 
         return tokens_groups
 
@@ -369,7 +378,9 @@ class IntSummHandler(tornado.web.RequestHandler):
         sentences = []
         for mention in mentions:
             doc = self.get_doc_by_id(corpus, mention['doc_id'])
-            sentences.append(self.get_sent_by_id(doc, mention['sent_idx']))
+            found_sent = self.get_sent_by_id(doc, mention['sent_idx'])
+            if found_sent not in sentences:
+                sentences.append(found_sent)
 
         reply = {
             "reply_coref_cluster": {
@@ -396,7 +407,9 @@ class IntSummHandler(tornado.web.RequestHandler):
         sentences = []
         for mention in mentions:
             doc = self.get_doc_by_id(corpus, mention['doc_id'])
-            sentences.append(self.get_sent_by_id(doc, mention['sent_idx']))
+            found_sent = self.get_sent_by_id(doc, mention['sent_idx'])
+            if found_sent not in sentences:
+                sentences.append(found_sent)
 
         reply = {
             "reply_proposition_cluster": {
