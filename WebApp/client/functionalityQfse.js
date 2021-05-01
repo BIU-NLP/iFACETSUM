@@ -381,6 +381,15 @@ function openDocument(e) {
 }
 $(document).on('click', '.open-document', openDocument);
 
+function openCorefCluster(e) {
+    const corefId = $(e.target).attr('data-coref-cluster-idx');
+    const text = e.target.textContent;
+    $('#navigationMentionsButton').click();
+    fetchCorefCluster(corefId);
+
+}
+$(document).on('click', '.open-coref-cluster', openPropositionCluster);
+
 function openPropositionCluster(e) {
     const propositionId = $(e.target).attr('data-proposition-cluster-idx');
     const text = e.target.textContent;
@@ -560,7 +569,8 @@ class ListItem extends React.Component {
                 if (txtList[i]['coref_clusters'] && txtList[i]['coref_clusters'].length > 0) {
                     mentionsTxt = "";
                     for (const corefCluster of txtList[i]['coref_clusters']) {
-                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['cluster_idx'] + ") "
+//                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['cluster_idx'] + ") "
+                        mentionsTxt +=  `<button type='button' data-coref-cluster-idx='${corefCluster['cluster_idx']}' class='btn btn-link open-coref-cluster'>[${corefCluster['cluster_idx']}]</button>`
                     }
                 }
 
