@@ -849,3 +849,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 #groups-toggle {
     margin-top: 15px;
 }
+
+.open-coref-cluster, .open-proposition-cluster {
+    padding: 0px;
+}
