@@ -1,15 +1,13 @@
 import json
 import logging
+import os
+import re
 from collections import defaultdict
 from typing import List, Dict, Tuple
-import os
-
-import conllu
 
 from QFSE.Corpus import Corpus
+from QFSE.coref.coref_expr import get_clusters
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
-import re
-
 from QFSE.models import CorefClusters
 
 
@@ -34,21 +32,25 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
 def get_coref_clusters(formatted_topics, corpus):
     path_to_dir = os.getcwd()
 
-    with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
-        data = f.read()
+    # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
+    #     data = f.read()
+    with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as json_file:
+        data = json.load(json_file)
 
     # TODO: Call external coref API with `formatted_topics`
 
-    coref_clusters = CorefClusters(*parse_conll_coref_file(data))
+    coref_clusters = CorefClusters(*get_clusters(data))
     coref_clusters_dict = coref_clusters.to_dict()
     doc_names_to_clusters = coref_clusters_dict['doc_name_to_clusters']
     for document in corpus.documents:
         if document.id in doc_names_to_clusters:
             document_coref_clusters = doc_names_to_clusters[document.id]
             document.coref_clusters = document_coref_clusters
-            for coref_cluster in document_coref_clusters.values():
-                for mention in coref_cluster:
-                    document.sentences[mention['sent_idx']].coref_clusters.append(mention)
+            # for coref_cluster in document_coref_clusters.values():
+            #     for mention in coref_cluster:
+            #           document.sentences[mention['sent_idx']].coref_clusters.append(mention)
+            for mention in document_coref_clusters:
+                document.sentences[mention['sent_idx']].coref_clusters.append(mention)
 
     corpus.coref_clusters = coref_clusters_dict['cluster_idx_to_mentions']
 
