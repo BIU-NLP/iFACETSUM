@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple
 import nltk
 import pandas as pd
 
+from QFSE.consts import COREF_TYPE_PROPOSITIONS
 from QFSE.coref.models import Mention
 from QFSE.models import PropositionClusters
 from QFSE.propositions.models import PropositionLine, PropositionCluster
@@ -123,7 +124,7 @@ def parse_lines(df, corpus):
 
         if sent_idx is None:
             return None
-        return Mention(doc_file, sent_idx, span_start_idx, span_end_idx, span_text, cluster_idx)
+        return Mention(doc_file, sent_idx, span_start_idx, span_end_idx, span_text, cluster_idx, COREF_TYPE_PROPOSITIONS)
 
     def dedup_seq_keep_order(seq):
         seen = set()

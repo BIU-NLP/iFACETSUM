@@ -13,6 +13,7 @@ class Mention:
     end: int
     token: str
     cluster_idx: int
+    cluster_type: str
 
 
 @dataclass_json

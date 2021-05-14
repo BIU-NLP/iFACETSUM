@@ -5,6 +5,7 @@ from collections import defaultdict
 from typing import List
 
 from QFSE.Sentence import Sentence
+from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS
 from QFSE.models import SummarySent, Summary
 from QFSE.propositions.utils import get_proposition_clusters
 
@@ -53,7 +54,6 @@ TYPE_ITERATION_RATING = 6
 TYPE_QUESTIONNAIRE_RATING = 7
 TYPE_REQUEST_DOCUMENT = 8
 TYPE_REQUEST_COREF_CLUSTER = 9
-TYPE_REQUEST_PROPOSITION_CLUSTER = 10
 # summary types
 SUMMARY_TYPES = {'qfse_cluster':SummarizerClustering, 'increment_cluster':SummarizerAddMore, 'qfse_textrank':SummarizerTextRankPlusLexical}
 SUGGESTED_QUERIES_TYPES = {'qfse_cluster':SuggestedQueriesNgramCount, 'increment_cluster':SuggestedQueriesNgramCount, 'qfse_textrank':SuggestedQueriesTextRank}
@@ -110,8 +110,6 @@ class IntSummHandler(tornado.web.RequestHandler):
                     returnJson = self.get_document(clientJson)
                 elif requestType == TYPE_REQUEST_COREF_CLUSTER:
                     returnJson = self.get_coref_cluster(clientJson)
-                elif requestType == TYPE_REQUEST_PROPOSITION_CLUSTER:
-                    returnJson = self.get_proposition_cluster(clientJson)
                 else:
                     returnJson = self.getErrorJson('Undefined JSON received.')
 
@@ -145,8 +143,6 @@ class IntSummHandler(tornado.web.RequestHandler):
             requestType = TYPE_REQUEST_DOCUMENT
         elif 'request_coref_cluster' in clientJson:
             requestType = TYPE_REQUEST_COREF_CLUSTER
-        elif 'request_proposition_cluster' in clientJson:
-            requestType = TYPE_REQUEST_PROPOSITION_CLUSTER
         else:
             requestType = TYPE_ERROR
 
@@ -260,9 +256,11 @@ class IntSummHandler(tornado.web.RequestHandler):
         if show_coref:
             tokens = sent.tokens
             clusters = sent.coref_clusters
+            cluster_type = COREF_TYPE_EVENTS
         else:
             tokens = sent.text.split(" ")
             clusters = sent.proposition_clusters
+            cluster_type = COREF_TYPE_PROPOSITIONS
 
         token_to_mention = defaultdict(list)
         for mention in clusters:
@@ -274,7 +272,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                 curr_tokens = open_mentions.pop()
                 tokens_groups.append({
                     "tokens": curr_tokens['tokens'],
-                    "group_id": curr_tokens['cluster_idx']
+                    "group_id": curr_tokens['cluster_idx'],
+                    "cluster_type": curr_tokens['cluster_type']
                 })
 
         tokens_groups = []
@@ -286,7 +285,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                     flush_open_mention(tokens_groups, open_mentions)
 
                 if len(open_mentions) == 0:
-                    open_mentions.append({"tokens": [], "cluster_idx": mention[0]['cluster_idx']})
+                    open_mentions.append({"tokens": [], "cluster_idx": mention[0]['cluster_idx'], "cluster_type": cluster_type })
                 open_mentions[-1]['tokens'].append([token])
             else:
                 while len(open_mentions) != 0:
@@ -367,9 +366,14 @@ class IntSummHandler(tornado.web.RequestHandler):
     def get_coref_cluster(self, client_json):
         client_id = client_json['clientId']
         coref_cluster_id = int(client_json['request_coref_cluster']['corefClusterId'])
+        coref_cluster_type = client_json['request_coref_cluster']['corefClusterType']
 
         corpus = m_infoManager.getSummarizer(client_id).corpus
-        found_clusters = [mentions for key, mentions in corpus.coref_clusters.items() if key == coref_cluster_id]
+        if coref_cluster_type == COREF_TYPE_PROPOSITIONS:
+            clusters = corpus.proposition_clusters
+        else:
+            clusters = corpus.coref_clusters
+        found_clusters = [mentions for key, mentions in clusters.items() if key == coref_cluster_id]
         if any(found_clusters):
             mentions = found_clusters[0]
         else:
@@ -386,6 +390,7 @@ class IntSummHandler(tornado.web.RequestHandler):
             "reply_coref_cluster": {
                 "doc": {
                     "id": coref_cluster_id,
+                    "corefType": coref_cluster_type,
                     "sentences": self._corpus_sents_to_response_sents(sentences)
                 }
             }
@@ -393,34 +398,6 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         return json.dumps(reply)
 
-    def get_proposition_cluster(self, client_json):
-        client_id = client_json['clientId']
-        proposition_cluster_id = int(client_json['request_proposition_cluster']['propositionClusterId'])
-
-        corpus = m_infoManager.getSummarizer(client_id).corpus
-        found_clusters = [mentions for key, mentions in corpus.proposition_clusters.items() if key == proposition_cluster_id]
-        if any(found_clusters):
-            mentions = found_clusters[0]
-        else:
-            raise ValueError(f"Cluster not found ; proposition_cluster_id {proposition_cluster_id}")
-
-        sentences = []
-        for mention in mentions:
-            doc = self.get_doc_by_id(corpus, mention['doc_id'])
-            found_sent = self.get_sent_by_id(doc, mention['sent_idx'])
-            if found_sent not in sentences:
-                sentences.append(found_sent)
-
-        reply = {
-            "reply_proposition_cluster": {
-                "doc": {
-                    "id": proposition_cluster_id,
-                    "sentences": self._corpus_sents_to_response_sents(sentences)
-                }
-            }
-        }
-
-        return json.dumps(reply)
 
     def getQuestionAnswerJson(self, clientJson):
         clientId = clientJson['clientId']
