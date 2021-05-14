@@ -1,5 +1,6 @@
 from typing import Tuple, Dict, List
 
+from QFSE.consts import COREF_TYPE_EVENTS
 from QFSE.coref.models import Mention
 
 
@@ -18,7 +19,7 @@ def get_clusters(data) -> Tuple[Dict[str, List[Mention]], Dict[int, List[Mention
             if cluster_id not in clusters:
                 clusters[cluster_id] = list()
             ment_obj = Mention(doc_id, int(ment['sent_id']), tok_star, tok_end,
-                               ment['tokens_str'], cluster_id)
+                               ment['tokens_str'], cluster_id, COREF_TYPE_EVENTS)
 
             document[doc_id].append(ment_obj)
             clusters[cluster_id].append(ment_obj)

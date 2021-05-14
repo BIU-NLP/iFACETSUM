@@ -98,7 +98,7 @@
 
     <div id="mainContentRow" class="row">
         <!-- The left side of the page is for the interactive summary -->
-        <div id="toolbarContent" class="col-2">
+        <div id="toolbarContent" class="col-0" style="display:none">
             <div class="componentSubtitle">
                 Navigation:
             </div>
@@ -132,7 +132,7 @@
                 </li>
             </ul>
         </div>
-        <div id="mainContent" class="col-7">
+        <div id="mainContent" class="col-9">
             <div class="centeredForLeft">
                 <!-- Empty List - build programmatically with the queries and results -->
                 <div id="explorationPage">
@@ -161,10 +161,10 @@
                 </div>
 
                 <div id="groups-toggle" class="btn-group btn-group-toggle" data-toggle="buttons">
-                    <label class="btn btn-secondary btn-light btn-sm">
+                    <label class="btn btn-secondary active btn-light btn-sm">
                         <input type="radio" name="options" id="toggleMentionsButton" autocomplete="off" checked> Mentions
                     </label>
-                    <label class="btn btn-secondary active btn-light btn-sm">
+                    <label class="btn btn-secondary btn-light btn-sm">
                         <input type="radio" name="options" id="togglePropositionsButton" autocomplete="off"> Propositions
                     </label>
                 </div>

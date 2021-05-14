@@ -1,0 +1,2 @@
+COREF_TYPE_PROPOSITIONS = "propositions"
+COREF_TYPE_EVENTS = "events"

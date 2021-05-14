@@ -756,6 +756,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 /* start - highlight css */
 
+/* Removed colors
 .highlight-blue.highlight-blue {
     border-color: var(--blue);
 }
@@ -803,6 +804,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 .highlight-red.highlight-hover {
     background: var(--red);
 }
+*/
 
 .highlight-icon {
     padding: 0px 8px;
@@ -818,24 +820,30 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 .highlight-hover {
-    border: 2px solid;
+    border: 1px dashed;
     position: relative;
     line-height: 22px;
     display: flex;
+    /* Removed colors
     color: var(--gray-dark);
     background: var(--light);
+    */
     cursor: pointer;
+    padding-left: 4px;
 }
 
 .highlight-no-hover {
-    border: 2px solid;
+    border: 1px dashed;
     margin: 4px 8px 4px 4px;
     position: relative;
     line-height: 22px;
     display: flex;
+    /* Removed colors:
+    border: 2px solid;
     color: var(--gray-dark);
-    background: var(--light);
+    background: var(--light);*/
     cursor: pointer;
+    padding-left: 4px;
 }
 
 .sentence-span.highlight-hover {
@@ -852,4 +860,10 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .open-coref-cluster, .open-proposition-cluster {
     padding: 0px;
+}
+
+.popover-body {
+    max-height: 500px;
+    overflow-y: auto;
+    white-space:pre-wrap;
 }

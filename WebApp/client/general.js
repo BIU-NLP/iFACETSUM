@@ -365,11 +365,10 @@ function handleJsonReply(jsonObj) {
         setPaneResponse(jsonObj["reply_document"], $documentsPane);
     }
     else if ("reply_coref_cluster" in jsonObj) {
-        setPaneResponse(jsonObj["reply_coref_cluster"], $mentionsPane);
+//        setPaneResponse(jsonObj["reply_coref_cluster"], depending on type ? $mentionsPane : $propositionsPane);
+        setGlobalResponse(jsonObj["reply_coref_cluster"]);
     }
-    else if ("reply_proposition_cluster" in jsonObj) {
-        setPaneResponse(jsonObj["reply_proposition_cluster"], $propositionsPane);
-    }
+
     else if ("reply_set_question_answer" in jsonObj) {
         // nothing to do
     }

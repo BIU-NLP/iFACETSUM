@@ -46,7 +46,7 @@ var hitId = '';
 var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
-let showCoref = false;
+let showCoref = true;
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
 var RATING_PARAMS = {
@@ -339,7 +339,6 @@ function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
         ListItem,
         {
             "txtList": txtList,
-            "docsMetas": documentsMetas,
             "numSentToShow": 3,
             "showCoref": showCoref
         }
@@ -401,7 +400,8 @@ $(document).on('click', '.open-proposition-cluster', openPropositionCluster);
 
 
 
-const GROUPS_COLORS = ["blue", "pink", "orange", "red"];
+// const GROUPS_COLORS = ["blue", "pink", "orange", "red"];
+const GROUPS_COLORS = ["blue"];
 const group_id_to_color = {};
 for (const [i, color] of GROUPS_COLORS.entries()) {
     group_id_to_color[i] = color;
@@ -415,6 +415,7 @@ class TokensGroup extends React.Component {
     render() {
         const groups = this.props.groups;
         const groupId = this.props.group_id;
+        const clusterType = this.props.cluster_type;
 
         const innerHtml = [];
 
@@ -441,7 +442,7 @@ class TokensGroup extends React.Component {
                 },
                 groupId
             );
-            innerHtml.push(groupIcon);
+//            innerHtml.push(groupIcon);
         }
 
         for (const tokensGroup of groups) {
@@ -453,9 +454,11 @@ class TokensGroup extends React.Component {
                   {
                     "groups": tokensGroup['tokens'],
                     "group_id": tokensGroup['group_id'],
+                    "cluster_type": tokensGroup['cluster_type'],
                     "highlightedClusters": this.props.highlightedClusters,
                     "startHighlightCluster": this.props.startHighlightCluster,
-                    "stopHighlightCluster": this.props.stopHighlightCluster
+                    "stopHighlightCluster": this.props.stopHighlightCluster,
+                    "showPopover": this.props.showPopover
                   }
                 );
                 innerHtml.push(innerTokensGroup);
@@ -475,13 +478,33 @@ class TokensGroup extends React.Component {
             }
         }
 
+        let elementParams = {
+            "className": "sentence-span " + className,
+            "onMouseEnter": onMouseEnterFunc,
+            "onMouseLeave": onMouseLeaveFunc
+        };
+
+        // Add popover if not inside a popover
+        if (groupId !== undefined && this.props.showPopover) {
+            let dataContent = '<div id="popover-loading">Loading...</div>';
+
+            elementParams = Object.assign({}, elementParams, {
+                "data-toggle": "popover",
+                "data-trigger": "focus",
+                "tabindex": "-1",
+                "data-placement": "right",
+                "data-html": true,
+                "data-coref-cluster-idx": groupId,
+                "data-coref-cluster-type": clusterType,
+                "data-content": "<span>" +
+                dataContent +
+                "</span>"
+            })
+        }
+
         return e(
             "span",
-            {
-                "className": "sentence-span " + className,
-                "onMouseEnter": onMouseEnterFunc,
-                "onMouseLeave": onMouseLeaveFunc
-            },
+            elementParams,
             innerHtml
         )
     }
@@ -517,10 +540,7 @@ class ListItem extends React.Component {
             "minimized": false
         });
 
-        $('p').popover({
-              trigger: 'focus',
-              'data-placement': "right"
-          });
+        this.initializePopOver();
     }
 
     minimize = () => {
@@ -531,10 +551,54 @@ class ListItem extends React.Component {
 
     initializePopOver = () => {
         const $this = $(ReactDOM.findDOMNode(this));
-        $this.find('p').popover({
-              trigger: 'focus',
-              'data-placement': "right"
-          });
+        const $popoverElements = $this.find('[data-toggle=popover]');
+        $popoverElements.on('shown.bs.popover', function(event) {
+            const $target = $(event.target);
+            const clusterId = $target.attr('data-coref-cluster-idx');
+            const clusterType = $target.attr('data-coref-cluster-type');
+            const sentIdx = $target.closest('[data-sent-idx]').attr('data-sent-idx');
+
+            let clustersMeta = globalCorefClustersMetas;
+            if (clusterType === "propositions") {
+                clustersMeta = globalPropositionClustersMetas;
+            }
+
+            if (clustersMeta[clusterId].sentences === undefined) {
+                sendRequest({
+                    "clientId": clientId,
+                    "request_coref_cluster": {
+                        "corefClusterId": clusterId,
+                        "corefClusterType": clusterType
+                    }
+                });
+            } else {
+                let sentences = clustersMeta[clusterId]['sentences'];
+                sentences = sentences.filter(x => x['idx'] != sentIdx);
+
+                let liReact;
+                if (sentences.length > 0){
+                    liReact = e(
+                        ListItem,
+                        {
+                            "txtList": sentences,
+                            "numSentToShow": 999,
+                            "showCoref": showCoref,
+                            "showPopover": false  // Don't show a popover inside a popover
+                        }
+                    );
+                } else {
+                    liReact = e(
+                        "span",
+                        {},
+                        "This is the only sentence"
+                    );
+                }
+
+                const $popoverDataContent = $('#popover-loading');
+                ReactDOM.render(liReact, $popoverDataContent[0]);
+            }
+        });
+        $popoverElements.popover();
     }
 
     componentDidMount = () => {
@@ -554,7 +618,6 @@ class ListItem extends React.Component {
     render() {
         const txtList = this.props.txtList;
         const numSentToShow = this.props.numSentToShow || 1;
-        const docsMetas = this.props.docsMetas;
         const sentences = [];
 
         // put the list of sentences separately line by line with a small margin in between:
@@ -563,42 +626,12 @@ class ListItem extends React.Component {
                 const sentenceText = txtList[i]['text'];
                 const docId = txtList[i]['doc_id'];
                 const sentIdx = txtList[i]['idx'];
-                const docMeta = docsMetas[docId];
-                let mentionsTxt = "None";
-                let propositionsTxt = "None";
-                if (txtList[i]['coref_clusters'] && txtList[i]['coref_clusters'].length > 0) {
-                    mentionsTxt = "";
-                    for (const corefCluster of txtList[i]['coref_clusters']) {
-//                        mentionsTxt += " " + corefCluster['token'] + " (" + corefCluster['cluster_idx'] + ") "
-                        mentionsTxt +=  `<button type='button' data-coref-cluster-idx='${corefCluster['cluster_idx']}' class='btn btn-link open-coref-cluster'>[${corefCluster['cluster_idx']}]</button>`
-                    }
-                }
-
-                if (txtList[i]['proposition_clusters'] && txtList[i]['proposition_clusters'].length > 0) {
-                    propositionsTxt = "";
-                    for (const propositionCluster of txtList[i]['proposition_clusters']) {
-                        propositionsTxt += `<button type='button' data-proposition-cluster-idx='${propositionCluster['cluster_idx']}' class='btn btn-link open-proposition-cluster'>[${propositionCluster['cluster_idx']}]</button>`
-                    }
-                }
-
 
                 const sentencePar = e(
                     'p',
                     {
-                        "className": "sentence-paragraph",
-                       "tabIndex": "0",
-                       "role": "button",
-                       "data-toggle": "popover",
-                       "data-trigger": "focus",
-                       "data-placement": "right",
-                       "title": "Sentence exploration",
-                       "data-html": true,
-                       "data-content": "<span>" +
-                         "<div>Document id: <button type='button' class='btn btn-link open-document'>" + docId + "</button></div>" +
-                         "<div>Sentence #" + sentIdx + "</div>" +
-                         "<div>Mentions: " + mentionsTxt + "</div>" +
-                         "<div>Propositions: " + propositionsTxt + "</div>" +
-                         "</span>"
+                       "className": "sentence-paragraph",
+                       "data-sent-idx": sentIdx
                     },
                     e(
                       TokensGroup,
@@ -606,7 +639,8 @@ class ListItem extends React.Component {
                         "groups": this.state.showCoref ? txtList[i]['coref_tokens'] : txtList[i]['proposition_tokens'],
                         "startHighlightCluster": this.startHighlightCluster,
                         "stopHighlightCluster": this.stopHighlightCluster,
-                        "highlightedClusters": this.state.highlightedClusters
+                        "highlightedClusters": this.state.highlightedClusters,
+                        "showPopover": this.props.showPopover !== undefined ? this.props.showPopover : true
                       }
                     )
                   );
@@ -670,7 +704,6 @@ function insertDocInPane(doc, $pane) {
         ListItem,
         {
             "txtList": doc.sentences,
-            "docsMetas": documentsMetas,
             "numSentToShow": 2,
             "showCoref": showCoref
         }
@@ -682,6 +715,17 @@ function insertDocInPane(doc, $pane) {
 
     // scroll to more or less the headline of the document:
     $pane[0].scrollTop = $pane[0].scrollTop + $pane[0].offsetHeight - 200;
+}
+
+function setGlobalResponse(docResult) {
+    const doc = docResult['doc'];
+    const groupId = doc.id;
+    const corefType = doc['corefType'];
+    let clustersMeta = globalCorefClustersMetas;
+    if (corefType === "propositions") {
+        clustersMeta = globalPropositionClustersMetas;
+    }
+    clustersMeta[groupId]['sentences'] = doc.sentences;
 }
 
 function addStarRatingWidget(parentElement, numStarsInRating, iterationNum, displayCharacter, instructionsTxt, instructionsExplanation, starLabelClass) {
@@ -883,7 +927,8 @@ function fetchCorefCluster(corefClusterId) {
     sendRequest({
         "clientId": clientId,
         "request_coref_cluster": {
-            "corefClusterId": corefClusterId
+            "corefClusterId": corefClusterId,
+            "corefClusterType": "events"
         }
     });
 }
@@ -899,8 +944,9 @@ function fetchPropositionCluster(propositionClusterId) {
 
     sendRequest({
         "clientId": clientId,
-        "request_proposition_cluster": {
-            "propositionClusterId": propositionClusterId
+        "request_coref_cluster": {
+            "corefClusterId": propositionClusterId,
+            "corefClusterType": "propositions"
         }
     });
 }
