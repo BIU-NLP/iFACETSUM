@@ -6,6 +6,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple
 
 from QFSE.Corpus import Corpus
+from QFSE.consts import COREF_TYPE_EVENTS
 from QFSE.coref.coref_expr import get_clusters
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters
@@ -167,7 +168,7 @@ def parse_lines(lines):
             for cluster in parsed_line.clusters:
                 if cluster.partial_cluster_type == PartialClusterType.BEGIN_AND_END:
                     mentions_list = mentions[cluster.cluster_idx]
-                    mention = Mention(curr_doc_name, curr_sent_idx, curr_token_idx_per_sent, curr_token_idx_per_sent, parsed_line.token, cluster.cluster_idx)
+                    mention = Mention(curr_doc_name, curr_sent_idx, curr_token_idx_per_sent, curr_token_idx_per_sent, parsed_line.token, cluster.cluster_idx, COREF_TYPE_EVENTS)
                     mentions_list.append(mention)
                     all_clusters[cluster.cluster_idx].append(mention)
                 elif cluster.partial_cluster_type == PartialClusterType.BEGIN:
@@ -179,7 +180,7 @@ def parse_lines(lines):
                     token_str = " ".join([line.token for line in open_cluster])
 
                     mentions_list = mentions[cluster.cluster_idx]
-                    mention = Mention(curr_doc_name, curr_sent_idx, get_fixed_token_idx(open_cluster[0].token_idx, tokens_in_doc_before_curr_sent), curr_token_idx_per_sent, token_str, cluster.cluster_idx)
+                    mention = Mention(curr_doc_name, curr_sent_idx, get_fixed_token_idx(open_cluster[0].token_idx, tokens_in_doc_before_curr_sent), curr_token_idx_per_sent, token_str, cluster.cluster_idx, COREF_TYPE_EVENTS)
                     mentions_list.append(mention)
                     all_clusters[cluster.cluster_idx].append(mention)
 
