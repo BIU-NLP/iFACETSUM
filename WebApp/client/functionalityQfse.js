@@ -1063,6 +1063,20 @@ function changeGroup(event) {
     }
 }
 
+function showDebug() {
+    const $toolbarContent = $('#toolbarContent');
+    const $mainContent = $('#mainContent');
+    $toolbarContent.attr('style', '');
+    $toolbarContent.attr('class', 'col-2')
+    $mainContent.attr('class', 'col-7');
+}
+
+
+const debugMode = window.location.href.indexOf("debug") > -1;
+if (debugMode) {
+    showDebug();
+}
+
 enterQueryButton.addEventListener("click",queryOnButtonClick);
 queryInputBox.addEventListener("keyup", queryOnKeyUp);
 repeatQueryButton.addEventListener("click", queryRepeatOnButtonClick);
