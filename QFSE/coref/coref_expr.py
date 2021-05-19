@@ -9,8 +9,7 @@ def get_clusters(data) -> Tuple[Dict[str, List[Mention]], Dict[int, List[Mention
     document = dict()
     for ment in data:
         doc_id = ment['doc_id'][ment['doc_id'].index("_")+1:]
-        doc_num_id = ment['doc_id'].split("_")[1]
-        cluster_id = int(doc_num_id + ment['coref_chain'])
+        cluster_id = int(ment['coref_chain'])
         tok_star = int(ment['tokens_number'][0])
         tok_end = int(ment['tokens_number'][-1])
         if tok_end - tok_star < 5:

@@ -35,7 +35,7 @@ def get_coref_clusters(formatted_topics, corpus):
 
     # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
     #     data = f.read()
-    with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as json_file:
+    with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
         data = json.load(json_file)
 
     # TODO: Call external coref API with `formatted_topics`
