@@ -422,27 +422,39 @@ class TokensGroup extends React.Component {
         let className = "";
         let onMouseEnterFunc;
         let onMouseLeaveFunc;
-        if (groupId !== undefined) {
-            const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
-            className = "highlight-" + groupColor;
-            onMouseEnterFunc = () => this.props.startHighlightCluster(groupId);
-            onMouseLeaveFunc = () => this.props.stopHighlightCluster(groupId);
 
-            if (this.props.highlightedClusters.includes(groupId)) {
-                className += " highlight-hover";
-            } else {
-                className += " highlight-no-hover";
+        if (groupId !== undefined) {
+            let showHighlight = groupId !== undefined;
+
+
+            // Don't highlight if requested fixed clusters
+            if (this.props.fixedClusters && !this.props.fixedClusters.includes(groupId)) {
+                showHighlight = false;
             }
 
+            if (showHighlight) {
+                const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
+                className = "highlight-" + groupColor;
+                onMouseEnterFunc = () => this.props.startHighlightCluster(groupId);
+                onMouseLeaveFunc = () => this.props.stopHighlightCluster(groupId);
 
-            const groupIcon = e(
-                "span",
-                {
-                    "className": "highlight-hover highlight-icon highlight-" + groupColor
-                },
-                groupId
-            );
-//            innerHtml.push(groupIcon);
+                if (this.props.highlightedClusters.includes(groupId)) {
+                    className += " highlight-hover";
+                } else {
+                    className += " highlight-no-hover";
+                }
+
+
+                const groupIcon = e(
+                    "span",
+                    {
+                        "className": "highlight-hover highlight-icon highlight-" + groupColor
+                    },
+                    groupId
+                );
+//              innerHtml.push(groupIcon);
+
+            }
         }
 
         for (const tokensGroup of groups) {
@@ -458,7 +470,8 @@ class TokensGroup extends React.Component {
                     "highlightedClusters": this.props.highlightedClusters,
                     "startHighlightCluster": this.props.startHighlightCluster,
                     "stopHighlightCluster": this.props.stopHighlightCluster,
-                    "showPopover": this.props.showPopover
+                    "showPopover": this.props.showPopover,
+                    "fixedClusters": this.props.fixedClusters
                   }
                 );
                 innerHtml.push(innerTokensGroup);
@@ -515,7 +528,7 @@ class ListItem extends React.Component {
         super(props);
         this.state = {
             minimized: true,
-            highlightedClusters: [],
+            highlightedClusters: props.fixedClusters || [],
             showCoref: props.showCoref
         };
     }
@@ -529,8 +542,13 @@ class ListItem extends React.Component {
     stopHighlightCluster = (clusterIdx) => {
         this.setState({
             "highlightedClusters": this.state.highlightedClusters.filter(function(x) {
-                return x !== clusterIdx
-            })
+                // Don't remove clusters received in props (should stay fixed)
+                if (this.props.fixedClusters && this.props.fixedClusters.includes(clusterIdx)) {
+                    return true;
+                }
+
+                return x !== clusterIdx;
+            }.bind(this))
         });
     }
 
@@ -583,7 +601,8 @@ class ListItem extends React.Component {
                             "txtList": sentences,
                             "numSentToShow": 999,
                             "showCoref": showCoref,
-                            "showPopover": false  // Don't show a popover inside a popover
+                            "showPopover": false,  // Don't show a popover inside a popover
+                            "fixedClusters": [parseInt(clusterId)]
                         }
                     );
                 } else {
@@ -640,7 +659,8 @@ class ListItem extends React.Component {
                         "startHighlightCluster": this.startHighlightCluster,
                         "stopHighlightCluster": this.stopHighlightCluster,
                         "highlightedClusters": this.state.highlightedClusters,
-                        "showPopover": this.props.showPopover !== undefined ? this.props.showPopover : true
+                        "showPopover": this.props.showPopover !== undefined ? this.props.showPopover : true,
+                        "fixedClusters": this.props.fixedClusters
                       }
                     )
                   );
