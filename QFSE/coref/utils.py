@@ -18,6 +18,7 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
         token_idx = 1
         sentences_formatted = []
         for sentence in doc.sentences:
+            sentence.first_token_idx = token_idx - 1
             for token in sentence.tokens:
                 sentences_formatted.append([sentence.sentIndex, token_idx, token, True])
                 token_idx += 1
