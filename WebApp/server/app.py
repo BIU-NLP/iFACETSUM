@@ -251,19 +251,16 @@ class IntSummHandler(tornado.web.RequestHandler):
         } for corpus_sent in corpus_sents]
 
     def _split_sent_text_to_tokens(self, sent: Sentence):
-        hotfix_wrong_indices = False
         # TODO: Do this split earlier and send it also to the other services
         tokens = sent.tokens
         token_to_mention = defaultdict(list)
 
         # Coref
-        clusters = sent.coref_clusters
-        cluster_type = COREF_TYPE_EVENTS
         hotfix_wrong_indices = True
         if hotfix_wrong_indices:
             first_token_idx = sent.first_token_idx
 
-        for mentions in clusters:
+        for mentions in sent.coref_clusters:
             mention_start = mentions['start']
             mention_end = mentions['end']
             if hotfix_wrong_indices:
@@ -273,10 +270,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 token_to_mention[token_idx].append(mentions)
 
         # Propositions
-        clusters = sent.proposition_clusters
-        cluster_type = COREF_TYPE_PROPOSITIONS
-
-        for mentions in clusters:
+        for mentions in sent.proposition_clusters:
             mention_start = mentions['start']
             mention_end = mentions['end']
             for token_idx in range(mention_start, mention_end + 1):
