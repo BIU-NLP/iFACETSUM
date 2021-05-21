@@ -18,6 +18,7 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
         token_idx = 1
         sentences_formatted = []
         for sentence in doc.sentences:
+            sentence.first_token_idx = token_idx - 1
             for token in sentence.tokens:
                 sentences_formatted.append([sentence.sentIndex, token_idx, token, True])
                 token_idx += 1
@@ -35,7 +36,7 @@ def get_coref_clusters(formatted_topics, corpus):
 
     # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
     #     data = f.read()
-    with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as json_file:
+    with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
         data = json.load(json_file)
 
     # TODO: Call external coref API with `formatted_topics`
