@@ -251,7 +251,6 @@ class IntSummHandler(tornado.web.RequestHandler):
         } for corpus_sent in corpus_sents]
 
     def _split_sent_text_to_tokens(self, sent: Sentence):
-        # TODO: Do this split earlier and send it also to the other services
         tokens = sent.tokens
         token_to_mention = defaultdict(list)
 
@@ -278,9 +277,12 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         # Split
 
-        def flush_open_mentions(tokens_groups, open_mentions):
-            while any(open_mentions):
-                last_open_mention = open_mentions.pop(list(open_mentions.keys())[-1])
+        def flush_open_mentions(tokens_groups, open_mentions, open_mentions_to_flush):
+            while any(open_mentions_to_flush):
+                last_open_mention_id = list(open_mentions_to_flush.keys())[-1]
+                last_open_mention = open_mentions_to_flush.pop(last_open_mention_id)
+                if last_open_mention_id in open_mentions:
+                    open_mentions.pop(last_open_mention_id)
                 token_group = {
                     "tokens": last_open_mention['tokens'],
                     "group_id": last_open_mention['cluster_idx'],
@@ -299,12 +301,12 @@ class IntSummHandler(tornado.web.RequestHandler):
         for token_idx, token in enumerate(tokens):
             if token_idx in token_to_mention:
                 mentions = token_to_mention[token_idx]
-                any_open_mention_included = False
-                if any(open_mentions_by_ids):
-                    some_open_mention = list(open_mentions_by_ids.values())[-1]
-                    any_open_mention_included = any(curr_mention for curr_mention in mentions if some_open_mention['cluster_idx'] == curr_mention['cluster_idx'])
-                if not any_open_mention_included:
-                    flush_open_mentions(tokens_groups, open_mentions_by_ids)
+                open_mentions_to_flush = {}
+                for open_mention_id, open_mention in open_mentions_by_ids.items():
+                    open_mention_included = any(curr_mention for curr_mention in mentions if open_mention_id == curr_mention['cluster_idx'])
+                    if not open_mention_included:
+                        open_mentions_to_flush[open_mention_id] = open_mention
+                flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_to_flush)
 
                 for mention in mentions:
                     cluster_idx = mention['cluster_idx']
@@ -315,11 +317,11 @@ class IntSummHandler(tornado.web.RequestHandler):
                     last_open_mention = list(open_mentions_by_ids.values())[-1]
                     last_open_mention['tokens'].append([token])
             else:
-                flush_open_mentions(tokens_groups, open_mentions_by_ids)
+                flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_by_ids)
                 tokens_groups.append([token])
 
         while any(open_mentions_by_ids):
-            flush_open_mentions(tokens_groups, open_mentions_by_ids)
+            flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_by_ids)
 
         return tokens_groups
 

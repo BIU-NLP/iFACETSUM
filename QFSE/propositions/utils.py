@@ -52,23 +52,13 @@ def find_indices_by_char_idx(sentences, sent_text, span_text):
         if sent_text in curr_sent_text:
             span_text_split = span_text.split("...")
 
-            span_start_word_idx = None
-            span_end_word_idx = None
-
             start_char_idx = curr_sent_text.index(span_text_split[0])
             end_char_idx = curr_sent_text.index(span_text_split[-1]) + len(span_text_split[-1]) - 1
 
-            def is_token_merged(token):
-                """
-                Splitting by space vs splitting with spacy yields different results.
-                Returns 1 if when splitting by space this was concatenated to another token
-                """
-
-                return 0 if token.is_punct or token.is_space or token.is_bracket or token.is_quote or token.is_currency else 1
-            sent_split_lengths = [len(x.text) + is_token_merged(x) for x in curr_sent.spacy_rep]  # plus one for the space
+            sent_split_lengths = [len(x) + 1 for x in curr_sent.tokens]  # plus 1 for space
             sent_split_accumulated = [sent_split_lengths[i] + sum(sent_split_lengths[:i]) for i in range(len(sent_split_lengths))]
 
-            span_start_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if start_char_idx < word_accumulated][0]
+            span_start_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if start_char_idx + 1 < word_accumulated][0]
             span_end_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if end_char_idx < word_accumulated][0]
 
             if span_start_word_idx is None or span_end_word_idx is None:
