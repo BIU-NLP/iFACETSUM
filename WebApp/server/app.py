@@ -308,9 +308,10 @@ class IntSummHandler(tornado.web.RequestHandler):
                     cluster_idx = mention['cluster_idx']
                     if not any(open_mentions_by_ids) or cluster_idx not in open_mentions_by_ids:
                         open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": cluster_idx, "cluster_type": cluster_type}
+
+                if any(open_mentions_by_ids):
                     last_open_mention = list(open_mentions_by_ids.values())[-1]
-                    if cluster_idx == last_open_mention['cluster_idx']:
-                        last_open_mention['tokens'].append([token])
+                    last_open_mention['tokens'].append([token])
             else:
                 flush_open_mentions(tokens_groups, open_mentions_by_ids)
                 tokens_groups.append([token])

@@ -616,6 +616,9 @@ class ListItem extends React.Component {
                 const $popoverDataContent = $('#popover-loading');
                 ReactDOM.render(liReact, $popoverDataContent[0]);
             }
+
+            // avoid more popups showing if mention inside mention
+            event.preventDefault();
         });
         $popoverElements.popover();
     }
