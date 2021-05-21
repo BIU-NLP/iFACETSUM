@@ -257,6 +257,9 @@ class IntSummHandler(tornado.web.RequestHandler):
             tokens = sent.tokens
             clusters = sent.coref_clusters
             cluster_type = COREF_TYPE_EVENTS
+            hotfix_wrong_indices = True
+            if hotfix_wrong_indices:
+                first_token_idx = sent.first_token_idx
         else:
             tokens = sent.text.split(" ")
             clusters = sent.proposition_clusters
@@ -264,7 +267,12 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         token_to_mention = defaultdict(list)
         for mention in clusters:
-            for token_idx in range(mention['start'], mention['end'] + 1):
+            mention_start = mention['start']
+            mention_end = mention['end']
+            if hotfix_wrong_indices:
+                mention_start -= first_token_idx
+                mention_end -= first_token_idx
+            for token_idx in range(mention_start, mention_end + 1):
                 token_to_mention[token_idx].append(mention)
 
         def flush_open_mention(tokens_groups, open_mentions):
