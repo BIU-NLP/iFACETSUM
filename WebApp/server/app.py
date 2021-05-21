@@ -254,15 +254,14 @@ class IntSummHandler(tornado.web.RequestHandler):
     def _split_sent_text_to_tokens(self, sent: Sentence, show_coref):
         hotfix_wrong_indices = False
         # TODO: Do this split earlier and send it also to the other services
+        tokens = sent.tokens
         if show_coref:
-            tokens = sent.tokens
             clusters = sent.coref_clusters
             cluster_type = COREF_TYPE_EVENTS
             hotfix_wrong_indices = True
             if hotfix_wrong_indices:
                 first_token_idx = sent.first_token_idx
         else:
-            tokens = sent.text.split(" ")
             clusters = sent.proposition_clusters
             cluster_type = COREF_TYPE_PROPOSITIONS
 
