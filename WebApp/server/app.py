@@ -247,25 +247,22 @@ class IntSummHandler(tornado.web.RequestHandler):
             "doc_id": corpus_sent.docId,
             "coref_clusters": corpus_sent.coref_clusters,
             "proposition_clusters": corpus_sent.proposition_clusters,
-            "coref_tokens": self._split_sent_text_to_tokens(corpus_sent, show_coref=True),
-            "proposition_tokens": self._split_sent_text_to_tokens(corpus_sent, show_coref=False),
+            "coref_tokens": self._split_sent_text_to_tokens(corpus_sent)
         } for corpus_sent in corpus_sents]
 
-    def _split_sent_text_to_tokens(self, sent: Sentence, show_coref):
+    def _split_sent_text_to_tokens(self, sent: Sentence):
         hotfix_wrong_indices = False
         # TODO: Do this split earlier and send it also to the other services
         tokens = sent.tokens
-        if show_coref:
-            clusters = sent.coref_clusters
-            cluster_type = COREF_TYPE_EVENTS
-            hotfix_wrong_indices = True
-            if hotfix_wrong_indices:
-                first_token_idx = sent.first_token_idx
-        else:
-            clusters = sent.proposition_clusters
-            cluster_type = COREF_TYPE_PROPOSITIONS
-
         token_to_mention = defaultdict(list)
+
+        # Coref
+        clusters = sent.coref_clusters
+        cluster_type = COREF_TYPE_EVENTS
+        hotfix_wrong_indices = True
+        if hotfix_wrong_indices:
+            first_token_idx = sent.first_token_idx
+
         for mentions in clusters:
             mention_start = mentions['start']
             mention_end = mentions['end']
@@ -274,6 +271,18 @@ class IntSummHandler(tornado.web.RequestHandler):
                 mention_end -= first_token_idx
             for token_idx in range(mention_start, mention_end + 1):
                 token_to_mention[token_idx].append(mentions)
+
+        # Propositions
+        clusters = sent.proposition_clusters
+        cluster_type = COREF_TYPE_PROPOSITIONS
+
+        for mentions in clusters:
+            mention_start = mentions['start']
+            mention_end = mentions['end']
+            for token_idx in range(mention_start, mention_end + 1):
+                token_to_mention[token_idx].append(mentions)
+
+        # Split
 
         def flush_open_mentions(tokens_groups, open_mentions):
             while any(open_mentions):
@@ -306,7 +315,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 for mention in mentions:
                     cluster_idx = mention['cluster_idx']
                     if not any(open_mentions_by_ids) or cluster_idx not in open_mentions_by_ids:
-                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": cluster_idx, "cluster_type": cluster_type}
+                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": cluster_idx, "cluster_type": mention['cluster_type']}
 
                 if any(open_mentions_by_ids):
                     last_open_mention = list(open_mentions_by_ids.values())[-1]
