@@ -7,7 +7,7 @@ import numpy as np
 
 class Sentence:
 
-    def __init__(self, docId, sentIndex, text, representationStyle, doNotInitRepresentation=False): # spacyDoc=None, setBertEmbedding=False):
+    def __init__(self, docId, sentIndex, text, representationStyle, doNotInitRepresentation=False, spacy_rep=None): # spacyDoc=None, setBertEmbedding=False):
         self.docId = docId
         self.sentIndex = sentIndex
         self.sentId = '{}::{}'.format(docId, sentIndex)
@@ -16,6 +16,7 @@ class Sentence:
         self.representationStyle = representationStyle
 
         self.tokens = word_tokenize(text)
+        self.spacy_rep = spacy_rep
         self.lengthInWords = len(self.tokens)
         self.lengthInChars = len(self.text)
 
