@@ -46,7 +46,6 @@ var hitId = '';
 var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
-let showCoref = true;
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
 var RATING_PARAMS = {
@@ -339,8 +338,7 @@ function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
         ListItem,
         {
             "txtList": txtList,
-            "numSentToShow": 3,
-            "showCoref": showCoref
+            "numSentToShow": 3
         }
     );
 
@@ -528,8 +526,7 @@ class ListItem extends React.Component {
         super(props);
         this.state = {
             minimized: true,
-            highlightedClusters: props.fixedClusters || [],
-            showCoref: props.showCoref
+            highlightedClusters: props.fixedClusters || []
         };
     }
 
@@ -600,7 +597,6 @@ class ListItem extends React.Component {
                         {
                             "txtList": sentences,
                             "numSentToShow": 999,
-                            "showCoref": showCoref,
                             "showPopover": false,  // Don't show a popover inside a popover
                             "fixedClusters": [parseInt(clusterId)]
                         }
@@ -658,7 +654,7 @@ class ListItem extends React.Component {
                     e(
                       TokensGroup,
                       {
-                        "groups": this.state.showCoref ? txtList[i]['coref_tokens'] : txtList[i]['proposition_tokens'],
+                        "groups": txtList[i]['coref_tokens'],
                         "startHighlightCluster": this.startHighlightCluster,
                         "stopHighlightCluster": this.stopHighlightCluster,
                         "highlightedClusters": this.state.highlightedClusters,
@@ -727,8 +723,7 @@ function insertDocInPane(doc, $pane) {
         ListItem,
         {
             "txtList": doc.sentences,
-            "numSentToShow": 2,
-            "showCoref": showCoref
+            "numSentToShow": 2
         }
     );
 
@@ -1070,21 +1065,6 @@ function changeScreen(event) {
 
 }
 
-function changeGroup(event) {
-    const $targetClicked = $(event.currentTarget);
-
-    if ($targetClicked.find('input').attr('id') == "togglePropositionsButton") {
-        showCoref = false;
-    }
-
-    if ($targetClicked.find('input').attr('id') == "toggleMentionsButton") {
-        showCoref = true;
-    }
-
-    for (globalListItemCallback of globalListItemCallbacks) {
-        globalListItemCallback({"showCoref": showCoref});
-    }
-}
 
 function showDebug() {
     const $toolbarContent = $('#toolbarContent');
@@ -1107,11 +1087,6 @@ repeatQueryButton.addEventListener("click", queryRepeatOnButtonClick);
 stopExploringButton.addEventListener("click", stopExploringButtonOnClick);
 for (toolbarNavigationItem of $toolbarNavigationItems) {
     toolbarNavigationItem.addEventListener("click", changeScreen);
-}
-
-const $groupToggleButtons = $('#groups-toggle label');
-for (groupToggleButton of $groupToggleButtons) {
-    groupToggleButton.addEventListener("click", changeGroup);
 }
 
 

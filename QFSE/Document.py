@@ -29,13 +29,13 @@ class Document:
             self.sentences = []
             for sentIdx, sentSpacyObj in enumerate(self.spacyDoc.sents):
                 self.sentences.append(
-                    Sentence(self.id, sentIdx, sentSpacyObj.text, self.representationStyle, doNotInitRepresentation=True))
+                    Sentence(self.id, sentIdx, sentSpacyObj.text, self.representationStyle, doNotInitRepresentation=True, spacy_rep=sentSpacyObj))
                 self.sentences[-1].setRepresentation(sentSpacyObj.vector)
 
         # in all other cases, and as it should be for correct code, the representations are computed
         # within the Sentence object:
         else:
-            self.sentences = [Sentence(self.id, sentIdx, sentSpacyObj.text, self.representationStyle)
+            self.sentences = [Sentence(self.id, sentIdx, sentSpacyObj.text, self.representationStyle, spacy_rep=sentSpacyObj)
                               for sentIdx, sentSpacyObj in enumerate(self.spacyDoc.sents)]
 
 
