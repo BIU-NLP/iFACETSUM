@@ -252,6 +252,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         } for corpus_sent in corpus_sents]
 
     def _split_sent_text_to_tokens(self, sent: Sentence, show_coref):
+        hotfix_wrong_indices = False
         # TODO: Do this split earlier and send it also to the other services
         if show_coref:
             tokens = sent.tokens
@@ -266,42 +267,56 @@ class IntSummHandler(tornado.web.RequestHandler):
             cluster_type = COREF_TYPE_PROPOSITIONS
 
         token_to_mention = defaultdict(list)
-        for mention in clusters:
-            mention_start = mention['start']
-            mention_end = mention['end']
+        for mentions in clusters:
+            mention_start = mentions['start']
+            mention_end = mentions['end']
             if hotfix_wrong_indices:
                 mention_start -= first_token_idx
                 mention_end -= first_token_idx
             for token_idx in range(mention_start, mention_end + 1):
-                token_to_mention[token_idx].append(mention)
+                token_to_mention[token_idx].append(mentions)
 
-        def flush_open_mention(tokens_groups, open_mentions):
-            if len(open_mentions) > 0:
-                curr_tokens = open_mentions.pop()
-                tokens_groups.append({
-                    "tokens": curr_tokens['tokens'],
-                    "group_id": curr_tokens['cluster_idx'],
-                    "cluster_type": curr_tokens['cluster_type']
-                })
+        def flush_open_mentions(tokens_groups, open_mentions):
+            while any(open_mentions):
+                last_open_mention = open_mentions.pop(list(open_mentions.keys())[-1])
+                token_group = {
+                    "tokens": last_open_mention['tokens'],
+                    "group_id": last_open_mention['cluster_idx'],
+                    "cluster_type": last_open_mention['cluster_type']
+                }
+
+                # Prepend to next open mention instead
+                if any(open_mentions):
+                    penultimate_open_mention = open_mentions[list(open_mentions.keys())[-1]]
+                    penultimate_open_mention['tokens'].append(token_group)
+                else:
+                    tokens_groups.append(token_group)
 
         tokens_groups = []
-        open_mentions = []
+        open_mentions_by_ids = {}
         for token_idx, token in enumerate(tokens):
             if token_idx in token_to_mention:
-                mention = token_to_mention[token_idx]
-                while len(open_mentions) != 0 and any(curr_mention for curr_mention in mention if open_mentions[-1]['cluster_idx'] != curr_mention['cluster_idx']):
-                    flush_open_mention(tokens_groups, open_mentions)
+                mentions = token_to_mention[token_idx]
+                any_open_mention_included = False
+                if any(open_mentions_by_ids):
+                    some_open_mention = list(open_mentions_by_ids.values())[-1]
+                    any_open_mention_included = any(curr_mention for curr_mention in mentions if some_open_mention['cluster_idx'] == curr_mention['cluster_idx'])
+                if not any_open_mention_included:
+                    flush_open_mentions(tokens_groups, open_mentions_by_ids)
 
-                if len(open_mentions) == 0:
-                    open_mentions.append({"tokens": [], "cluster_idx": mention[0]['cluster_idx'], "cluster_type": cluster_type })
-                open_mentions[-1]['tokens'].append([token])
+                for mention in mentions:
+                    cluster_idx = mention['cluster_idx']
+                    if not any(open_mentions_by_ids) or cluster_idx not in open_mentions_by_ids:
+                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": cluster_idx, "cluster_type": cluster_type}
+                    last_open_mention = list(open_mentions_by_ids.values())[-1]
+                    if cluster_idx == last_open_mention['cluster_idx']:
+                        last_open_mention['tokens'].append([token])
             else:
-                while len(open_mentions) != 0:
-                    flush_open_mention(tokens_groups, open_mentions)
+                flush_open_mentions(tokens_groups, open_mentions_by_ids)
                 tokens_groups.append([token])
 
-        while len(open_mentions) != 0:
-            flush_open_mention(tokens_groups, open_mentions)
+        while any(open_mentions_by_ids):
+            flush_open_mentions(tokens_groups, open_mentions_by_ids)
 
         return tokens_groups
 
