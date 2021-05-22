@@ -1,9 +1,10 @@
-from QFSE.Utilities import nlp, bert_embedder, get_item
+from QFSE.Utilities import bert_embedder, get_item
 from QFSE.Utilities import REPRESENTATION_STYLE_W2V, REPRESENTATION_STYLE_BERT, REPRESENTATION_STYLE_SPACY
 from QFSE.Utilities import STOP_WORDS, PUNCTUATION, TRANSITION_WORDS
 import sklearn
 from nltk.tokenize import word_tokenize
 import numpy as np
+
 
 class Sentence:
 
@@ -31,10 +32,12 @@ class Sentence:
 
     def __initRepresentation(self):
         nlp = get_item("spacy")
+        text = self.text
+        text = "".join([x.text_with_ws for x in nlp(text) if x.text not in STOP_WORDS and x.text.lower() not in PUNCTUATION])
         if self.representationStyle == REPRESENTATION_STYLE_SPACY:
-            self.representation = nlp(self.text).vector  # a spacy doc object
+            self.representation = nlp(text).vector  # a spacy doc object
         elif self.representationStyle == REPRESENTATION_STYLE_BERT:
-            self.representation = bert_embedder.encode([self.text])[0]  # a numpy vector
+            self.representation = bert_embedder.encode([text])[0]  # a numpy vector
         elif self.representationStyle == REPRESENTATION_STYLE_W2V:  # default for now is W2V
             wordVectors = [nlp.vocab.get_vector(w) for w in self.tokens if
                                            w not in STOP_WORDS and w not in PUNCTUATION and nlp.vocab.has_vector(w)]

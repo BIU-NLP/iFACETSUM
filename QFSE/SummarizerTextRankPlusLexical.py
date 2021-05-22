@@ -5,7 +5,7 @@ from nltk.stem.porter import *
 from functools import reduce
 from nltk.tokenize import word_tokenize
 from QFSE.SummarizerBase import SummarizerBase
-from QFSE.Utilities import isPotentialSentence
+from QFSE.Utilities import isPotentialSentence, get_item
 from QFSE.Utilities import nlp
 
 QUERY_DOC_ALIAS = '_QUERY_'
@@ -21,6 +21,7 @@ class SummarizerTextRankPlusLexical(SummarizerBase):
         self.summarySpacyObject = self._initSummarySpacyObject()
 
     def _initSummarySpacyObject(self):
+        nlp = get_item("spacy")
         # get the top summary sentences per document (to cut time significantly for the full corpus processing):
         perDocSummTexts = []
         for docIdx, doc in enumerate(self.corpus.documents):
@@ -74,7 +75,7 @@ class SummarizerTextRankPlusLexical(SummarizerBase):
 
         numSentencesTaken = 0
         for sentIndex, spacySent in enumerate(
-                self.summarySpacyObject._.textrank.summary(limit_phrases=20, limit_sentences=numSentenceToGet)):
+                self.summarySpacyObject._.textrank.summary(limit_phrases=20, limit_sentences=int(numSentenceToGet))):
 
             # skip forward to the next sentence to check
             if sentIndex <= self.lastSentenceIndexFromGeneric:

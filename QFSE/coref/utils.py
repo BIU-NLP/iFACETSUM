@@ -52,7 +52,7 @@ def get_coref_clusters(formatted_topics, corpus):
         for mention in mentions:
             token_counter[mention.token] += 1
         most_representative_mention = token_counter.most_common()[0][0]
-        clusters_objs[cluster_id] = Cluster(cluster_id, mentions, cluster_label, most_representative_mention)
+        clusters_objs[cluster_id] = Cluster(cluster_id, COREF_TYPE_EVENTS, mentions, cluster_label, most_representative_mention)
 
     coref_clusters = CorefClusters(documents, clusters_objs)
     coref_clusters_dict = coref_clusters.to_dict()
