@@ -205,7 +205,8 @@ class IntSummHandler(tornado.web.RequestHandler):
         for x in summary.summary_sents:
             formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
             x.sent = formatted_sent
-        keyPhraseList = suggestedQueriesGenerator.getSuggestionsFromToIndices(0, NUM_SUGG_QUERIES_PRESENTED[summaryAlgorithm] - 1)
+        keyPhraseList = [{"text": text} for text in suggestedQueriesGenerator.getSuggestionsFromToIndices(0, NUM_SUGG_QUERIES_PRESENTED[summaryAlgorithm] - 1)]
+        keyPhraseList.extend(self._get_mention_labels_keyphrases(corpus.coref_clusters))
         topicName = topicId
 
         questionnaireList = {{"id": qId,"str": qStr} for qId, qStr in m_infoManager.getQuestionnaire(clientId).items()}
@@ -220,7 +221,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 "topicName": topicName,
                 "topicId": topicId,
                 "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences)} for x in corpus.documents},
-                "corefClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": mentions[0]['token']} for cluster_idx, mentions in corpus.coref_clusters.items()},
+                "corefClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": cluster['mentions'][0]['token']} for cluster_idx, cluster in corpus.coref_clusters.items()},
                 "propositionClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": mentions[0]['token']} for cluster_idx, mentions in corpus.proposition_clusters.items()},
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": list(questionnaireList),
@@ -229,6 +230,11 @@ class IntSummHandler(tornado.web.RequestHandler):
             }
         }
         return json.dumps(reply)
+
+    def _get_mention_labels_keyphrases(self, clusters):
+        most_mentioned_clusters = sorted(clusters.values(), key=lambda cluster: len(cluster['mentions']), reverse=True)
+        return [{"label": cluster['cluster_label'], "text": cluster['most_representative_mention']} for cluster in most_mentioned_clusters[:25]]
+
 
     def _summary_sents_to_corpus_sents(self, corpus, summary: Summary) -> List[Sentence]:
         sentences_used = []
@@ -400,7 +406,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         if coref_cluster_type == COREF_TYPE_PROPOSITIONS:
             clusters = corpus.proposition_clusters
         else:
-            clusters = corpus.coref_clusters
+            clusters = {cluster_id: cluster['mentions'] for cluster_id, cluster in corpus.coref_clusters.items()}
         found_clusters = [mentions for key, mentions in clusters.items() if key == coref_cluster_id]
         if any(found_clusters):
             mentions = found_clusters[0]
