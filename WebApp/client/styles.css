@@ -820,7 +820,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 .highlight-hover {
-    border: 1px dashed red;
+    border: 1px dashed;
     position: relative;
     line-height: 22px;
     display: flex;

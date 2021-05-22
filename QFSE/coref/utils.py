@@ -2,14 +2,15 @@ import json
 import logging
 import os
 import re
-from collections import defaultdict
+from collections import defaultdict, Counter
 from typing import List, Dict, Tuple
 
 from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS
 from QFSE.coref.coref_expr import get_clusters
+from QFSE.coref.coref_labels import extract_labels
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
-from QFSE.models import CorefClusters
+from QFSE.models import CorefClusters, Cluster
 
 
 def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
@@ -41,7 +42,19 @@ def get_coref_clusters(formatted_topics, corpus):
 
     # TODO: Call external coref API with `formatted_topics`
 
-    coref_clusters = CorefClusters(*get_clusters(data))
+    documents, clusters = get_clusters(data)
+
+    cluster_to_label = extract_labels(clusters)
+    clusters_objs = {}
+    for cluster_id, mentions in clusters.items():
+        cluster_label = cluster_to_label.get(cluster_id, None)
+        token_counter = Counter()
+        for mention in mentions:
+            token_counter[mention.token] += 1
+        most_representative_mention = token_counter.most_common()[0][0]
+        clusters_objs[cluster_id] = Cluster(cluster_id, mentions, cluster_label, most_representative_mention)
+
+    coref_clusters = CorefClusters(documents, clusters_objs)
     coref_clusters_dict = coref_clusters.to_dict()
     doc_names_to_clusters = coref_clusters_dict['doc_name_to_clusters']
     for document in corpus.documents:
