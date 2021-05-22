@@ -154,11 +154,20 @@ function queryInputLength(){
 function createKeywordListElement(keyPhrasesList) {
     // add the keyphrases
     for (var i = 0; i < keyPhrasesList.length; i++) {
+        const keyPhrase = keyPhrasesList[i];
+
         // create the keyphrase list item and add it to the keywordList div:
         var liId = "li_keyword_"+i
         var li = document.createElement("li");
         li.setAttribute("id", liId);
-        li.appendChild(document.createTextNode(keyPhrasesList[i]));
+        let text = keyPhrase['text'];
+        if ('label' in keyPhrase && keyPhrase['label'] !== null) {
+            text = `${keyPhrase['label']}: ${text}`
+        }
+        const childElement = document.createElement("span");
+        childElement.innerText = text;
+        childElement.setAttribute('data-keyphrase-text', keyPhrase['text']);
+        li.appendChild(childElement);
         li.classList.add("keywordItem");
         keywordList.appendChild(li);
 
@@ -168,7 +177,8 @@ function createKeywordListElement(keyPhrasesList) {
             //if (!isWaitingForResponse && !keywordLi.classList.contains("keywordUsed")) {
 
             if (canSendRequest()) {
-                var text = keywordLi.innerText;
+                $innerSpan = $(keywordLi).find('[data-keyphrase-text]');
+                let text = $innerSpan.attr('data-keyphrase-text');
                 if (text != "") {
                     text = text.trim();
                 }
