@@ -334,9 +334,9 @@ class IntSummHandler(tornado.web.RequestHandler):
     def getQuerySummaryJson(self, clientJson):
         clientId = clientJson['clientId']
         topicId = clientJson['request_query']['topicId']
-        cluster_id = clientJson['request_query']['cluster_id']
+        cluster_id = clientJson['request_query']['cluster_id'] if 'cluster_id' in clientJson['request_query'] else None
         cluster_id = int(cluster_id) if cluster_id else cluster_id
-        cluster_type = clientJson['request_query']['cluster_type']
+        cluster_type = clientJson['request_query']['cluster_type'] if 'cluster_type' in clientJson['request_query'] else None
         query = clientJson['request_query']['query']
         numSentences = clientJson['request_query']['summarySentenceCount']
         queryType = clientJson['request_query']['type']

@@ -5,6 +5,8 @@ import re
 from collections import defaultdict, Counter
 from typing import List, Dict, Tuple
 
+from nltk import word_tokenize, sent_tokenize
+
 from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS
 from QFSE.coref.coref_expr import get_clusters
@@ -18,6 +20,14 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
     for doc in corpus.documents:
         token_idx = 1
         sentences_formatted = []
+
+        # # NLTK tokenizer
+        # for sent_idx, sentence in enumerate(sent_tokenize(doc.text)):
+        # # sentence.first_token_idx = token_idx - 1
+        # for token in word_tokenize(sentence):
+        #     sentences_formatted.append([sent_idx, token_idx, token, True])
+        #     token_idx += 1
+
         for sentence in doc.sentences:
             sentence.first_token_idx = token_idx - 1
             for token in sentence.tokens:
