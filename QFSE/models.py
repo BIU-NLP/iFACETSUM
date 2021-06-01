@@ -26,6 +26,7 @@ class Summary:
 @dataclass
 class Cluster:
     cluster_id: int
+    cluster_type: str
     mentions: List[Mention]
     cluster_label: str
     most_representative_mention: str

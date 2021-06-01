@@ -28,9 +28,11 @@ class Document:
             # vector representation per sentence:
             self.sentences = []
             for sentIdx, sentSpacyObj in enumerate(self.spacyDoc.sents):
+                doNotInitRepresentation = True
                 self.sentences.append(
-                    Sentence(self.id, sentIdx, sentSpacyObj.text, self.representationStyle, doNotInitRepresentation=True, spacy_rep=sentSpacyObj))
-                self.sentences[-1].setRepresentation(sentSpacyObj.vector)
+                    Sentence(self.id, sentIdx, sentSpacyObj.text, self.representationStyle, doNotInitRepresentation=doNotInitRepresentation, spacy_rep=sentSpacyObj))
+                if doNotInitRepresentation:
+                    self.sentences[-1].setRepresentation(sentSpacyObj.vector)
 
         # in all other cases, and as it should be for correct code, the representations are computed
         # within the Sentence object:
