@@ -34,7 +34,7 @@ var pageBaseUrl = "qfse.html";
 var summaryType = "qfse";
 var timeAllowed = -1;
 var lastQueryType = '';
-var lastQueryStr = '';
+var lastQuery = null;
 var iterationNum = 0; // keeps track of how many iterations there are (0 is the initial summary)
 var iterationStarRatingType = 0; // 0=none , 1=rating , 2=newInfo
 var lastIterationRated = false; // each iteration's summary must be rated before continuing to the next iteration
@@ -161,12 +161,22 @@ function createKeywordListElement(keyPhrasesList) {
         var li = document.createElement("li");
         li.setAttribute("id", liId);
         let text = keyPhrase['text'];
-        if ('label' in keyPhrase && keyPhrase['label'] !== null) {
-            text = `${keyPhrase['label']}: ${text}`
-        }
+
         const childElement = document.createElement("span");
+
+        if ('label' in keyPhrase) {
+            const mentionMarker = "*";
+            if (keyPhrase['label'] !== null) {
+                text = `${mentionMarker} ${keyPhrase['label']}: ${text}`;
+            } else {
+                text = `${mentionMarker} ${text}`;
+            }
+            childElement.setAttribute('data-keyphrase-cluster-id', keyPhrase['cluster_id']);
+            childElement.setAttribute('data-keyphrase-cluster-type', keyPhrase['cluster_type']);
+        }
+        childElement.setAttribute('data-keyphrase-text', text);
+        childElement.setAttribute('data-keyphrase', text);
         childElement.innerText = text;
-        childElement.setAttribute('data-keyphrase-text', keyPhrase['text']);
         li.appendChild(childElement);
         li.classList.add("keywordItem");
         keywordList.appendChild(li);
@@ -177,14 +187,20 @@ function createKeywordListElement(keyPhrasesList) {
             //if (!isWaitingForResponse && !keywordLi.classList.contains("keywordUsed")) {
 
             if (canSendRequest()) {
-                $innerSpan = $(keywordLi).find('[data-keyphrase-text]');
+                $innerSpan = $(keywordLi).find('[data-keyphrase]');
+                let clusterId = null;
+                let clusterType = null;
                 let text = $innerSpan.attr('data-keyphrase-text');
+                if ($innerSpan.attr('data-keyphrase-cluster-id')) {
+                    clusterId = $innerSpan.attr('data-keyphrase-cluster-id')
+                    clusterType = $innerSpan.attr('data-keyphrase-cluster-type')
+                }
                 if (text != "") {
                     text = text.trim();
                 }
                 keywordLi.classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                query(text);
+                query(text, clusterId, clusterType);
                 queryInputBox.focus();
             }
         }
@@ -902,8 +918,7 @@ function showQuestionnaire() {
 //}
 
 /* Handle a query string. */
-function query(queryStr) {
-
+function query(queryStr, clusterId, clusterType) {
     // create the query list item in the exploration pane:
     insertQueryItemInExplorationPane(queryStr, exploreList);
 
@@ -920,11 +935,11 @@ function query(queryStr) {
 
     // if the new query is not a "more info" query, then keep remember it:
     if (queryStr != '') {
-        lastQueryStr = queryStr;
+        lastQuery = [queryStr, clusterId, clusterType];
     }
 
     // get query response info from the server:
-    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
+    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "cluster_id": clusterId, "cluster_type": clusterType, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
     // the response will be sent to function setQueryResponse asynchronously
 }
 
@@ -1008,13 +1023,13 @@ function queryOnKeyUp(event) {
 }
 
 function queryRepeatOnButtonClick() {
-    if (lastQueryStr == '') {
+    if (lastQuery == null) {
         alert("No query to repeat.")
     }
     // if a query was run before, rerun it:
     else if (canSendRequest()) {
         lastQueryType = 'repeat';
-        query(lastQueryStr); // run the last query
+        query(...lastQuery); // run the last query
     }
 }
 
