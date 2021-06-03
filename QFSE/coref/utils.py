@@ -47,12 +47,17 @@ def get_coref_clusters(formatted_topics, corpus):
 
     # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
     #     data = f.read()
-    with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
-        data = json.load(json_file)
+    # with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
+    #     data = f.read()
+    with open(f"{path_to_dir}/data/coref/duc_entities.conll") as f:
+        data = f.read()
+    # with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
+    #     data = json.load(json_file)
 
     # TODO: Call external coref API with `formatted_topics`
 
-    documents, clusters = get_clusters(data)
+    documents, clusters = parse_conll_coref_file(data)
+    # documents, clusters = get_clusters(data)
 
     cluster_to_label = extract_labels(clusters)
     clusters_objs = {}
@@ -74,7 +79,10 @@ def get_coref_clusters(formatted_topics, corpus):
             # for coref_cluster in document_coref_clusters.values():
             #     for mention in coref_cluster:
             #           document.sentences[mention['sent_idx']].coref_clusters.append(mention)
-            for mention in document_coref_clusters:
+            mentions = document_coref_clusters
+            if isinstance(document_coref_clusters, dict):
+                mentions = [mention for coref_cluster in document_coref_clusters.values() for mention in coref_cluster]
+            for mention in mentions:
                 document.sentences[mention['sent_idx']].coref_clusters.append(mention)
 
     corpus.coref_clusters = coref_clusters_dict['cluster_idx_to_mentions']
@@ -191,22 +199,28 @@ def parse_lines(lines):
             mentions = parsed.setdefault(curr_doc_name, defaultdict(list))
             for cluster in parsed_line.clusters:
                 if cluster.partial_cluster_type == PartialClusterType.BEGIN_AND_END:
-                    mentions_list = mentions[cluster.cluster_idx]
-                    mention = Mention(curr_doc_name, curr_sent_idx, curr_token_idx_per_sent, curr_token_idx_per_sent, parsed_line.token, cluster.cluster_idx, COREF_TYPE_EVENTS)
-                    mentions_list.append(mention)
-                    all_clusters[cluster.cluster_idx].append(mention)
+                    # Bug - skip clusters encapsulating the same cluster (13|(13...13)..13)
+                    if cluster.cluster_idx not in open_clusters:
+                        mentions_list = mentions[cluster.cluster_idx]
+                        mention = Mention(curr_doc_name, curr_sent_idx, curr_token_idx_per_sent, curr_token_idx_per_sent, parsed_line.token, cluster.cluster_idx, COREF_TYPE_EVENTS)
+                        mentions_list.append(mention)
+                        all_clusters[cluster.cluster_idx].append(mention)
                 elif cluster.partial_cluster_type == PartialClusterType.BEGIN:
-                    open_clusters[cluster.cluster_idx].append(parsed_line)
+                    # Bug - skip clusters encapsulating the same cluster (13|(13...13)..13)
+                    if cluster.cluster_idx not in open_clusters:
+                        open_clusters[cluster.cluster_idx].append(parsed_line)
                 elif cluster.partial_cluster_type == PartialClusterType.END:
-                    open_cluster = open_clusters.pop(cluster.cluster_idx)
-                    open_cluster.append(parsed_line)
+                    # Bug - can happen because we skip clusters encapsulating the same cluster (13|(13...13)..13)
+                    if cluster.cluster_idx in open_clusters:
+                        open_cluster = open_clusters.pop(cluster.cluster_idx)
+                        open_cluster.append(parsed_line)
 
-                    token_str = " ".join([line.token for line in open_cluster])
+                        token_str = " ".join([line.token for line in open_cluster])
 
-                    mentions_list = mentions[cluster.cluster_idx]
-                    mention = Mention(curr_doc_name, curr_sent_idx, get_fixed_token_idx(open_cluster[0].token_idx, tokens_in_doc_before_curr_sent), curr_token_idx_per_sent, token_str, cluster.cluster_idx, COREF_TYPE_EVENTS)
-                    mentions_list.append(mention)
-                    all_clusters[cluster.cluster_idx].append(mention)
+                        mentions_list = mentions[cluster.cluster_idx]
+                        mention = Mention(curr_doc_name, curr_sent_idx, get_fixed_token_idx(open_cluster[0].token_idx, tokens_in_doc_before_curr_sent), curr_token_idx_per_sent, token_str, cluster.cluster_idx, COREF_TYPE_EVENTS)
+                        mentions_list.append(mention)
+                        all_clusters[cluster.cluster_idx].append(mention)
 
             # If there are open clusters, all the entities in between are part of it
             for open_cluster in open_clusters.values():
