@@ -33,7 +33,9 @@ def parse_line(line):
 def get_sentences_by_doc_id(doc_id, corpus):
     found_docs = [doc for doc in corpus.documents if doc_id in doc.id]
     if len(found_docs) != 1:
-        raise ValueError("# of found docs is different than 1")
+        # raise ValueError("# of found docs is different than 1")
+        logging.error("parsing proposition error: # of found docs is different than 1")
+        return None
 
     doc = found_docs[0]
 
@@ -119,11 +121,12 @@ def parse_lines(df, corpus):
         # sent_end = span_offsets[-1][-1]
 
         sentences = get_sentences_by_doc_id(doc_file, corpus)
-        sent_idx, span_start_idx, span_end_idx = find_indices_by_char_idx(sentences, sent_text, span_text)
+        if sentences:
+            sent_idx, span_start_idx, span_end_idx = find_indices_by_char_idx(sentences, sent_text, span_text)
 
-        if sent_idx is None:
-            return None
-        return Mention(doc_file, sent_idx, span_start_idx, span_end_idx, span_text, cluster_idx, COREF_TYPE_PROPOSITIONS)
+            if sent_idx is None:
+                return None
+            return Mention(doc_file, sent_idx, span_start_idx, span_end_idx, span_text, cluster_idx, COREF_TYPE_PROPOSITIONS)
 
     def dedup_seq_keep_order(seq):
         seen = set()

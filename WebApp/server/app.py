@@ -221,7 +221,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                 "topicName": topicName,
                 "topicId": topicId,
                 "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences)} for x in corpus.documents},
-                "corefClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": cluster['mentions'][0]['token']} for cluster_idx, cluster in corpus.coref_clusters.items()},
+                "corefClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": cluster['most_representative_mention'], "cluster_label": cluster['cluster_label'], "cluster_type": cluster['cluster_type'], "num_mentions": len(cluster['mentions'])} for cluster_idx, cluster in corpus.coref_clusters.items()},
                 "propositionClustersMetas": {cluster_idx: {"cluster_idx": cluster_idx, "display_name": mentions[0]['token']} for cluster_idx, mentions in corpus.proposition_clusters.items()},
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": list(questionnaireList),
@@ -233,7 +233,7 @@ class IntSummHandler(tornado.web.RequestHandler):
 
     def _get_mention_labels_keyphrases(self, clusters):
         most_mentioned_clusters = sorted(clusters.values(), key=lambda cluster: len(cluster['mentions']), reverse=True)
-        return [{"label": cluster['cluster_label'], "text": cluster['most_representative_mention'], "cluster_id": cluster['cluster_id'], "cluster_type": cluster['cluster_type']} for cluster in most_mentioned_clusters[:25]]
+        return [{"label": cluster['cluster_label'], "text": cluster['most_representative_mention'], "cluster_id": cluster['cluster_id'], "cluster_type": cluster['cluster_type']} for cluster in most_mentioned_clusters[:50]]
 
 
     def _summary_sents_to_corpus_sents(self, corpus, summary: Summary) -> List[Sentence]:
@@ -348,21 +348,42 @@ class IntSummHandler(tornado.web.RequestHandler):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
         corpus = m_infoManager.getSummarizer(clientId).corpus
+        sentences = None
         if cluster_id:
             mentions = self._get_clusters(corpus, cluster_id, cluster_type)
             query = self._build_query_by_cluster(mentions)
-        summary = m_infoManager.getSummarizer(clientId).summarizeByQuery(query, numSentences, queryType)
-        for x in summary.summary_sents:
-            formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
-            x.sent = formatted_sent
+            sentences = self._get_sentences_for_query(mentions, corpus)
 
-        corpus_sents = self._summary_sents_to_corpus_sents(corpus, summary)
-        response_sents = self._corpus_sents_to_response_sents(corpus_sents)
+        abstractive_summary = True
+        if not abstractive_summary:
+            summary = m_infoManager.getSummarizer(clientId).summarizeByQuery(query, numSentences, queryType, sentences)
+            for x in summary.summary_sents:
+                formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
+                x.sent = formatted_sent
+
+            corpus_sents = self._summary_sents_to_corpus_sents(corpus, summary)
+            response_sents = self._corpus_sents_to_response_sents(corpus_sents)
+            length_in_words = summary.length_in_words
+        else:
+            model, tokenizer = get_item("abstract_summarizer")
+            inputs = tokenizer([". ".join([sent.text for sent in sentences])], return_tensors="pt")
+
+            # Generate Summary
+            summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
+            summary_sents = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
+
+            corpus_sents = []
+            for summary_sent in summary_sents:
+                sent = Sentence(None, None, summary_sent, None)
+                sent.first_token_idx = 0
+                corpus_sents.append(sent)
+            response_sents = self._corpus_sents_to_response_sents(corpus_sents)
+            length_in_words = 0
 
         reply = {
             "reply_query": {
                 "summary": response_sents,
-                "textLength": summary.length_in_words
+                "textLength": length_in_words
             }
         }
 
@@ -370,6 +391,16 @@ class IntSummHandler(tornado.web.RequestHandler):
 
     def _build_query_by_cluster(self, mentions):
         return " ; ".join(set([mention['token'] for mention in mentions]))
+
+    def _get_sentences_for_query(self, mentions, corpus):
+        sentences = []
+        for mention in mentions:
+            for document in corpus.documents:
+                if document.id == mention['doc_id']:
+                    sentences.append(document.sentences[mention['sent_idx']])
+                    break
+
+        return sentences
 
     def get_document(self, client_json):
         client_id = client_json['clientId']

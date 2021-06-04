@@ -108,7 +108,7 @@ class SummarizerTextRankPlusLexical(SummarizerBase):
 
         return finalSummaryTxtList, finalSummaryIds, numWordsInSummary
 
-    def _getQuerySummaryText(self, query, numSentencesNeeded):
+    def _getQuerySummaryText(self, query, numSentencesNeeded, sentences):
         # The algorithm here is:
         #   stem the query
         #   Get the ROUGE similarity of the query to each of the potential sentences in the corpus
@@ -124,7 +124,7 @@ class SummarizerTextRankPlusLexical(SummarizerBase):
             return finalSummaryTxtList, finalSummaryIds, numWordsInSummary
 
         # get similarity scores to the rest of the available sentences:
-        scoreBySentIdSorted = self._getSimilarityScores(query)
+        scoreBySentIdSorted = self._getSimilarityScores(query, sentences)
 
         # append sentences for the response to the query:
         responseSentences = []
@@ -146,13 +146,15 @@ class SummarizerTextRankPlusLexical(SummarizerBase):
 
         return responseSentenceTexts, responseSentenceIds, summaryLength
 
-    def _getSimilarityScores(self, query):
+    def _getSimilarityScores(self, query, sentences):
         # gets the similarity scores between the given query and all the relevant available sentences
         # input: query (text string)
         # output: list of tuples (sentId, score) sorted by high to low score
 
         # get the sentences for which to get similarities (non used potential sentences):
-        sentencesToCompareTo = [s for s in self.allSentencesForPotentialSummaries if s.sentId not in self.usedSentences]
+        # sentences_to_use = sentences
+        sentences_to_use = self.allSentencesForPotentialSummaries
+        sentencesToCompareTo = [s for s in sentences_to_use if s.sentId not in self.usedSentences]
         # get different similarity scores:
         lexicalScores = self._getLexicalSimilarityScores(query, sentencesToCompareTo)
         semanticScores = self._getSemanticSimilarityScores(query, sentencesToCompareTo)

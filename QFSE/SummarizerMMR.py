@@ -303,7 +303,7 @@ class SummarizerMMR(SummarizerBase):
         #return (numSignificantWords / sentLen) * log(sentLen)
 
 
-    def _getQuerySummaryText(self, query, numSentencesNeeded):
+    def _getQuerySummaryText(self, query, numSentencesNeeded, sentences):
         # The algorithm here is:
         #   Spacy-vectorize the query
         #   Get the similarity of the query to each of the potential sentences in the corpus

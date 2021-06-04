@@ -53,8 +53,8 @@ class SummarizerBase:
         # this should be overridden by the inheriting classes
         return '', [], 0
 
-    def summarizeByQuery(self, query, numSentencesNeeded, queryType) -> Summary:
-        summaryTextList, summarySentenceIdsList, summaryLengthInWords = self._getQuerySummaryText(query, numSentencesNeeded)
+    def summarizeByQuery(self, query, numSentencesNeeded, queryType, sentences=None) -> Summary:
+        summaryTextList, summarySentenceIdsList, summaryLengthInWords = self._getQuerySummaryText(query, numSentencesNeeded, sentences)
         #if len(summarySentenceIdsList) > 0:
         # even if the summary is empty, keep it (otherwise there is a sync bug between the iteration and the summaries):
         self.summaries.append(summarySentenceIdsList)
@@ -70,7 +70,7 @@ class SummarizerBase:
         summary_sents = [SummarySent(sent_id_to_doc_id(sent_id), sent_id, sent_id_to_sent_idx(sent_id), sent) for (sent_id, sent) in zip(summarySentenceIdsList, summaryTextList)]
         return Summary(summary_sents, summaryLengthInWords)
 
-    def _getQuerySummaryText(self, query, numSentencesNeeded):
+    def _getQuerySummaryText(self, query, numSentencesNeeded, sentences):
         # this should be overridden by the inheriting classes
         return '', [], 0
 

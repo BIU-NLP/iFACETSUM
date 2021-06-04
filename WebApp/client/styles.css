@@ -80,13 +80,6 @@ p {
     background-color: #76CFE0;
 }
 
-#keywordsList {
-    overflow-y: auto;
-    height: 350px;
-    /*padding-top: 20;*/
-    /*padding-right: 10;*/
-}
-
 ul {
 	text-align: left;
 	margin-top: 20px;
@@ -871,4 +864,28 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     max-width: 500px;
     overflow-y: auto;
     white-space:pre-wrap;
+}
+
+#keywordsList {
+    display: none;
+}
+
+#clustersIdsListContainer .list-group-item {
+    padding: 0;
+}
+
+#keywordsList {
+    overflow-y: auto;
+    height: 350px;
+    /*padding-top: 20;*/
+    /*padding-right: 10;*/
+}
+
+#clustersIdsListContainer {
+    overflow-y: auto;
+    height: 500px;
+}
+
+.cluster-list-item {
+    cursor: pointer;
 }

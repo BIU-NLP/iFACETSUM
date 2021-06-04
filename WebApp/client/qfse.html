@@ -140,7 +140,7 @@
                     <div id="highlightTipMessage" class="hidden" style="margin-top: 15px; float: left; border: 1px solid #025f70; padding: 3px; border-radius: 3px; font-size: small; cursor: default; text-shadow: 0 0 5px #f9c837;">
                         Tip: Highlight text to query
                     </div>
-                    <button id="repeatQueryButton" class="queryButton" style="margin-top:10px; float: right; height: 34px; padding: 5;">
+                    <button id="repeatQueryButton" class="queryButton" style="margin-top:10px; float: right; height: 34px; padding: 5; display: none;">
                         <div class="myTooltip">
                             <i class="fas fa-redo-alt"></i>
                             <i class="fas fa-plus"></i>
@@ -167,7 +167,7 @@
         <div id="rightSide" class="col-3">
             <div id="queryArea" class="centeredForRight">
                 <!-- Search box -->
-                <div class="queryBox col-12">
+                <div class="queryBox col-12" style="display: none;">
                     <input id="userInput" class="queryBox" type="search" placeholder="Enter a query...">
                     <button id="enterQueryButton" class="queryButton">
                         <div class="myTooltip">
@@ -181,11 +181,14 @@
                 </div>
 
                 <div id="keywordsArea" style="display: none;">
-                    <div class="componentSubtitle">
+                    <div class="componentSubtitle" style="display: none;">
                         Suggested Queries:
                     </div>
-                    <!-- place holder for list of keywords -->
+                    <!--place holder for list of keywords-->
                     <div id="keywordsList">
+                    </div>
+                    <div id="clustersIdsListContainer">
+
                     </div>
                 </div>
             </div>

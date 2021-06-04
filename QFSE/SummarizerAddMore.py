@@ -7,7 +7,7 @@ class SummarizerAddMore(SummarizerClustering):
     def __init__(self, corpus, evaluateOnTheFly=False):
         super().__init__(corpus, evaluateOnTheFly=evaluateOnTheFly)
 
-    def _getQuerySummaryText(self, query, numSentencesNeeded):
+    def _getQuerySummaryText(self, query, numSentencesNeeded, sentences):
         # the query is ignored, as we simply add the next best sentence each time.
 
         if self._noMoreSentences():
