@@ -47,10 +47,10 @@ def get_coref_clusters(formatted_topics, corpus):
 
     # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
     #     data = f.read()
-    # with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
-    #     data = f.read()
-    with open(f"{path_to_dir}/data/coref/duc_entities.conll") as f:
+    with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
         data = f.read()
+    # with open(f"{path_to_dir}/data/coref/duc_entities.conll") as f:
+    #     data = f.read()
     # with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
     #     data = json.load(json_file)
 
