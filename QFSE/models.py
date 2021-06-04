@@ -25,7 +25,7 @@ class Summary:
 @dataclass_json
 @dataclass
 class Cluster:
-    cluster_id: int
+    cluster_id: str
     cluster_type: str
     mentions: List[Mention]
     cluster_label: str

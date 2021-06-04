@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from QFSE.Sentence import Sentence
 from QFSE.Utilities import REPRESENTATION_STYLE_SPACY, get_item
 from QFSE.Utilities import nlp
@@ -12,7 +14,7 @@ class Document:
         self.text = text
         self.representationStyle = representationStyle
         self.spacyDoc = None
-        self.coref_clusters = []
+        self.coref_clusters = defaultdict(dict)
         self._initDoc()
 
     def _initDoc(self):

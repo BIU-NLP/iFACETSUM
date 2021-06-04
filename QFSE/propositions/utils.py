@@ -173,11 +173,11 @@ def get_proposition_clusters(formatted_topics, corpus):
         doc_id = document.id.split("_")[1]
         if doc_id in doc_names_to_clusters:
             document_proposition_clusters = doc_names_to_clusters[doc_id]
-            document.proposition_clusters = document_proposition_clusters
+            document.coref_clusters[COREF_TYPE_PROPOSITIONS] = document_proposition_clusters
             for mention in document_proposition_clusters:
-                document.sentences[mention['sent_idx']].proposition_clusters.append(mention)
+                document.sentences[mention['sent_idx']].coref_clusters[PropositionClusters].append(mention)
 
-    corpus.proposition_clusters = propositions_clusters_dict['cluster_idx_to_mentions']
+    corpus.coref_clusters[COREF_TYPE_PROPOSITIONS] = propositions_clusters_dict['cluster_idx_to_mentions']
 
     return propositions_clusters
 

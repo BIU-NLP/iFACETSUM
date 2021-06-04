@@ -4,7 +4,7 @@ from QFSE.consts import COREF_TYPE_EVENTS
 from QFSE.coref.models import Mention
 
 
-def get_clusters(data) -> Tuple[Dict[str, List[Mention]], Dict[int, List[Mention]]]:
+def get_clusters(data, cluster_type) -> Tuple[Dict[str, List[Mention]], Dict[int, List[Mention]]]:
     clusters = dict()
     for ment in data:
         doc_id = ment['doc_id'][ment['doc_id'].index("_")+1:]
@@ -12,7 +12,7 @@ def get_clusters(data) -> Tuple[Dict[str, List[Mention]], Dict[int, List[Mention
         tok_star = int(ment['tokens_number'][0])
         tok_end = int(ment['tokens_number'][-1])
         ment_obj = Mention(doc_id, int(ment['sent_id']), tok_star, tok_end,
-                           ment['tokens_str'], cluster_id, COREF_TYPE_EVENTS)
+                           ment['tokens_str'], cluster_id, cluster_type)
 
         if cluster_id not in clusters:
             clusters[cluster_id] = list()

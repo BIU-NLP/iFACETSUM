@@ -1,7 +1,7 @@
 import os
 import csv
 from QFSE.Document import Document
-from collections import Counter
+from collections import Counter, defaultdict
 from nltk import bigrams
 from nltk import trigrams
 from QFSE.Utilities import REPRESENTATION_STYLE_W2V, STOP_WORDS
@@ -53,6 +53,7 @@ class Corpus():
         # the second is a dict of dictionaries of {questionnairId -> {qId->qStr}} (for True/False answer options)
         self.questionnaireDict, self.questionnaireAnswersReported = self._loadQuestionnaire(
             questionnaireDirpath)  # dict of dictionaries of qId->qStr
+        self.coref_clusters = defaultdict(dict)
 
 
     def _loadDocuments(self):

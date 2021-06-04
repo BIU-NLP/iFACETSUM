@@ -417,7 +417,7 @@ function createMentionsListElement(corefClustersMetas) {
                 const itemId = $innerLi.attr('data-cluster-idx');
                 $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                fetchCorefCluster(itemId);
+                fetchCorefCluster(itemId, corefClusterType);
             }
         }
 
@@ -530,7 +530,7 @@ function openCorefCluster(e) {
     const corefId = $(e.target).attr('data-coref-cluster-idx');
     const text = e.target.textContent;
     $('#navigationMentionsButton').click();
-    fetchCorefCluster(corefId);
+    fetchCorefCluster(corefId, corefClusterType);
 
 }
 $(document).on('click', '.open-coref-cluster', openPropositionCluster);
@@ -1080,7 +1080,7 @@ function fetchDocument(documentId, documentName) {
         }
     });
 }
-function fetchCorefCluster(corefClusterId) {
+function fetchCorefCluster(corefClusterId, corefClusterType) {
     const corefClusterText = globalCorefClustersMetas[corefClusterId]['display_name'];
     insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
 
@@ -1093,7 +1093,7 @@ function fetchCorefCluster(corefClusterId) {
         "clientId": clientId,
         "request_coref_cluster": {
             "corefClusterId": corefClusterId,
-            "corefClusterType": "events"
+            "corefClusterType": corefClusterType
         }
     });
 }
