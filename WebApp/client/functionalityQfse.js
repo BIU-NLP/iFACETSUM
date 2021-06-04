@@ -123,6 +123,7 @@ function setTopic(topicInfo) {
         '</div>' +
         ' on';
 
+    createClustersIdsList(corefClustersMetas, propositionClustersMetas);
     createKeywordListElement(keyPhrasesList);
     createDocumentsListElement(documentsMetas);
     createMentionsListElement(corefClustersMetas);
@@ -148,6 +149,127 @@ function setTopic(topicInfo) {
 
 function queryInputLength(){
 	return queryInputBox.value.length;
+}
+
+
+class ClusterIdItem extends React.Component {
+    query = () => {
+        if (canSendRequest()) {
+            const cluster = this.props.cluster;
+            const text = cluster['display_name'];
+            const clusterId = cluster['cluster_idx'];
+            const clusterType = cluster['cluster_type'];
+
+            query(text, clusterId, clusterType);
+        }
+    }
+
+    render() {
+        const cluster = this.props.cluster;
+
+        return e(
+            "div",
+            {
+                "className": "list-group-item collapse cluster-list-item",
+                onClick: this.query
+            },
+            `${cluster['display_name']} (${cluster['num_mentions']})`
+       );
+    }
+}
+
+
+class LabelClustersItem extends React.Component {
+    render() {
+        const labelClusters = this.props.labelClusters;
+        const clusterLabel = labelClusters[0]['cluster_label'];
+
+        const clustersItems = [];
+        clustersItems.push(
+            e(
+                "div",
+                {
+                    "className": "card-header",
+                    "dataParent": `#accordion-${clusterLabel}`,
+                    "dataToggle": "collapse"
+                },
+                clusterLabel
+            )
+        );
+        for (const cluster of labelClusters) {
+            const clusterIdItemReact = e(
+                ClusterIdItem,
+                {
+                    "cluster": cluster
+                }
+            )
+
+            clustersItems.push(clusterIdItemReact)
+        }
+
+
+        return e(
+            "div",
+            {
+                "id": `accordion-${clusterLabel}`,
+                "className": "list-group-item list-group accordion card"
+            },
+            clustersItems
+       );
+    }
+}
+
+class ClustersIdsList extends React.Component {
+    render() {
+        const labelsClusters = this.props.labelsClusters;
+
+        const labelClustersItems = [];
+        for (const labelClusters of labelsClusters) {
+            const labelClustersItem = e(
+                LabelClustersItem,
+                {
+                    "labelClusters": labelClusters
+                }
+            )
+
+            labelClustersItems.push(labelClustersItem);
+        }
+
+        return e(
+            "div",
+            {
+                "className": "list-group"
+            },
+            labelClustersItems
+       );
+    }
+}
+
+function createClustersIdsList(corefClustersMetas, propositionClustersMetas) {
+
+    // Convert list of clusters to labels clusters
+    const labelsClusters = {};
+    let clusters = Object.values(corefClustersMetas);
+    clusters = clusters.sort((a,b) => b['num_mentions'] - a['num_mentions']);
+    for (const cluster of clusters) {
+        const labelClusters = labelsClusters[cluster['cluster_label']] || [];
+        labelsClusters[cluster['cluster_label']] = labelClusters;
+        labelClusters.push(cluster);
+    }
+
+   const htmlElementToRenderInto = document.createElement("div");
+
+    const reactToRender = e(
+        ClustersIdsList,
+        {
+            "labelsClusters": Object.values(labelsClusters)
+        }
+    );
+
+    ReactDOM.render(reactToRender, htmlElementToRenderInto);
+
+    const $clustersIdsListContainer = $('#clustersIdsListContainer');
+    $clustersIdsListContainer[0].appendChild(htmlElementToRenderInto); //add to exploration list
 }
 
 /* Initializes the list of keyphrases. */
