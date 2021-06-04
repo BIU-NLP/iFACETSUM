@@ -103,6 +103,7 @@ function setTopic(topicInfo) {
     globalDocumentsMetas = documentsMetas;
     const corefClustersMetas = topicInfo['corefClustersMetas'];
     globalCorefClustersMetas = topicInfo['corefClustersMetas'];
+    const eventsClustersMetas = topicInfo['eventsClustersMetas'];
     const propositionClustersMetas = topicInfo['propositionClustersMetas'];
     globalPropositionClustersMetas = topicInfo['propositionClustersMetas'];
     //var timeAllowed = topicInfo['timeAllowed'];
@@ -123,12 +124,12 @@ function setTopic(topicInfo) {
         '</div>' +
         ' on';
 
-    createClustersIdsList(corefClustersMetas, propositionClustersMetas);
+    createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
     createKeywordListElement(keyPhrasesList);
     createDocumentsListElement(documentsMetas);
     createMentionsListElement(corefClustersMetas);
     createPropositionsListElement(propositionClustersMetas);
-    insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
+//    insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
 
     // keep the text length so far:
     totalTextLength = textLength;
@@ -157,7 +158,7 @@ class ClusterIdItem extends React.Component {
         if (canSendRequest()) {
             const cluster = this.props.cluster;
             const text = cluster['display_name'];
-            const clusterId = cluster['cluster_idx'];
+            const clusterId = cluster['cluster_id'];
             const clusterType = cluster['cluster_type'];
 
             query(text, clusterId, clusterType);
@@ -245,24 +246,19 @@ class ClustersIdsList extends React.Component {
     }
 }
 
-function createClustersIdsList(corefClustersMetas, propositionClustersMetas) {
+function createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas) {
+    const corefLabelsToClusters = categorizeClustersByLabels(Object.values(corefClustersMetas), "OTHER");
+    const eventsLabelsToClusters = categorizeClustersByLabels(Object.values(eventsClustersMetas), "EVENTS");
+    const propositionLabelsToClusters = categorizeClustersByLabels(Object.values(propositionClustersMetas), "PROPOSITIONS");
 
-    // Convert list of clusters to labels clusters
-    const labelsClusters = {};
-    let clusters = Object.values(corefClustersMetas);
-    clusters = clusters.sort((a,b) => b['num_mentions'] - a['num_mentions']);
-    for (const cluster of clusters) {
-        const labelClusters = labelsClusters[cluster['cluster_label']] || [];
-        labelsClusters[cluster['cluster_label']] = labelClusters;
-        labelClusters.push(cluster);
-    }
+    const allClusters = Object.assign(propositionLabelsToClusters, eventsLabelsToClusters, corefLabelsToClusters)
 
    const htmlElementToRenderInto = document.createElement("div");
 
     const reactToRender = e(
         ClustersIdsList,
         {
-            "labelsClusters": Object.values(labelsClusters)
+            "labelsClusters": Object.values(allClusters)
         }
     );
 
@@ -270,6 +266,21 @@ function createClustersIdsList(corefClustersMetas, propositionClustersMetas) {
 
     const $clustersIdsListContainer = $('#clustersIdsListContainer');
     $clustersIdsListContainer[0].appendChild(htmlElementToRenderInto); //add to exploration list
+}
+
+function categorizeClustersByLabels(clusters, defaultLabel) {
+    // Convert list of clusters to labels clusters
+    const labelsClusters = {};
+    clusters = clusters.sort((a,b) => b['num_mentions'] - a['num_mentions']);
+    for (const cluster of clusters) {
+        const clusterLabel = cluster['cluster_label'] || defaultLabel;
+        cluster['cluster_label'] = clusterLabel;
+        const labelClusters = labelsClusters[clusterLabel] || [];
+        labelsClusters[clusterLabel] = labelClusters;
+        labelClusters.push(cluster);
+    }
+
+    return labelsClusters
 }
 
 /* Initializes the list of keyphrases. */
@@ -417,7 +428,7 @@ function createMentionsListElement(corefClustersMetas) {
                 const itemId = $innerLi.attr('data-cluster-idx');
                 $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
-                fetchCorefCluster(itemId);
+                fetchCorefCluster(itemId, corefClusterType);
             }
         }
 
@@ -530,7 +541,7 @@ function openCorefCluster(e) {
     const corefId = $(e.target).attr('data-coref-cluster-idx');
     const text = e.target.textContent;
     $('#navigationMentionsButton').click();
-    fetchCorefCluster(corefId);
+    fetchCorefCluster(corefId, corefClusterType);
 
 }
 $(document).on('click', '.open-coref-cluster', openPropositionCluster);
@@ -1080,7 +1091,7 @@ function fetchDocument(documentId, documentName) {
         }
     });
 }
-function fetchCorefCluster(corefClusterId) {
+function fetchCorefCluster(corefClusterId, corefClusterType) {
     const corefClusterText = globalCorefClustersMetas[corefClusterId]['display_name'];
     insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
 
@@ -1093,7 +1104,7 @@ function fetchCorefCluster(corefClusterId) {
         "clientId": clientId,
         "request_coref_cluster": {
             "corefClusterId": corefClusterId,
-            "corefClusterType": "events"
+            "corefClusterType": corefClusterType
         }
     });
 }

@@ -8,9 +8,8 @@ from typing import List, Dict, Tuple
 from nltk import word_tokenize, sent_tokenize
 
 from QFSE.Corpus import Corpus
-from QFSE.consts import COREF_TYPE_EVENTS
-from QFSE.coref.coref_expr import get_clusters
-from QFSE.coref.coref_labels import extract_labels
+from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES
+from QFSE.coref.coref_labels import create_objs
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
 
@@ -42,14 +41,17 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
     return docs_formatted
 
 
-def get_coref_clusters(formatted_topics, corpus):
+def get_coref_clusters(formatted_topics, corpus, cluster_type):
     path_to_dir = os.getcwd()
 
+    if cluster_type == COREF_TYPE_EVENTS:
+        with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
+            data = f.read()
+    elif cluster_type == COREF_TYPE_ENTITIES:
+        with open(f"{path_to_dir}/data/coref/duc_entities.conll") as f:
+            data = f.read()
+
     # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
-    #     data = f.read()
-    with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
-        data = f.read()
-    # with open(f"{path_to_dir}/data/coref/duc_entities.conll") as f:
     #     data = f.read()
     # with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
     #     data = json.load(json_file)
@@ -57,17 +59,9 @@ def get_coref_clusters(formatted_topics, corpus):
     # TODO: Call external coref API with `formatted_topics`
 
     documents, clusters = parse_conll_coref_file(data)
-    # documents, clusters = get_clusters(data)
+    # documents, clusters = get_clusters(data, cluster_type)
 
-    cluster_to_label = extract_labels(clusters)
-    clusters_objs = {}
-    for cluster_id, mentions in clusters.items():
-        cluster_label = cluster_to_label.get(cluster_id, None)
-        token_counter = Counter()
-        for mention in mentions:
-            token_counter[mention.token] += 1
-        most_representative_mention = token_counter.most_common()[0][0]
-        clusters_objs[cluster_id] = Cluster(cluster_id, COREF_TYPE_EVENTS, mentions, cluster_label, most_representative_mention)
+    clusters_objs = create_objs(clusters, cluster_type)
 
     coref_clusters = CorefClusters(documents, clusters_objs)
     coref_clusters_dict = coref_clusters.to_dict()
@@ -75,17 +69,14 @@ def get_coref_clusters(formatted_topics, corpus):
     for document in corpus.documents:
         if document.id in doc_names_to_clusters:
             document_coref_clusters = doc_names_to_clusters[document.id]
-            document.coref_clusters = document_coref_clusters
-            # for coref_cluster in document_coref_clusters.values():
-            #     for mention in coref_cluster:
-            #           document.sentences[mention['sent_idx']].coref_clusters.append(mention)
+            document.coref_clusters[cluster_type] = document_coref_clusters
             mentions = document_coref_clusters
             if isinstance(document_coref_clusters, dict):
                 mentions = [mention for coref_cluster in document_coref_clusters.values() for mention in coref_cluster]
             for mention in mentions:
-                document.sentences[mention['sent_idx']].coref_clusters.append(mention)
+                document.sentences[mention['sent_idx']].coref_clusters[cluster_type].append(mention)
 
-    corpus.coref_clusters = coref_clusters_dict['cluster_idx_to_mentions']
+    corpus.coref_clusters[cluster_type] = coref_clusters_dict['cluster_idx_to_mentions']
 
     return coref_clusters
 

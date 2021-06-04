@@ -25,11 +25,12 @@ class Summary:
 @dataclass_json
 @dataclass
 class Cluster:
-    cluster_id: int
+    cluster_id: str
     cluster_type: str
     mentions: List[Mention]
     cluster_label: str
-    most_representative_mention: str
+    display_name: str
+    num_mentions: int
 
 
 @dataclass_json
@@ -43,4 +44,5 @@ class CorefClusters:
 @dataclass
 class PropositionClusters:
     doc_name_to_clusters: Dict[str, List[Mention]]
-    cluster_idx_to_mentions: Dict[str, List[Mention]]
+    cluster_idx_to_mentions: Dict[str, Cluster]
+

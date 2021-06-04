@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from QFSE.Utilities import bert_embedder, get_item
 from QFSE.Utilities import REPRESENTATION_STYLE_W2V, REPRESENTATION_STYLE_BERT, REPRESENTATION_STYLE_SPACY
 from QFSE.Utilities import STOP_WORDS, PUNCTUATION, TRANSITION_WORDS
@@ -21,8 +23,7 @@ class Sentence:
         self.lengthInWords = len(self.tokens)
         self.lengthInChars = len(self.text)
 
-        self.coref_clusters = []
-        self.proposition_clusters = []
+        self.coref_clusters = defaultdict(list)
 
         if doNotInitRepresentation:
             self.representation = None
