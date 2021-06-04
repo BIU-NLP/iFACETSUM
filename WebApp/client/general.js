@@ -365,7 +365,8 @@ function handleJsonReply(jsonObj) {
         setPaneResponse(jsonObj["reply_document"], $documentsPane);
     }
     else if ("reply_coref_cluster" in jsonObj) {
-        setPaneResponse(jsonObj["reply_coref_cluster"], jsonObj['reply_coref_cluster']['doc']['corefType'] === "events" ? $mentionsPane : $propositionsPane);
+        const clusterType = jsonObj['reply_coref_cluster']['doc']['corefType'];
+        setPaneResponse(jsonObj["reply_coref_cluster"], (clusterType === "events" || clusterType === "entities") ? $mentionsPane : $propositionsPane);
         setGlobalResponse(jsonObj["reply_coref_cluster"]);
     }
 

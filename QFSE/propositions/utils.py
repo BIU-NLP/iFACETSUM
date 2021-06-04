@@ -6,6 +6,7 @@ import nltk
 import pandas as pd
 
 from QFSE.consts import COREF_TYPE_PROPOSITIONS
+from QFSE.coref.coref_labels import create_objs
 from QFSE.coref.models import Mention
 from QFSE.models import PropositionClusters
 from QFSE.propositions.models import PropositionLine, PropositionCluster
@@ -166,18 +167,22 @@ def get_proposition_clusters(formatted_topics, corpus):
 
     # TODO: Call external proposition alignment with `formatted_topics`
 
-    propositions_clusters = PropositionClusters(*parse_propositions_file(df, corpus))
+    documents, all_clusters = parse_propositions_file(df, corpus)
+
+    clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS)
+
+    propositions_clusters = PropositionClusters(documents, clusters_objs)
     propositions_clusters_dict = propositions_clusters.to_dict()
     doc_names_to_clusters = propositions_clusters_dict['doc_name_to_clusters']
     for document in corpus.documents:
         doc_id = document.id.split("_")[1]
         if doc_id in doc_names_to_clusters:
             document_proposition_clusters = doc_names_to_clusters[doc_id]
-            document.proposition_clusters = document_proposition_clusters
+            document.coref_clusters[COREF_TYPE_PROPOSITIONS] = document_proposition_clusters
             for mention in document_proposition_clusters:
-                document.sentences[mention['sent_idx']].proposition_clusters.append(mention)
+                document.sentences[mention['sent_idx']].coref_clusters[PropositionClusters].append(mention)
 
-    corpus.proposition_clusters = propositions_clusters_dict['cluster_idx_to_mentions']
+    corpus.coref_clusters[COREF_TYPE_PROPOSITIONS] = propositions_clusters_dict['cluster_idx_to_mentions']
 
     return propositions_clusters
 
