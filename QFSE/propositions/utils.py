@@ -6,6 +6,7 @@ import nltk
 import pandas as pd
 
 from QFSE.consts import COREF_TYPE_PROPOSITIONS
+from QFSE.coref.coref_labels import create_objs
 from QFSE.coref.models import Mention
 from QFSE.models import PropositionClusters
 from QFSE.propositions.models import PropositionLine, PropositionCluster
@@ -166,7 +167,11 @@ def get_proposition_clusters(formatted_topics, corpus):
 
     # TODO: Call external proposition alignment with `formatted_topics`
 
-    propositions_clusters = PropositionClusters(*parse_propositions_file(df, corpus))
+    documents, all_clusters = parse_propositions_file(df, corpus)
+
+    clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS)
+
+    propositions_clusters = PropositionClusters(documents, clusters_objs)
     propositions_clusters_dict = propositions_clusters.to_dict()
     doc_names_to_clusters = propositions_clusters_dict['doc_name_to_clusters']
     for document in corpus.documents:
