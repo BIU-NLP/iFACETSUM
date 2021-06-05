@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Optional, Union
 
 from dataclasses_json import dataclass_json
 
@@ -62,3 +62,33 @@ class DocSent:
 class ClusterQuery:
     cluster_id: int
     cluster_type: str
+
+
+@dataclass_json
+@dataclass
+class TokensCluster:
+    tokens: List
+    cluster_id: int
+    cluster_type: str
+
+    def get_text(self):
+        return " ".join([token.get_text() if isinstance(token, TokensCluster) else " ".join(token) for token in self.tokens])
+
+
+@dataclass_json
+@dataclass
+class QueryResultSentence:
+    tokens: List[Union[TokensCluster, List[str]]]
+    doc_id: Optional[str] = None
+    sent_idx: Optional[int] = None
+    is_first_time_seen: bool = True
+
+    def get_text(self):
+        return " ".join([token.get_text() if isinstance(token, TokensCluster) else " ".join(token) for token in self.tokens])
+
+
+@dataclass_json
+@dataclass
+class QueryResult:
+    result_sentences: List[QueryResultSentence]
+    query: List[ClusterQuery]

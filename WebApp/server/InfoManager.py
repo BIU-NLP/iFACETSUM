@@ -34,9 +34,8 @@ class InfoManager:
     def clientInitialized(self, clientId):
         return clientId in self.m_clientsInfo and 'summarizer' in self.m_clientsInfo[clientId]
 
-
     def initClientFunc(self, clientId, corpus, suggQuerGen, numSuggQueries, summarizer, topicId, questionnaireBatchIndex, timeAllowed, assignmentId,
-                       hitId, workerId, turkSubmitTo):
+                       hitId, workerId, turkSubmitTo, query_results_analyzer):
         self.m_clientsInfo[clientId]['corpus'] = corpus
         self.m_clientsInfo[clientId]['suggQuerGen'] = suggQuerGen
         self.m_clientsInfo[clientId]['summarizer'] = summarizer
@@ -53,14 +52,15 @@ class InfoManager:
         self.m_clientsInfo[clientId]['exploreTime'] = -1
         self.m_clientsInfo[clientId]['comments'] = ''
         self.m_clientsInfo[clientId]['questionnaireRatings'] = {}
-        self.m_clientsInfo[clientId]['suggestedQueries'] = suggQuerGen.getSuggestionsFromToIndices(0, numSuggQueries-1)
+        self.m_clientsInfo[clientId]['query_results_analyzer'] = query_results_analyzer
+        # self.m_clientsInfo[clientId]['suggestedQueries'] = suggQuerGen.getSuggestionsFromToIndices(0, numSuggQueries-1)
         logging.info('Client initialized: {}'.format(clientId))
 
     def initClient(self, clientId, corpus, suggQuerGen, numSuggQueries, summarizer, topicId, questionnaireBatchIndex, timeAllowed, assignmentId,
-                   hitId, workerId, turkSubmitTo):
+                   hitId, workerId, turkSubmitTo, query_results_analyzer):
         return self.handleRequest(clientId, self.initClientFunc,
                                   [clientId, corpus, suggQuerGen, numSuggQueries, summarizer, topicId, questionnaireBatchIndex, timeAllowed,
-                                   assignmentId, hitId, workerId, turkSubmitTo],
+                                   assignmentId, hitId, workerId, turkSubmitTo, query_results_analyzer],
                                   'Failed to initialize client {}'.format(clientId))
 
     def setStartTimeOfInteractionFunc(self, clientId):
@@ -87,6 +87,9 @@ class InfoManager:
         # take care of generated the summary.
         self.m_clientsInfo[clientId]['haveChanges'] = True
         return self.m_clientsInfo[clientId]['summarizer']
+
+    def get_query_results_analyzer(self, clientId):
+        return self.m_clientsInfo[clientId]['query_results_analyzer']
 
     def setSubmitInfoFunc(self, clientId, questionAnswersDict, timeUsedForExploration, commentsFromUser):
         self.setQuestionnaireAnswersFunc(clientId, questionAnswersDict)

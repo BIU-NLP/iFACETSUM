@@ -2,14 +2,16 @@
 import sys
 import os
 from collections import defaultdict
-from typing import List, Set, Dict
+from typing import List, Set, Dict, Union
 
 from QFSE.Sentence import Sentence
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_ENTITIES
 from QFSE.coref.coref_labels import create_cluster_obj
 from QFSE.coref.models import Mention
-from QFSE.models import SummarySent, Summary, Cluster, DocSent, ClusterQuery
+from QFSE.models import SummarySent, Summary, Cluster, DocSent, ClusterQuery, QueryResult, QueryResultSentence, \
+    TokensCluster
 from QFSE.propositions.utils import get_proposition_clusters
+from QFSE.query_results_analyzer import QueryResultsAnalyzer
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 
@@ -191,7 +193,8 @@ class IntSummHandler(tornado.web.RequestHandler):
         get_proposition_clusters(formatted_topics, corpus)
 
         m_infoManager.initClient(clientId, corpus, None, 0, None, topicId,
-                                 questionnaireBatchIndex, timeAllowed, assignmentId, hitId, workerId, turkSubmitTo)
+                                 questionnaireBatchIndex, timeAllowed, assignmentId, hitId, workerId, turkSubmitTo,
+                                 QueryResultsAnalyzer())
         topicName = topicId
 
         reply = {
@@ -260,30 +263,30 @@ class IntSummHandler(tornado.web.RequestHandler):
             "coref_tokens": self._split_sent_text_to_tokens(corpus_sent)
         } for corpus_sent in corpus_sents]
 
-    def _split_sent_text_to_tokens(self, sent: Sentence):
-        tokens = sent.tokens
+    def _split_sent_text_to_tokens(self, sent) -> List[Union[TokensCluster, List[str]]]:
+        tokens = sent
         token_to_mention = defaultdict(list)
 
-        # Coref
-        hotfix_wrong_indices = True
-        if hotfix_wrong_indices:
-            first_token_idx = sent.first_token_idx
-
-        for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
-            mention_start = mentions['start']
-            mention_end = mentions['end']
-            if hotfix_wrong_indices:
-                mention_start -= first_token_idx
-                mention_end -= first_token_idx
-            for token_idx in range(mention_start, mention_end + 1):
-                token_to_mention[token_idx].append(mentions)
-
-        # Propositions
-        for mentions in sent.coref_clusters[COREF_TYPE_PROPOSITIONS]:
-            mention_start = mentions['start']
-            mention_end = mentions['end']
-            for token_idx in range(mention_start, mention_end + 1):
-                token_to_mention[token_idx].append(mentions)
+        # # Coref
+        # hotfix_wrong_indices = True
+        # if hotfix_wrong_indices:
+        #     first_token_idx = sent.first_token_idx
+        #
+        # for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
+        #     mention_start = mentions['start']
+        #     mention_end = mentions['end']
+        #     if hotfix_wrong_indices:
+        #         mention_start -= first_token_idx
+        #         mention_end -= first_token_idx
+        #     for token_idx in range(mention_start, mention_end + 1):
+        #         token_to_mention[token_idx].append(mentions)
+        #
+        # # Propositions
+        # for mentions in sent.coref_clusters[COREF_TYPE_PROPOSITIONS]:
+        #     mention_start = mentions['start']
+        #     mention_end = mentions['end']
+        #     for token_idx in range(mention_start, mention_end + 1):
+        #         token_to_mention[token_idx].append(mentions)
 
         # Split
 
@@ -293,11 +296,11 @@ class IntSummHandler(tornado.web.RequestHandler):
                 last_open_mention = open_mentions_to_flush.pop(last_open_mention_id)
                 if last_open_mention_id in open_mentions:
                     open_mentions.pop(last_open_mention_id)
-                token_group = {
-                    "tokens": last_open_mention['tokens'],
-                    "group_id": last_open_mention['cluster_idx'],
-                    "cluster_type": last_open_mention['cluster_type']
-                }
+                token_group = TokensCluster(
+                    tokens=last_open_mention['tokens'],
+                    cluster_id=last_open_mention['cluster_idx'],
+                    cluster_type=last_open_mention['cluster_type']
+                )
 
                 # Prepend to next open mention instead
                 if any(open_mentions):
@@ -306,9 +309,10 @@ class IntSummHandler(tornado.web.RequestHandler):
                 else:
                     tokens_groups.append(token_group)
 
-        tokens_groups = []
+        tokens_groups: List[Union[TokensCluster, List[str]]] = []
         open_mentions_by_ids = {}
         for token_idx, token in enumerate(tokens):
+            token = token.text
             if token_idx in token_to_mention:
                 mentions = token_to_mention[token_idx]
                 open_mentions_to_flush = {}
@@ -362,42 +366,35 @@ class IntSummHandler(tornado.web.RequestHandler):
                 doc_sent_indices_to_use = set.intersection(*doc_sent_indices)
                 sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
-        response_sents = []
         length_in_words = 0
+        query_result = QueryResult([], clusters_query)
         if sentences is not None:
-            abstractive_summary = True
-            if not abstractive_summary:
-                summary = m_infoManager.getSummarizer(clientId).summarizeByQuery(query, numSentences, queryType, sentences)
-                for x in summary.summary_sents:
-                    formatted_sent = x.sent.replace('"', '\\"').replace('\n', ' ')
-                    x.sent = formatted_sent
+            model, tokenizer = get_item("abstract_summarizer")
+            if len(sentences) > 1:
+                inputs = tokenizer([". ".join([sent.text for sent in sentences])], return_tensors="pt")
 
-                corpus_sents = self._summary_sents_to_corpus_sents(corpus, summary)
-                response_sents = self._corpus_sents_to_response_sents(corpus_sents)
-                length_in_words = summary.length_in_words
+                # Generate Summary
+                summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
+                summary_sents = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
+                # Bart doesn't split the sentences
+                nlp = get_item("spacy")
+                summary_sents = [sent for summary_sent in summary_sents for sent in nlp(summary_sent).sents]
             else:
-                model, tokenizer = get_item("abstract_summarizer")
-                if len(sentences) > 1:
-                    inputs = tokenizer([". ".join([sent.text for sent in sentences])], return_tensors="pt")
+                # No need to summarize one sentence
+                summary_sents = [sent for sent in sentences]
 
-                    # Generate Summary
-                    summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
-                    summary_sents = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
-                else:
-                    # No need to summarize if one sentence
-                    summary_sents = [sent.text for sent in sentences]
+            query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent)) for sent in summary_sents]
 
-                corpus_sents = []
-                for summary_sent in summary_sents:
-                    sent = Sentence(None, None, summary_sent, None)
-                    sent.first_token_idx = 0
-                    corpus_sents.append(sent)
-                response_sents = self._corpus_sents_to_response_sents(corpus_sents)
-                length_in_words = 0
+            # Save queries and mark similar sentences to those used
+            query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
+            query_results_analyzer.analyze_repeating(query_result)
+            query_results_analyzer.add_query_results(query_result)
+
+            length_in_words = 0
 
         reply = {
             "reply_query": {
-                "summary": response_sents,
+                "queryResult": query_result.to_dict(),
                 "textLength": length_in_words,
                 "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, doc_sent_indices_to_use),
                 "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, doc_sent_indices_to_use),
