@@ -1,3 +1,4 @@
+import os
 import re
 #from collections import defaultdict
 #from math import log, sqrt
@@ -48,11 +49,17 @@ def loadSpacy():
 def loadAbstractSummarizer():
     from transformers import BartTokenizer, BartForConditionalGeneration, BartConfig
 
-    model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
-    tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+    BART_DIRECTORY = './bart-large-cnn/'
+
+    if os.path.exists(BART_DIRECTORY):
+        model = BartForConditionalGeneration.from_pretrained(BART_DIRECTORY)
+        tokenizer = BartTokenizer.from_pretrained(BART_DIRECTORY)
+    else:
+        model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
+        tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
+        model.save_pretrained(BART_DIRECTORY)
+        tokenizer.save_pretrained(BART_DIRECTORY)
     return model, tokenizer
-
-
 
 
 def get_item(registry_key: str):
