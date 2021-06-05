@@ -1,5 +1,6 @@
 const e = React.createElement;
 var enterQueryButton = document.getElementById("enterQueryButton");
+let globalQuery = [];
 const $queryArea = $('#queryArea');
 const $documentsListArea = $('#documentsListArea');
 const $documentsList = $('#documentsList');
@@ -30,6 +31,7 @@ var totalTextLength = 0;
 let globalDocumentsMetas = null;
 let globalCorefClustersMetas = null;
 let globalPropositionClustersMetas = null;
+const globalClustersMetas = {};
 var pageBaseUrl = "qfse.html";
 var summaryType = "qfse";
 var timeAllowed = -1;
@@ -106,6 +108,11 @@ function setTopic(topicInfo) {
     const eventsClustersMetas = topicInfo['eventsClustersMetas'];
     const propositionClustersMetas = topicInfo['propositionClustersMetas'];
     globalPropositionClustersMetas = topicInfo['propositionClustersMetas'];
+
+    globalClustersMetas['entities'] = corefClustersMetas;
+    globalClustersMetas['events'] = eventsClustersMetas;
+    globalClustersMetas['propositions'] = propositionClustersMetas;
+
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
@@ -161,29 +168,47 @@ class ClusterIdItem extends React.Component {
             const clusterId = cluster['cluster_id'];
             const clusterType = cluster['cluster_type'];
 
-            query(text, clusterId, clusterType);
+            if (this.props.clusterSelected) {
+                globalQuery = globalQuery.filter(clusterQuery => clusterQuery != this.props.clusterQuery);
+                query(null, null, null);
+            } else {
+                query(text, clusterId, clusterType);
+            }
         }
     }
 
     render() {
+
         const cluster = this.props.cluster;
+        const clusterSelectedClassName = this.props.clusterSelected ? "selected" : "";
 
         return e(
             "div",
             {
-                "className": "list-group-item collapse cluster-list-item",
+                "className": `list-group-item d-flex justify-content-between align-items-center cluster-list-item ${clusterSelectedClassName}`,
                 onClick: this.query
             },
-            `${cluster['display_name']} (${cluster['num_mentions']})`
+            [`${cluster['display_name_filtered']}`,
+            e(
+                "span",
+                {
+                    "className": "badge badge-primary badge-pill"
+                },
+                `${cluster['num_mentions_filtered']}`
+            )]
        );
     }
 }
 
+function compareClustersObjects(cluster1, cluster2) {
+    return cluster1['cluster_id'] == cluster2['cluster_id'] && cluster1['event_type'] == cluster2['event_type'];
+}
 
 class LabelClustersItem extends React.Component {
     render() {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
+        const clustersQuery = this.props.clustersQuery;
 
         const clustersItems = [];
         clustersItems.push(
@@ -198,10 +223,22 @@ class LabelClustersItem extends React.Component {
             )
         );
         for (const cluster of labelClusters) {
+
+            let clusterSelected = false;
+            let clusterQuery = null;
+            for (clusterQuery of clustersQuery) {
+                if (compareClustersObjects(clusterQuery, cluster)) {
+                    clusterSelected = true;
+                    break;
+                }
+            }
+
             const clusterIdItemReact = e(
                 ClusterIdItem,
                 {
-                    "cluster": cluster
+                    "cluster": cluster,
+                    "clusterSelected": clusterSelected,
+                    "clusterQuery": clusterQuery
                 }
             )
 
@@ -213,7 +250,7 @@ class LabelClustersItem extends React.Component {
             "div",
             {
                 "id": `accordion-${clusterLabel}`,
-                "className": "list-group-item list-group accordion card"
+                "className": "list-group-item label-list-group-item list-group accordion card"
             },
             clustersItems
        );
@@ -223,13 +260,15 @@ class LabelClustersItem extends React.Component {
 class ClustersIdsList extends React.Component {
     render() {
         const labelsClusters = this.props.labelsClusters;
+        const clustersQuery = this.props.clustersQuery;
 
         const labelClustersItems = [];
         for (const labelClusters of labelsClusters) {
             const labelClustersItem = e(
                 LabelClustersItem,
                 {
-                    "labelClusters": labelClusters
+                    "labelClusters": labelClusters,
+                    "clustersQuery": clustersQuery
                 }
             )
 
@@ -253,25 +292,31 @@ function createClustersIdsList(corefClustersMetas, eventsClustersMetas, proposit
 
     const allClusters = Object.assign(propositionLabelsToClusters, eventsLabelsToClusters, corefLabelsToClusters)
 
-   const htmlElementToRenderInto = document.createElement("div");
+    const htmlElementToRenderInto = document.createElement("div");
 
     const reactToRender = e(
         ClustersIdsList,
         {
-            "labelsClusters": Object.values(allClusters)
+            "labelsClusters": Object.values(allClusters),
+            "clustersQuery": globalQuery
         }
     );
+
 
     ReactDOM.render(reactToRender, htmlElementToRenderInto);
 
     const $clustersIdsListContainer = $('#clustersIdsListContainer');
-    $clustersIdsListContainer[0].appendChild(htmlElementToRenderInto); //add to exploration list
+    $clustersIdsListContainer[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+}
+
+function getClusterFromGlobalByQuery(clusterQuery) {
+    return globalClustersMetas[clusterQuery['cluster_type']][clusterQuery['cluster_id']];
 }
 
 function categorizeClustersByLabels(clusters, defaultLabel) {
     // Convert list of clusters to labels clusters
     const labelsClusters = {};
-    clusters = clusters.sort((a,b) => b['num_mentions'] - a['num_mentions']);
+    clusters = clusters.sort((a,b) => b['num_mentions_filtered'] - a['num_mentions_filtered']);
     for (const cluster of clusters) {
         const clusterLabel = cluster['cluster_label'] || defaultLabel;
         cluster['cluster_label'] = clusterLabel;
@@ -1052,11 +1097,27 @@ function showQuestionnaire() {
 
 /* Handle a query string. */
 function query(queryStr, clusterId, clusterType) {
-    // create the query list item in the exploration pane:
-    insertQueryItemInExplorationPane(queryStr, exploreList);
+    if (clusterType) {
+        globalQuery.push({
+            "cluster_id": clusterId,
+            "cluster_type": clusterType
+        });
+    }
+    createClustersIdsList(globalClustersMetas['entities'], globalClustersMetas['events'], globalClustersMetas['propositions']);
 
-    // put a loading ellipsis:
-    insertLoadingIndicatorInExplorationPane(exploreList);
+    queryStr = "";
+    for (const clusterQuery of globalQuery) {
+        const cluster = getClusterFromGlobalByQuery(clusterQuery);
+        queryStr += ` ${cluster['display_name']}`;
+    }
+
+    if (globalQuery.length > 0) {
+        // create the query list item in the exploration pane:
+        insertQueryItemInExplorationPane(queryStr, exploreList);
+
+        // put a loading ellipsis:
+        insertLoadingIndicatorInExplorationPane(exploreList);
+    }
 
     // scroll to bottom:
     exploreList.scrollTop = exploreList.scrollHeight;
@@ -1072,7 +1133,8 @@ function query(queryStr, clusterId, clusterType) {
     }
 
     // get query response info from the server:
-    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "cluster_id": clusterId, "cluster_type": clusterType, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
+    clustersQuery = globalQuery;
+    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "clusters_query": clustersQuery, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
     // the response will be sent to function setQueryResponse asynchronously
 }
 

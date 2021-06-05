@@ -1,6 +1,5 @@
 from typing import Tuple, Dict, List
 
-from QFSE.consts import COREF_TYPE_EVENTS
 from QFSE.coref.models import Mention
 
 

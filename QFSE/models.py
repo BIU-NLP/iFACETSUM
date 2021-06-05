@@ -46,3 +46,19 @@ class PropositionClusters:
     doc_name_to_clusters: Dict[str, List[Mention]]
     cluster_idx_to_mentions: Dict[str, Cluster]
 
+
+@dataclass_json
+@dataclass(frozen=True, eq=True)
+class DocSent:
+    doc_id: str
+    sent_idx: int
+
+    def __repr__(self):
+        return f"{self.doc_id}_{self.sent_idx}"
+
+
+@dataclass_json
+@dataclass
+class ClusterQuery:
+    cluster_id: int
+    cluster_type: str
