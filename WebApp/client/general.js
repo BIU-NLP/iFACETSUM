@@ -240,6 +240,13 @@ function initializeTopic(topicId) { //, topicName) {
 function setQueryResponse(queryResultInfo) {
     var summary = queryResultInfo['summary'];
     var textLength = queryResultInfo['textLength'];
+    const corefClustersMetas = queryResultInfo['corefClustersMetas'];
+    const eventsClustersMetas = queryResultInfo['eventsClustersMetas'];
+    const propositionClustersMetas = queryResultInfo['propositionClustersMetas'];
+    globalClustersMetas['entities'] = corefClustersMetas;
+    globalClustersMetas['events'] = eventsClustersMetas;
+    globalClustersMetas['propositions'] = propositionClustersMetas;
+    createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
 
     // remove the loading ellipsis:
     if (curLoadingInicatorElement != null) {

@@ -1,11 +1,12 @@
 import logging
+import pickle
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
 import nltk
 import pandas as pd
 
-from QFSE.consts import COREF_TYPE_PROPOSITIONS
+from QFSE.consts import COREF_TYPE_PROPOSITIONS, MAX_MENTIONS_IN_CLUSTER
 from QFSE.coref.coref_labels import create_objs
 from QFSE.coref.models import Mention
 from QFSE.models import PropositionClusters
@@ -163,13 +164,25 @@ def parse_propositions_file(df, corpus) -> Tuple[Dict[int, List[Mention]], Dict[
 def get_proposition_clusters(formatted_topics, corpus):
     import os
     path_to_dir = os.getcwd()
-    df = pd.read_csv(f"{path_to_dir}/data/devDUC2006_InDoc_D0601A_checkpoint-2000.csv")
+    file_name = "devDUC2006_InDoc_D0601A_checkpoint-2000.csv"
+    cache_file_path = f"{path_to_dir}/data/{file_name}.cache"
+    try:
+        with open(cache_file_path, "rb") as f:
+            documents, clusters_objs = pickle.load(f)
+    except:
+        df = pd.read_csv(f"{path_to_dir}/data/{file_name}")
 
-    # TODO: Call external proposition alignment with `formatted_topics`
+        # TODO: Call external proposition alignment with `formatted_topics`
 
-    documents, all_clusters = parse_propositions_file(df, corpus)
+        documents, all_clusters = parse_propositions_file(df, corpus)
 
-    clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS)
+        clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS)
+
+        with open(cache_file_path, "wb") as f:
+            pickle.dump((documents, clusters_objs), f)
+
+    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
+    clusters_objs = {cluster_id: cluster for cluster_id, cluster in clusters_objs.items() if cluster_id not in clusters_ids_to_filter}
 
     propositions_clusters = PropositionClusters(documents, clusters_objs)
     propositions_clusters_dict = propositions_clusters.to_dict()
@@ -177,9 +190,10 @@ def get_proposition_clusters(formatted_topics, corpus):
     for document in corpus.documents:
         doc_id = document.id.split("_")[1]
         if doc_id in doc_names_to_clusters:
-            document_proposition_clusters = doc_names_to_clusters[doc_id]
-            document.coref_clusters[COREF_TYPE_PROPOSITIONS] = document_proposition_clusters
-            for mention in document_proposition_clusters:
+            mentions = doc_names_to_clusters[doc_id]
+            # document.coref_clusters[COREF_TYPE_PROPOSITIONS] = document_proposition_clusters
+            mentions = [mention for mention in mentions if mention['cluster_idx'] not in clusters_ids_to_filter]
+            for mention in mentions:
                 document.sentences[mention['sent_idx']].coref_clusters[PropositionClusters].append(mention)
 
     corpus.coref_clusters[COREF_TYPE_PROPOSITIONS] = propositions_clusters_dict['cluster_idx_to_mentions']

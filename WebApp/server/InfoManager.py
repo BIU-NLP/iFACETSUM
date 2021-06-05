@@ -22,7 +22,7 @@ class InfoManager:
         self.sentencesUsed = {}
         # run a thread that saves the data once in a while:
         threadSaveDataToDatabase = threading.Thread(target=self.saveDataBackgroundFunc, args=())
-        threadSaveDataToDatabase.start()
+        # threadSaveDataToDatabase.start()
 
     def createClientFunc(self, clientId):
         if clientId not in self.m_clientsInfo:
@@ -76,6 +76,9 @@ class InfoManager:
 
     def getTopicId(self, clientId):
         return self.m_clientsInfo[clientId]['topicId']
+
+    def getCorpus(self, clientId):
+        return self.m_clientsInfo[clientId]['corpus']
 
     def getSummarizer(self, clientId):
         # When the summarizer is requested, it most likely means that a summary is generated, meaning there is a

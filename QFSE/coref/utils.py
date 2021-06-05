@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import pickle
 import re
 from collections import defaultdict, Counter
 from typing import List, Dict, Tuple
@@ -8,7 +9,7 @@ from typing import List, Dict, Tuple
 from nltk import word_tokenize, sent_tokenize
 
 from QFSE.Corpus import Corpus
-from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES
+from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES, MAX_MENTIONS_IN_CLUSTER
 from QFSE.coref.coref_labels import create_objs
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
@@ -45,34 +46,48 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
     path_to_dir = os.getcwd()
 
     if cluster_type == COREF_TYPE_EVENTS:
-        with open(f"{path_to_dir}/data/events_average_0.3_model_5_topic_level.conll") as f:
+        file_name = "events_average_0.3_model_5_topic_level.conll"
+        with open(f"{path_to_dir}/data/{file_name}") as f:
             data = f.read()
-    elif cluster_type == COREF_TYPE_ENTITIES:
-        with open(f"{path_to_dir}/data/coref/duc_entities.conll") as f:
+    else:  # if cluster_type == COREF_TYPE_ENTITIES:
+        file_name = "duc_entities.conll"
+        with open(f"{path_to_dir}/data/coref/{file_name}") as f:
             data = f.read()
 
-    # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
-    #     data = f.read()
-    # with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
-    #     data = json.load(json_file)
+    cache_file_path = f"{path_to_dir}/data/{file_name}.cache"
+    try:
+        with open(cache_file_path, "rb") as f:
+            documents, clusters_objs = pickle.load(f)
+    except:
 
-    # TODO: Call external coref API with `formatted_topics`
+        # with open(f"{path_to_dir}/data/coref/spacy_wd_coref_duc.json") as f:
+        #     data = f.read()
+        # with open(f"{path_to_dir}/data/coref/duc_predictions_ments.json") as json_file:
+        #     data = json.load(json_file)
 
-    documents, clusters = parse_conll_coref_file(data)
-    # documents, clusters = get_clusters(data, cluster_type)
+        # TODO: Call external coref API with `formatted_topics`
 
-    clusters_objs = create_objs(clusters, cluster_type)
+        documents, clusters = parse_conll_coref_file(data)
+        # documents, clusters = get_clusters(data, cluster_type)
+
+        clusters_objs = create_objs(clusters, cluster_type)
+
+        with open(cache_file_path, "wb") as f:
+            pickle.dump((documents, clusters_objs), f)
+
+    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
+    clusters_objs = {cluster_id: cluster for cluster_id, cluster in clusters_objs.items() if cluster_id not in clusters_ids_to_filter}
 
     coref_clusters = CorefClusters(documents, clusters_objs)
     coref_clusters_dict = coref_clusters.to_dict()
     doc_names_to_clusters = coref_clusters_dict['doc_name_to_clusters']
     for document in corpus.documents:
         if document.id in doc_names_to_clusters:
-            document_coref_clusters = doc_names_to_clusters[document.id]
-            document.coref_clusters[cluster_type] = document_coref_clusters
-            mentions = document_coref_clusters
-            if isinstance(document_coref_clusters, dict):
-                mentions = [mention for coref_cluster in document_coref_clusters.values() for mention in coref_cluster]
+            mentions = doc_names_to_clusters[document.id]
+            # document.coref_clusters[cluster_type] = mentions
+            if isinstance(mentions, dict):
+                mentions = [mention for coref_cluster in mentions.values() for mention in coref_cluster]
+            mentions = [mention for mention in mentions if mention['cluster_idx'] not in clusters_ids_to_filter]
             for mention in mentions:
                 document.sentences[mention['sent_idx']].coref_clusters[cluster_type].append(mention)
 
