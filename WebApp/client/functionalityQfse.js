@@ -534,30 +534,33 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
 }
 
 function insertSummaryItemInExplorationPane(queryResult, documentsMetas) {
-    // a div is used to align the li item right:
-    var listElementResult = document.createElement("div");
-    listElementResult.classList.add("floatright");
-
-
     const resultSentences = queryResult['result_sentences'];
 
-    const liReact = e(
-        ListItem,
-        {
-            "resultSentences": resultSentences,
-            "numSentToShow": 3
-        }
-    );
+    if (resultSentences.length > 0) {
+        // a div is used to align the li item right:
+        var listElementResult = document.createElement("div");
+        listElementResult.classList.add("floatright");
 
-    ReactDOM.render(liReact, listElementResult);
 
-    exploreList.appendChild(listElementResult); //add to exploration list
 
-//    // extend the list of all texts:
-//    Array.prototype.push.apply(allTextsInSession, resultSentences);
+        const liReact = e(
+            ListItem,
+            {
+                "resultSentences": resultSentences,
+                "numSentToShow": 3
+            }
+        );
 
-    // iteration done
-    iterationNum++;
+        ReactDOM.render(liReact, listElementResult);
+
+        exploreList.appendChild(listElementResult); //add to exploration list
+
+    //    // extend the list of all texts:
+    //    Array.prototype.push.apply(allTextsInSession, resultSentences);
+
+        // iteration done
+        iterationNum++;
+    }
 }
 
 function openDocument(e) {
@@ -672,7 +675,7 @@ class TokensGroup extends React.Component {
                          {
                             "className": groupClass
                          },
-                         token + " "
+                         token
                     );
                     innerHtml.push(innerTokensGroup);
                 }

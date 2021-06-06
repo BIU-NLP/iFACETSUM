@@ -312,7 +312,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         tokens_groups: List[Union[TokensCluster, List[str]]] = []
         open_mentions_by_ids = {}
         for token_idx, token in enumerate(tokens):
-            token = token.text
+            token = token.text_with_ws
             if token_idx in token_to_mention:
                 mentions = token_to_mention[token_idx]
                 open_mentions_to_flush = {}
@@ -369,19 +369,12 @@ class IntSummHandler(tornado.web.RequestHandler):
         length_in_words = 0
         query_result = QueryResult([], clusters_query)
         if sentences is not None:
-            model, tokenizer = get_item("abstract_summarizer")
             if len(sentences) > 1:
-                inputs = tokenizer([". ".join([sent.text for sent in sentences])], return_tensors="pt")
-
-                # Generate Summary
-                summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
-                summary_sents = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
-                # Bart doesn't split the sentences
-                nlp = get_item("spacy")
-                summary_sents = [sent for summary_sent in summary_sents for sent in nlp(summary_sent).sents]
+                summarizer = get_item("bart_summarizer")
+                summary_sents = summarizer.summarize(sentences)
             else:
                 # No need to summarize one sentence
-                summary_sents = [sent for sent in sentences]
+                summary_sents = [sent.spacy_rep for sent in sentences]
 
             query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent)) for sent in summary_sents]
 
