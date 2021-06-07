@@ -2,6 +2,8 @@ import os
 import re
 #from collections import defaultdict
 #from math import log, sqrt
+from QFSE.abstractive_summarizer import HuggingFaceSummarizer
+
 nlp = None
 bert_embedder = None
 
@@ -60,6 +62,11 @@ def loadAbstractSummarizer():
         model.save_pretrained(BART_DIRECTORY)
         tokenizer.save_pretrained(BART_DIRECTORY)
     return model, tokenizer
+
+
+@register("bart_summarizer")
+def loadBartSummarizer():
+    return HuggingFaceSummarizer()
 
 
 def get_item(registry_key: str):
