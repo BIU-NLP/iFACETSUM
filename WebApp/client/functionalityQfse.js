@@ -533,45 +533,34 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
     paneItem.appendChild(listElementQuery); //add to exploration list
 }
 
-function insertSummaryItemInExplorationPane(txtList, documentsMetas) {
-    // a div is used to align the li item right:
-    var listElementResult = document.createElement("div");
-    listElementResult.classList.add("floatright");
+function insertSummaryItemInExplorationPane(queryResult, documentsMetas) {
+    const resultSentences = queryResult['result_sentences'];
 
-    const liReact = e(
-        ListItem,
-        {
-            "txtList": txtList,
-            "numSentToShow": 3
-        }
-    );
-
-    ReactDOM.render(liReact, listElementResult);
-
-    exploreList.appendChild(listElementResult); //add to exploration list
+    if (resultSentences.length > 0) {
+        // a div is used to align the li item right:
+        var listElementResult = document.createElement("div");
+        listElementResult.classList.add("floatright");
 
 
-//        var textNode = document.createTextNode(txtList[i]['sent']);
 
-//    // if needed, put the star rating widget within the summary item:
-//    //if (needIterationStarRating) {
-//    if (iterationStarRatingType != 0) {
-//        var instructionsTxt = RATING_PARAMS[iterationStarRatingType]['instructionsRest'];
-//        var instructionsExplanation = RATING_PARAMS[iterationStarRatingType]['explanationRest'];
-//        var instructionsExplanationStarLabelClass = RATING_PARAMS[iterationStarRatingType]['starLabelClassRest'];
-//        if (iterationNum == 0) { // for the initial summary
-//            instructionsTxt = RATING_PARAMS[iterationStarRatingType]['instructionsInitial'];
-//            instructionsExplanation = RATING_PARAMS[iterationStarRatingType]['explanationInitial'];
-//            instructionsExplanationStarLabelClass = RATING_PARAMS[iterationStarRatingType]['starLabelClassInitial'];
-//        }
-//        addStarRatingWidget(li, RATING_PARAMS[iterationStarRatingType]['numStars'], iterationNum, RATING_PARAMS[iterationStarRatingType]['signCharacter'], instructionsTxt, instructionsExplanation, instructionsExplanationStarLabelClass)
-//    }
+        const liReact = e(
+            ListItem,
+            {
+                "resultSentences": resultSentences,
+                "numSentToShow": 3
+            }
+        );
 
-    // extend the list of all texts:
-    Array.prototype.push.apply(allTextsInSession, txtList);
+        ReactDOM.render(liReact, listElementResult);
 
-    // iteration done
-    iterationNum++;
+        exploreList.appendChild(listElementResult); //add to exploration list
+
+    //    // extend the list of all texts:
+    //    Array.prototype.push.apply(allTextsInSession, resultSentences);
+
+        // iteration done
+        iterationNum++;
+    }
 }
 
 function openDocument(e) {
@@ -616,7 +605,7 @@ class TokensGroup extends React.Component {
 
     render() {
         const groups = this.props.groups;
-        const groupId = this.props.group_id;
+        const groupId = this.props.cluster_id;
         const clusterType = this.props.cluster_type;
 
         const innerHtml = [];
@@ -662,12 +651,12 @@ class TokensGroup extends React.Component {
         for (const tokensGroup of groups) {
             let innerTokensGroup;
 
-            if (tokensGroup['group_id'] !== undefined) {
+            if (tokensGroup['cluster_id'] !== undefined) {
                 innerTokensGroup = e(
                   TokensGroup,
                   {
                     "groups": tokensGroup['tokens'],
-                    "group_id": tokensGroup['group_id'],
+                    "cluster_id": tokensGroup['cluster_id'],
                     "cluster_type": tokensGroup['cluster_type'],
                     "highlightedClusters": this.props.highlightedClusters,
                     "startHighlightCluster": this.props.startHighlightCluster,
@@ -686,7 +675,7 @@ class TokensGroup extends React.Component {
                          {
                             "className": groupClass
                          },
-                         token + " "
+                         token
                     );
                     innerHtml.push(innerTokensGroup);
                 }
@@ -799,7 +788,7 @@ class ListItem extends React.Component {
                     liReact = e(
                         ListItem,
                         {
-                            "txtList": sentences,
+                            "resultSentences": sentences,
                             "numSentToShow": 999,
                             "showPopover": false,  // Don't show a popover inside a popover
                             "fixedClusters": [parseInt(clusterId)]
@@ -838,27 +827,31 @@ class ListItem extends React.Component {
     }
 
     render() {
-        const txtList = this.props.txtList;
+        const resultSentences = this.props.resultSentences;
         const numSentToShow = this.props.numSentToShow || 1;
         const sentences = [];
 
         // put the list of sentences separately line by line with a small margin in between:
-        for (var i = 0; i < txtList.length; i++) {
+        for (var i = 0; i < resultSentences.length; i++) {
             if (i < numSentToShow || !this.state.minimized) {
-                const sentenceText = txtList[i]['text'];
-                const docId = txtList[i]['doc_id'];
-                const sentIdx = txtList[i]['idx'];
+                const docId = resultSentences[i]['doc_id'];
+                const sentIdx = resultSentences[i]['idx'];
+                const isFirstTimeSeen = resultSentences[i]['is_first_time_seen'];
+                let sentenceSeenClass = "";
+                if (isFirstTimeSeen === false) {
+                    sentenceSeenClass = "sentence-seen";
+                }
 
                 const sentencePar = e(
                     'p',
                     {
-                       "className": "sentence-paragraph",
+                       "className": `sentence-paragraph ${sentenceSeenClass}`,
                        "data-sent-idx": sentIdx
                     },
                     e(
                       TokensGroup,
                       {
-                        "groups": txtList[i]['coref_tokens'],
+                        "groups": resultSentences[i]['tokens'],
                         "startHighlightCluster": this.startHighlightCluster,
                         "stopHighlightCluster": this.stopHighlightCluster,
                         "highlightedClusters": this.state.highlightedClusters,
@@ -871,7 +864,7 @@ class ListItem extends React.Component {
             }
         }
 
-        if (numSentToShow < txtList.length) {
+        if (numSentToShow < resultSentences.length) {
             if (this.state.minimized) {
                 const readMoreBtn = e(
                     'button',
@@ -883,7 +876,7 @@ class ListItem extends React.Component {
                         },
                         onClick: this.expand
                     },
-                    "Read more (" + txtList.length + " sentences)"
+                    "Read more (" + resultSentences.length + " sentences)"
                 );
                 sentences.push(readMoreBtn);
             } else {
@@ -926,7 +919,7 @@ function insertDocInPane(doc, $pane) {
     const liReact = e(
         ListItem,
         {
-            "txtList": doc.sentences,
+            "resultSentences": doc.sentences,
             "numSentToShow": 2
         }
     );

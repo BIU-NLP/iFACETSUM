@@ -894,3 +894,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 .list-group-item.selected {
     background-color: #e6e6e7;
 }
+
+.sentence-seen {
+    color: #7221a98c;
+}
