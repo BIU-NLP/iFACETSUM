@@ -90,5 +90,7 @@ class QueryResultSentence:
 @dataclass_json
 @dataclass
 class QueryResult:
+    query_idx: int
     result_sentences: List[QueryResultSentence]
     query: List[ClusterQuery]
+    orig_sentences: List[QueryResultSentence]

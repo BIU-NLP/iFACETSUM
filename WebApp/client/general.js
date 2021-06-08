@@ -245,6 +245,7 @@ function setQueryResponse(queryResultInfo) {
     globalClustersMetas['entities'] = corefClustersMetas;
     globalClustersMetas['events'] = eventsClustersMetas;
     globalClustersMetas['propositions'] = propositionClustersMetas;
+    globalQueriesResults[queryResult['query_idx']] = queryResult;
     createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
 
     // remove the loading ellipsis:
