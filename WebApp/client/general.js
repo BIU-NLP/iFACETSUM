@@ -1,4 +1,4 @@
-var requestUrl = "http://127.0.0.1:1389"; // place here the URL to the server
+var requestUrl = "http://127.0.0.1:5432"; // place here the URL to the server
 var stopwatch = 0;
 var m_topicId = '';
 var algorithm = 'cluster'; // the default algorithm is the cluster algorithm
