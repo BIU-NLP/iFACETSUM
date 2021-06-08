@@ -579,7 +579,11 @@ class IntSummHandler(tornado.web.RequestHandler):
 
 
 if __name__ == '__main__':
-    app = tornado.web.Application([tornado.web.url(r'/', IntSummHandler)])
+    settings = {
+        "static_path": "WebApp/client",
+        "static_url_prefix": "/client/",
+    }
+    app = tornado.web.Application([tornado.web.url(r'/', IntSummHandler)], **settings)
     if params.is_https:
         ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         ssl_ctx.load_cert_chain(params.https_certificate_file, params.https_key_file)

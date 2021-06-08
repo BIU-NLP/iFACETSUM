@@ -1,7 +1,7 @@
 from datetime import datetime
 
 # the web server port:
-http_server_port = 1389 # 1399
+http_server_port = 5432 # 1399
 
 # should the web server be over https or http
 # when this server is used in the nlp servers, where planet is the client, even
