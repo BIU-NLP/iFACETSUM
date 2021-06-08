@@ -123,13 +123,13 @@ function setTopic(topicInfo) {
     document.getElementById("topicNameHeader").innerHTML = name;
     document.getElementById("numDocumentsHeader").classList.add("myTooltip");
     document.getElementById("numDocumentsHeader").style.cursor = "help";
-    document.getElementById("numDocumentsHeader").innerHTML = '' +
-        'Summary of <span>' + numDocuments + ' articles</span>' +
-        '<div class="bottomTooltip" style="width: 350px;">' +
-        'Article sources: New York Times, Associated Press and Xinhua News Agency (years 1995-2000)' +
-        '<i></i>' +
-        '</div>' +
-        ' on';
+//    document.getElementById("numDocumentsHeader").innerHTML = '' +
+//        'Summary of <span>' + numDocuments + ' articles</span>' +
+//        '<div class="bottomTooltip" style="width: 350px;">' +
+//        'Article sources: New York Times, Associated Press and Xinhua News Agency (years 1995-2000)' +
+//        '<i></i>' +
+//        '</div>' +
+//        ' on';
 
     createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
     createKeywordListElement(keyPhrasesList);
@@ -182,20 +182,54 @@ class ClusterIdItem extends React.Component {
         const cluster = this.props.cluster;
         const clusterSelectedClassName = this.props.clusterSelected ? "selected" : "";
 
+        const allMentions = [];
+        for (const mention of cluster['mentions']) {
+            allMentions.push(mention['token']);
+        }
+
+
         return e(
             "div",
             {
                 "className": `list-group-item d-flex justify-content-between align-items-center cluster-list-item ${clusterSelectedClassName}`,
                 onClick: this.query
             },
-            [`${cluster['display_name_filtered']}`,
-            e(
-                "span",
-                {
-                    "className": "badge badge-primary badge-pill"
-                },
-                `${cluster['num_mentions_filtered']}`
-            )]
+            [
+                e(
+                    "div",
+                    {
+                        "className": "form-check",
+                    },
+                    [
+                        e(
+                            "input",
+                            {
+                                "className": "form-check-input",
+                                "type": "checkbox",
+                                "checked": clusterSelectedClassName ? "checked" : false
+                            }
+                        ),
+                        e(
+                            "label",
+                            {
+                                "className": "form-check-label"
+                            },
+                            [
+                                `${cluster['display_name']}`
+                            ]
+                        )
+                    ]
+                ),
+                e(
+                    "span",
+                    {
+                        "className": "badge badge-primary badge-pill",
+                        "data-toggle": "tooltip",
+                        "title": allMentions.join(", ")
+                    },
+                    `${cluster['num_mentions_filtered']}`
+                )
+            ]
        );
     }
 }
@@ -205,10 +239,47 @@ function compareClustersObjects(cluster1, cluster2) {
 }
 
 class LabelClustersItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            minimized: true
+        };
+    }
+
+    expand = () => {
+        this.setState({
+            "minimized": false
+        });
+
+        this.initializePopOver();
+    }
+
+    minimize = () => {
+        this.setState({
+            "minimized": true
+        });
+    }
+
+    componentDidMount = () => {
+        this.initializePopOver()
+    }
+
+    componentDidUpdate = () => {
+        // handles when clicking "show more"
+        this.initializePopOver()
+    }
+
+    initializePopOver = () => {
+        const $this = $(ReactDOM.findDOMNode(this));
+        const $popoverElements = $this.find('[data-toggle=popover]');
+        $popoverElements.popover();
+    }
+
     render() {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
         const clustersQuery = this.props.clustersQuery;
+        const numSentToShow = this.props.numSentToShow || 10;
 
         const clustersItems = [];
         clustersItems.push(
@@ -222,29 +293,90 @@ class LabelClustersItem extends React.Component {
                 clusterLabel
             )
         );
-        for (const cluster of labelClusters) {
+        for (let i = 0; i < labelClusters.length; i++) {
+            if (i < numSentToShow || !this.state.minimized) {
 
-            let clusterSelected = false;
-            let clusterQuery = null;
-            for (clusterQuery of clustersQuery) {
-                if (compareClustersObjects(clusterQuery, cluster)) {
-                    clusterSelected = true;
-                    break;
+                const cluster = labelClusters[i];
+
+                let clusterSelected = false;
+                let clusterQuery = null;
+                for (clusterQuery of clustersQuery) {
+                    if (compareClustersObjects(clusterQuery, cluster)) {
+                        clusterSelected = true;
+                        break;
+                    }
                 }
+
+                const clusterIdItemReact = e(
+                    ClusterIdItem,
+                    {
+                        "cluster": cluster,
+                        "clusterSelected": clusterSelected,
+                        "clusterQuery": clusterQuery
+                    }
+                )
+
+                clustersItems.push(clusterIdItemReact)
             }
-
-            const clusterIdItemReact = e(
-                ClusterIdItem,
-                {
-                    "cluster": cluster,
-                    "clusterSelected": clusterSelected,
-                    "clusterQuery": clusterQuery
-                }
-            )
-
-            clustersItems.push(clusterIdItemReact)
         }
 
+        if (clustersItems.length < labelClusters.length) {
+            if (this.state.minimized) {
+                const readMoreBtn = e(
+                    "div",
+                    {
+                        "className": "show-more-btn"
+                    },
+                    e(
+                        'a',
+                        {
+                            "href": "#",
+                            onClick: this.expand
+                        },
+                        [
+                            "Show more ",
+
+                            e(
+                                "i",
+                                {
+                                    "className": "fas fa-arrow-down"
+                                }
+                            )
+                        ]
+                    )
+                );
+                clustersItems.push(readMoreBtn);
+            }
+         }
+
+        if (!this.state.minimized) {
+            const readLessBtn = e(
+                "div",
+                {
+                    "className": "show-less-btn"
+                },
+                e(
+                    'a',
+                    {
+                        "href": "#",
+                        onClick: this.minimize
+                    },
+                    [
+                        "Show less ",
+
+                        e(
+                            "i",
+                            {
+                                "className": "fas fa-arrow-up"
+                            }
+                        )
+                    ]
+                )
+            );
+            clustersItems.push(readLessBtn);
+        }
+
+        const minimizedClass = this.state.minimized ? " minimized" : "";
 
         return e(
             "div",
@@ -286,11 +418,11 @@ class ClustersIdsList extends React.Component {
 }
 
 function createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas) {
-    const corefLabelsToClusters = categorizeClustersByLabels(Object.values(corefClustersMetas), "OTHER");
-    const eventsLabelsToClusters = categorizeClustersByLabels(Object.values(eventsClustersMetas), "EVENTS");
-    const propositionLabelsToClusters = categorizeClustersByLabels(Object.values(propositionClustersMetas), "PROPOSITIONS");
+    const corefLabelsToClusters = categorizeClustersByLabels(Object.values(corefClustersMetas));
+    const eventsLabelsToClusters = categorizeClustersByLabels(Object.values(eventsClustersMetas));
+    const propositionLabelsToClusters = categorizeClustersByLabels(Object.values(propositionClustersMetas));
 
-    const allClusters = Object.assign(propositionLabelsToClusters, eventsLabelsToClusters, corefLabelsToClusters)
+    const allClusters = Object.assign(eventsLabelsToClusters, propositionLabelsToClusters, corefLabelsToClusters)
 
     const htmlElementToRenderInto = document.createElement("div");
 
@@ -313,12 +445,12 @@ function getClusterFromGlobalByQuery(clusterQuery) {
     return globalClustersMetas[clusterQuery['cluster_type']][clusterQuery['cluster_id']];
 }
 
-function categorizeClustersByLabels(clusters, defaultLabel) {
+function categorizeClustersByLabels(clusters) {
     // Convert list of clusters to labels clusters
     const labelsClusters = {};
     clusters = clusters.sort((a,b) => b['num_mentions_filtered'] - a['num_mentions_filtered']);
     for (const cluster of clusters) {
-        const clusterLabel = cluster['cluster_label'] || defaultLabel;
+        const clusterLabel = cluster['cluster_label'];
         cluster['cluster_label'] = clusterLabel;
         const labelClusters = labelsClusters[clusterLabel] || [];
         labelsClusters[clusterLabel] = labelClusters;
@@ -1106,7 +1238,7 @@ function query(queryStr, clusterId, clusterType) {
 
     if (globalQuery.length > 0) {
         // create the query list item in the exploration pane:
-        insertQueryItemInExplorationPane(queryStr, exploreList);
+        /* insertQueryItemInExplorationPane(queryStr, exploreList); */
 
         // put a loading ellipsis:
         insertLoadingIndicatorInExplorationPane(exploreList);
@@ -1166,7 +1298,7 @@ function fetchCorefCluster(corefClusterId, corefClusterType) {
 
 function fetchPropositionCluster(propositionClusterId) {
     const propositionClusterText = globalPropositionClustersMetas[propositionClusterId]['display_name'];
-    insertQueryItemInExplorationPane(propositionClusterText, $propositionsPane[0]);
+//    insertQueryItemInExplorationPane(propositionClusterText, $propositionsPane[0]);
 
     insertLoadingIndicatorInExplorationPane($propositionsPane[0]);
 

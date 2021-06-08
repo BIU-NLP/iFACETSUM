@@ -232,16 +232,10 @@ class IntSummHandler(tornado.web.RequestHandler):
 
             if should_return_cluster:
                 cluster['num_mentions_filtered'] = cluster['num_mentions'] if query_is_empty else len(cluster_sentences_shown_in_query)
-                cluster['display_name_filtered'] = cluster['display_name'] if query_is_empty else create_cluster_obj(cluster_idx, cluster_type, [Mention.from_dict(mention) for mention in cluster_sentences_shown_in_query]).display_name
+                # cluster['display_name_filtered'] = cluster['display_name'] if query_is_empty else create_cluster_obj(cluster_idx, cluster_type, [Mention.from_dict(mention) for mention in cluster_sentences_shown_in_query]).display_name
                 clusters_filtered[cluster_idx] = cluster
 
         return clusters_filtered
-
-
-    def _get_mention_labels_keyphrases(self, clusters):
-        most_mentioned_clusters = sorted(clusters.values(), key=lambda cluster: len(cluster['mentions']), reverse=True)
-        return [{"label": cluster['cluster_label'], "text": cluster['display_name'], "cluster_id": cluster['cluster_id'], "cluster_type": cluster['cluster_type']} for cluster in most_mentioned_clusters[:50]]
-
 
     def _summary_sents_to_corpus_sents(self, corpus, summary: Summary) -> List[Sentence]:
         sentences_used = []

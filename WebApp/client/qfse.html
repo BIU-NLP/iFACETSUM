@@ -33,7 +33,6 @@
 <body>
 <div class="topBar">
     <div id="navigationBar" class="navbar">
-        <a id="backToIndex" class="fas fa-arrow-left" onclick="location.href='index.html';"></a>
         <div style="display: inline-flex;">
             <img src="biunlp_logo.png" alt="BIU NLP" width="50" height="50" style="margin-right: 20px">
             <h2>Exploratron</h2>
@@ -86,7 +85,7 @@
 </div>
 
 <!-- The contents of the page -->
-<div id="mainDiv" class="container" style="height: 900px;">
+<div id="mainDiv" class="container-fluid" style="height: 900px;">
 
     <div class="row">
         <div class="title">
@@ -132,37 +131,6 @@
                 </li>
             </ul>
         </div>
-        <div id="mainContent" class="col-9">
-            <div class="centeredForLeft">
-                <!-- Empty List - build programmatically with the queries and results -->
-                <div id="explorationPage">
-                    <div id="explorationPane" class="pane listItems col-12" style="padding-top: 20;"></div>
-                    <div id="highlightTipMessage" class="hidden" style="margin-top: 15px; float: left; border: 1px solid #025f70; padding: 3px; border-radius: 3px; font-size: small; cursor: default; text-shadow: 0 0 5px #f9c837;">
-                        Tip: Highlight text to query
-                    </div>
-                    <button id="repeatQueryButton" class="queryButton" style="margin-top:10px; float: right; height: 34px; padding: 5; display: none;">
-                        <div class="myTooltip">
-                            <i class="fas fa-redo-alt"></i>
-                            <i class="fas fa-plus"></i>
-                            <div class="bottomTooltip">
-                                Show more on last query
-                                <i></i> <!-- for pointer in tooltip -->
-                            </div>
-                        </div>
-                    </button>
-
-                </div>
-
-                <div id="documentsPane" class="pane col-12 hidden" style="padding-top: 20;">
-                </div>
-                <div id="mentionsPane" class="pane col-12 hidden" style="padding-top: 20;">
-                </div>
-                <div id="propositionsPane" class="pane col-12 hidden" style="padding-top: 20;">
-                </div>
-
-            </div>
-        </div>
-
         <!-- The right side of the page shows the querying area, or the questionnaire when needed -->
         <div id="rightSide" class="col-3">
             <div id="queryArea" class="centeredForRight">
@@ -234,6 +202,38 @@
 
             </div>
         </div>
+
+        <div id="mainContent" class="col-9">
+            <div class="centeredForLeft">
+                <!-- Empty List - build programmatically with the queries and results -->
+                <div id="explorationPage">
+                    <div id="explorationPane" class="pane listItems col-12" style="padding-top: 20;"></div>
+                    <div id="highlightTipMessage" class="hidden" style="margin-top: 15px; float: left; border: 1px solid #025f70; padding: 3px; border-radius: 3px; font-size: small; cursor: default; text-shadow: 0 0 5px #f9c837;">
+                        Tip: Highlight text to query
+                    </div>
+                    <button id="repeatQueryButton" class="queryButton" style="margin-top:10px; float: right; height: 34px; padding: 5; display: none;">
+                        <div class="myTooltip">
+                            <i class="fas fa-redo-alt"></i>
+                            <i class="fas fa-plus"></i>
+                            <div class="bottomTooltip">
+                                Show more on last query
+                                <i></i> <!-- for pointer in tooltip -->
+                            </div>
+                        </div>
+                    </button>
+
+                </div>
+
+                <div id="documentsPane" class="pane col-12 hidden" style="padding-top: 20;">
+                </div>
+                <div id="mentionsPane" class="pane col-12 hidden" style="padding-top: 20;">
+                </div>
+                <div id="propositionsPane" class="pane col-12 hidden" style="padding-top: 20;">
+                </div>
+
+            </div>
+        </div>
+
     </div>
 </div>
 
