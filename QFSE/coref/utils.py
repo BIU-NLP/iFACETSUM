@@ -36,7 +36,7 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
 
         docs_formatted[f"0_{doc.id}"] = sentences_formatted
 
-    # with open("docs_formatted.json", "w") as f:
+    # with open(f"{topic_id.replace(' ', '_')}_docs_formatted.json", "w") as f:
     #     f.write(json.dumps(docs_formatted))
 
     return docs_formatted

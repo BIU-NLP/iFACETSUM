@@ -22,7 +22,7 @@ h1 {
 }
 
 h5 {
-    color: #ffffff;
+    /* color: #ffffff; */
 }
 
 p {
@@ -128,8 +128,9 @@ ul {
 	background: none;
 	border: none;
 	float: right;
-	color: #025f70;
-	font-weight: 800;
+	/* color: #025f70; */
+    color: var(--dark);
+    text-decoration: underline dotted;
 }
 
 /*li {*/
@@ -173,8 +174,9 @@ ul {
 	background: none;
 	border: none;
 	float: right;
-	color: #025f70;
-	font-weight: 800;
+	/* color: #025f70; */
+    color: var(--dark);
+    text-decoration: underline dotted;
 }
 
 .keywordItem {
@@ -466,8 +468,9 @@ ul {
 	background: none;
 	border: none;
 	float: right;
-	color: #025f70;
-	font-weight: 800;
+	/* color: #025f70; */
+    color: var(--dark);
+    text-decoration: underline dotted;
 }
 
 
@@ -831,7 +834,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .sentence-span.highlight-hover {
     margin: 4px 8px 4px 4px;
-    color: var(--light);
+    color: var(--red);
 }
 
 /* end - highlight css */
@@ -920,4 +923,8 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     margin-left: 10px;
     color: var(--dark);
     text-decoration: underline dotted;
+}
+
+#queryArea {
+    width: 100%;  /* Don't shrink based on clusters sizes */
 }

@@ -224,7 +224,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         for cluster_idx, cluster in corpus.coref_clusters[cluster_type].items():
             # Return all if no query
             query_is_empty = doc_sent_indices is None
-            cluster_sentences_shown_in_query = False
+            cluster_sentences_shown_in_query = []
             if doc_sent_indices:
                 cluster_sentences_shown_in_query = [mention for mention in cluster['mentions'] if DocSent(mention['doc_id'], mention['sent_idx']) in doc_sent_indices]
 
@@ -257,30 +257,33 @@ class IntSummHandler(tornado.web.RequestHandler):
             "coref_tokens": self._split_sent_text_to_tokens(corpus_sent)
         } for corpus_sent in corpus_sents]
 
-    def _split_sent_text_to_tokens(self, sent) -> List[Union[TokensCluster, List[str]]]:
+    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool) -> List[Union[TokensCluster, List[str]]]:
         tokens = sent
         token_to_mention = defaultdict(list)
 
-        # # Coref
-        # hotfix_wrong_indices = True
-        # if hotfix_wrong_indices:
-        #     first_token_idx = sent.first_token_idx
-        #
-        # for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
-        #     mention_start = mentions['start']
-        #     mention_end = mentions['end']
-        #     if hotfix_wrong_indices:
-        #         mention_start -= first_token_idx
-        #         mention_end -= first_token_idx
-        #     for token_idx in range(mention_start, mention_end + 1):
-        #         token_to_mention[token_idx].append(mentions)
-        #
-        # # Propositions
-        # for mentions in sent.coref_clusters[COREF_TYPE_PROPOSITIONS]:
-        #     mention_start = mentions['start']
-        #     mention_end = mentions['end']
-        #     for token_idx in range(mention_start, mention_end + 1):
-        #         token_to_mention[token_idx].append(mentions)
+        if is_original_sentences:
+            tokens = sent.spacy_rep
+
+            # Coref - if not running CD LM
+            hotfix_wrong_indices = False
+            if hotfix_wrong_indices:
+                first_token_idx = sent.first_token_idx
+
+            for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
+                mention_start = mentions['start']
+                mention_end = mentions['end']
+                if hotfix_wrong_indices:
+                    mention_start -= first_token_idx
+                    mention_end -= first_token_idx
+                for token_idx in range(mention_start, mention_end + 1):
+                    token_to_mention[token_idx].append(mentions)
+
+            # Propositions
+            for mentions in sent.coref_clusters[COREF_TYPE_PROPOSITIONS]:
+                mention_start = mentions['start']
+                mention_end = mentions['end']
+                for token_idx in range(mention_start, mention_end + 1):
+                    token_to_mention[token_idx].append(mentions)
 
         # Split
 
@@ -349,7 +352,7 @@ class IntSummHandler(tornado.web.RequestHandler):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
         corpus = m_infoManager.getCorpus(clientId)
-        sentences = None
+        sentences = []
         doc_sent_indices_to_use = None
         if clusters_query:
             doc_sent_indices = []
@@ -361,8 +364,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                 sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
         length_in_words = 0
-        query_result = QueryResult([], clusters_query)
-        if sentences is not None:
+        query_result = QueryResult(None, [], clusters_query, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True)) for sent in sentences])
+        if any(sentences):
             if len(sentences) > 1:
                 summarizer = get_item("bart_summarizer")
                 summary_sents = summarizer.summarize(sentences)
@@ -370,12 +373,12 @@ class IntSummHandler(tornado.web.RequestHandler):
                 # No need to summarize one sentence
                 summary_sents = [sent.spacy_rep for sent in sentences]
 
-            query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent)) for sent in summary_sents]
+            query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False)) for sent in summary_sents]
 
             # Save queries and mark similar sentences to those used
             query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
             query_results_analyzer.analyze_repeating(query_result)
-            query_results_analyzer.add_query_results(query_result)
+            query_result.query_idx = query_results_analyzer.add_query_results(query_result)
 
             length_in_words = 0
 
