@@ -10,7 +10,7 @@ from nltk import word_tokenize, sent_tokenize
 
 from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES, MAX_MENTIONS_IN_CLUSTER
-from QFSE.coref.coref_labels import create_objs
+from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
 
@@ -49,10 +49,12 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
         file_name = "events_average_0.3_model_5_topic_level.conll"
         with open(f"{path_to_dir}/data/{file_name}") as f:
             data = f.read()
+        default_cluster = EVENTS_DEFAULT_CLUSTER
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
         file_name = "duc_entities.conll"
         with open(f"{path_to_dir}/data/coref/{file_name}") as f:
             data = f.read()
+        default_cluster = ENTITIES_DEFAULT_CLUSTER
 
     cache_file_path = f"{path_to_dir}/data/{file_name}.cache"
     try:
@@ -70,7 +72,7 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
         documents, clusters = parse_conll_coref_file(data)
         # documents, clusters = get_clusters(data, cluster_type)
 
-        clusters_objs = create_objs(clusters, cluster_type)
+        clusters_objs = create_objs(clusters, cluster_type, default_cluster)
 
         with open(cache_file_path, "wb") as f:
             pickle.dump((documents, clusters_objs), f)

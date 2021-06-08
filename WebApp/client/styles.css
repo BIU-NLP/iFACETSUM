@@ -1,7 +1,7 @@
 body {
-	background: #04A1BF;
 	text-align: center;
 	font-family: 'Open Sans', sans-serif;
+	background-color: #eee;
 }
 
 .title {
@@ -16,7 +16,7 @@ body {
 
 
 h1 {
-	color: #ffffff;
+	/*color: #ffffff;*/
 	text-transform: uppercase;
 	font-weight: 800;
 }
@@ -73,11 +73,10 @@ p {
 }
 
 .pane {
-    overflow-y: scroll;
+    /* overflow-y: scroll; */
     height: 510px;
     padding-top: 20;
     width: 100%;
-    background-color: #76CFE0;
 }
 
 ul {
@@ -137,14 +136,14 @@ ul {
 .exploreItem {
 	list-style: none;
 	padding: 10px 20px;
-	color: #ffffff;
+	/* color: #ffffff; */
 	/*text-transform: capitalize;*/
 	font-weight: 600;
 	/*border: 2px solid #025f70;*/
 	border-radius: 5px;
 	margin-bottom: 10px;
 	/*background: #4EB9CD;*/
-	background: #0593af;
+	/*background: #0593af;*/
 	transition: all 0.75s ease;
 	-webkit-transition: all 0.5s ease;
 	-moz-transition: all 0.5s ease;
@@ -155,17 +154,17 @@ ul {
 }
 
 .userItem {
-    background: #4ecda4;
+    /* background: #4ecda4; */
 }
 
 .exploreItem p:hover {
 	/*background: #76CFE0;*/
 	/*background: #04A1BF;*/
-	background: #038098;
+	/* background: #038098; */
 }
 
 .userItem:hover {
-    background: #3ecda4;
+    /* background: #3ecda4; */
 }
 
 
@@ -269,14 +268,12 @@ ul {
 .centeredForLeft {
   position: absolute;
   text-align: center;
-  right: 10;
   width: 100%;
 }
 
 .centeredForRight {
   position: absolute;
   text-align: center;
-  left: 10;
 }
 /* For splitting the screen to right-left end */
 
@@ -313,13 +310,6 @@ ul {
     z-index: 999;
 }
 
-.navbar {
-  background-color: #333;
-}
-
-.navbar h2 {
-    color: #f2f2f2;
-}
 
 /* Fixed menu bar at the top of the page */
 .navbar a {
@@ -494,7 +484,7 @@ ul {
     position: absolute;
     line-height: 24px;
     bottom: 25%;
-    color: white;
+    /* color: white; */
 }
 
 .dot {
@@ -883,18 +873,51 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 #clustersIdsListContainer {
     overflow-y: auto;
-    height: 500px;
     min-width: 300px;
 }
 
-.cluster-list-item {
+.cluster-list-item, .cluster-list-item label {
     cursor: pointer;
 }
 
 .list-group-item.selected {
-    background-color: #e6e6e7;
+    /* background-color: #e6e6e7; */
 }
 
 .sentence-seen {
     color: #7221a98c;
+}
+
+#mainDiv {
+    width: 80%;
+}
+
+#navigationBar {
+    padding: 20px 10%;  /* Should be half of mainDiv width */
+    background-color: white;
+    border-bottom: #dcdcdc 1px solid;
+}
+
+#clustersIdsListContainer .card-header, #clustersIdsListContainer .list-group-item {
+    border: 0;
+}
+
+#clustersIdsListContainer .card-header {
+    text-align: left;
+    background-color: white;
+    font-weight: 800
+}
+
+#clustersIdsListContainer .list-group-item .form-check {
+    width: 90%;  /* So the propositions won't touch the badge */
+    text-align: left;
+}
+
+
+/* Make them less stand out */
+.show-more-btn, .show-less-btn, .show-more-btn a, .show-less-btn a {
+    text-align: left;
+    margin-left: 10px;
+    color: var(--dark);
+    text-decoration: underline dotted;
 }
