@@ -31,6 +31,7 @@ var totalTextLength = 0;
 let globalDocumentsMetas = null;
 let globalCorefClustersMetas = null;
 let globalPropositionClustersMetas = null;
+let globalQueriesResults = {};
 const globalClustersMetas = {};
 var pageBaseUrl = "qfse.html";
 var summaryType = "qfse";
@@ -95,6 +96,7 @@ function resetPage() {
     curLoadingInicatorElement = null;
 }
 
+
 function setTopic(topicInfo) {
     var keyPhrasesList = topicInfo['keyPhraseList'];
     var name = topicInfo['topicName'];
@@ -155,6 +157,38 @@ function setTopic(topicInfo) {
     showPageToAnnotator();
 }
 
+function initializeModal() {
+    $('#origSentencesModal').on('show.bs.modal', function(event) {
+        const dataQueryIdx = $(event.relatedTarget).attr('data-query-idx');
+        const queryResult = globalQueriesResults[dataQueryIdx];
+        const origSentences = queryResult['orig_sentences'];
+
+        const htmlElementToRenderInto = document.createElement("div");
+
+        const fixedClusters = [];
+        for (const clusterQuery of queryResult['query']) {
+            fixedClusters.push(parseInt(clusterQuery['cluster_id']));
+        }
+
+        const reactToRender = e(
+            ListItem,
+            {
+                "resultSentences": origSentences,
+                "numSentToShow": 10,
+                "showPopover": false, // Don't show a popover inside a modalfile:///Users/eranh/OneDrive/Bar%20Ilan/git/exploratron/WebApp/client/qfse.html?topicId=Native%20American%20Challenges&algorithm=cluster
+                "fixedClusters": fixedClusters // Show only clusters that were used to query
+            }
+        );
+
+
+        ReactDOM.render(reactToRender, htmlElementToRenderInto);
+
+        const $modalBody = $('#origSentencesModal .modal-body');
+        $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+    });
+}
+
 function queryInputLength(){
 	return queryInputBox.value.length;
 }
@@ -198,7 +232,7 @@ class ClusterIdItem extends React.Component {
                 e(
                     "div",
                     {
-                        "className": "form-check",
+                        "className": "form-check"
                     },
                     [
                         e(
@@ -206,6 +240,7 @@ class ClusterIdItem extends React.Component {
                             {
                                 "className": "form-check-input",
                                 "type": "checkbox",
+                                "readOnly": "readOnly",
                                 "checked": clusterSelectedClassName ? "checked" : false
                             }
                         ),
@@ -287,8 +322,8 @@ class LabelClustersItem extends React.Component {
                 "div",
                 {
                     "className": "card-header",
-                    "dataParent": `#accordion-${clusterLabel}`,
-                    "dataToggle": "collapse"
+                    "data-parent": `#accordion-${clusterLabel}`,
+                    "data-toggle": "collapse"
                 },
                 clusterLabel
             )
@@ -666,19 +701,21 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
 }
 
 function insertSummaryItemInExplorationPane(queryResult, documentsMetas) {
+    const queryIdx = queryResult['query_idx'];
     const resultSentences = queryResult['result_sentences'];
+    const origSentences = queryResult['orig_sentences'];
 
     if (resultSentences.length > 0) {
         // a div is used to align the li item right:
         var listElementResult = document.createElement("div");
         listElementResult.classList.add("floatright");
 
-
-
         const liReact = e(
             ListItem,
             {
+                "queryIdx": queryIdx,
                 "resultSentences": resultSentences,
+                "origSentences": origSentences,
                 "numSentToShow": 3
             }
         );
@@ -959,7 +996,9 @@ class ListItem extends React.Component {
     }
 
     render() {
+        const queryIdx = this.props.queryIdx;
         const resultSentences = this.props.resultSentences;
+        const origSentences = this.props.origSentences;
         const numSentToShow = this.props.numSentToShow || 1;
         const sentences = [];
 
@@ -1026,6 +1065,24 @@ class ListItem extends React.Component {
                 );
                 sentences.push(readLessBtn);
             }
+        }
+
+        if (queryIdx) {
+            sentences.push(e(
+                'button',
+                {
+                    style: {
+                        "marginTop": "10px",
+                        "marginBottom": "10px",
+                        "cursor": "pointer"
+                    },
+                    "data-toggle": "modal",
+                    "data-target": "#origSentencesModal",
+                    "data-query-idx": queryIdx,
+                    "data-query-id": this.props.queryId
+                },
+                `This summary is based on ${origSentences.length} sentences`
+            ));
         }
 
         const minimizedClass = this.state.minimized ? " minimized" : "";
@@ -1434,5 +1491,6 @@ for (toolbarNavigationItem of $toolbarNavigationItems) {
     toolbarNavigationItem.addEventListener("click", changeScreen);
 }
 
+initializeModal();
 
 window.onload = onInitFunc;
