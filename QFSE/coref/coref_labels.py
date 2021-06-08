@@ -2,16 +2,30 @@ from collections import Counter, defaultdict
 from QFSE.Utilities import get_item
 from QFSE.models import Cluster
 
+PROPOSITIONS_DEFAULT_CLUSTER = "Key statements"
+EVENTS_DEFAULT_CLUSTER = "Key topics"
+ENTITIES_DEFAULT_CLUSTER = "Other"
 
-def create_objs(clusters, cluster_type):
+LABELS_MAP = {
+    "GPE": "Geopolitical Entity",
+    "EVENT": ENTITIES_DEFAULT_CLUSTER,
+    "ORG": "Organization",
+    "PERSON": "Person",
+    "DATE": "Date",
+    "NORP": "Nationality, Religious, Political",
+    "LOC": "Location"
+}
+
+
+def create_objs(clusters, cluster_type, default_cluster):
     clusters_objs = {}
     for cluster_id, mentions in clusters.items():
-        clusters_objs[cluster_id] = create_cluster_obj(cluster_id, cluster_type, mentions)
+        clusters_objs[cluster_id] = create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster)
 
     return clusters_objs
 
 
-def create_cluster_obj(cluster_id, cluster_type, mentions):
+def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
     nlp = get_item("spacy")
 
     ents_counter = Counter()
@@ -33,4 +47,5 @@ def create_cluster_obj(cluster_id, cluster_type, mentions):
     for mention in mentions_used_for_representative:
         token_counter[mention.token] += 1
     most_representative_mention = token_counter.most_common()[0][0]
+    cluster_label = LABELS_MAP.get(cluster_label, default_cluster)
     return Cluster(cluster_id, cluster_type, mentions, cluster_label, most_representative_mention, len(mentions))

@@ -227,7 +227,7 @@ function initializeTopic(topicId) { //, topicName) {
         // show that it is loading:
         document.getElementById("topicNameHeader").innerHTML = "Loading \"" + name + "\"...";
         document.getElementById("numDocumentsHeader").innerHTML = "";
-        insertLoadingIndicatorInExplorationPane(exploreList);
+        //insertLoadingIndicatorInExplorationPane(exploreList);
 
         // set that the request is now being sent to the server:
         isWaitingForInitial = true;

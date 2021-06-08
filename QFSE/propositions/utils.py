@@ -7,7 +7,7 @@ import nltk
 import pandas as pd
 
 from QFSE.consts import COREF_TYPE_PROPOSITIONS, MAX_MENTIONS_IN_CLUSTER
-from QFSE.coref.coref_labels import create_objs
+from QFSE.coref.coref_labels import create_objs, PROPOSITIONS_DEFAULT_CLUSTER
 from QFSE.coref.models import Mention
 from QFSE.models import PropositionClusters
 from QFSE.propositions.models import PropositionLine, PropositionCluster
@@ -176,7 +176,7 @@ def get_proposition_clusters(formatted_topics, corpus):
 
         documents, all_clusters = parse_propositions_file(df, corpus)
 
-        clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS)
+        clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS, PROPOSITIONS_DEFAULT_CLUSTER)
 
         with open(cache_file_path, "wb") as f:
             pickle.dump((documents, clusters_objs), f)
