@@ -130,106 +130,36 @@
                 </li>
             </ul>
         </div>
-        <!-- The right side of the page shows the querying area, or the questionnaire when needed -->
-        <div id="rightSide" class="col-3">
-            <div id="queryArea" class="centeredForRight">
-                <!-- Search box -->
-                <div class="queryBox col-12" style="display: none;">
-                    <input id="userInput" class="queryBox" type="search" placeholder="Enter a query...">
-                    <button id="enterQueryButton" class="queryButton">
-                        <div class="myTooltip">
-                            <i class="fas fa-arrow-right"></i>
-                            <div class="bottomTooltip">
-                                Run query
-                                <i></i> <!-- for pointer in tooltip -->
+        <div class="col-md-3 offset-md-1">
+            <div id="keywordsArea">
+                <div id="clustersIdsListContainer">
+                    <div class="card">
+                        <div id="navigation-header" class="card-header">Navigation</div>
+                        <div class="card-body">
+                            <div id="navigation-card">
+
                             </div>
                         </div>
-                    </button>
-                </div>
-
-                <div id="keywordsArea" style="display: none;">
-                    <div class="componentSubtitle" style="display: none;">
-                        Suggested Queries:
-                    </div>
-                    <!--place holder for list of keywords-->
-                    <div id="keywordsList">
-                    </div>
-                    <div id="clustersIdsListContainer">
-
                     </div>
                 </div>
-            </div>
-            <div id="documentsListArea" class="centeredForRight hidden">
-                <div class="componentSubtitle">
-                    Documents:
-                </div>
-                <div id="documentsList">
-                </div>
-            </div>
-            <div id="mentionsListArea" class="centeredForRight hidden">
-                <div class="componentSubtitle">
-                    Mentions:
-                </div>
-                <div id="mentionsList">
-                </div>
-            </div>
-            <div id="propositionsListArea" class="centeredForRight hidden">
-                <div class="componentSubtitle">
-                    Propositions:
-                </div>
-                <div id="propositionsList">
-                </div>
-            </div>
-            <div id="questionnaireArea" style="float: left; margin-right: 20px; margin-left: 10px; display: none;">
-                <div style="float: left; margin-bottom: 10px; color: wheat; font-size: 14;">Mark the statements whose information is covered in the presented text<br>(up to minor details). Then fill the short survey and click '<b>Submit</b>':</div>
-                <br>
-                <div id="questionnaireModalBody" class="modal-body"></div>
-                <div id="findTipMessage" style="margin-top: 15px; float: left; border: 1px solid #025f70; padding: 3px; border-radius: 3px; font-size: small; cursor: default;">
-                    Tip: Use the browser's "find in page" feature using CTRL-F.
-                </div>
-
-                <!-- The following form is hidden (via css) and is called after the actual submit button is clicked and handled.
-                     This is done so since the AMT submit cannot be done programatically using ajax due to access controls issues. -->
-                <form id="turkSubmit" action="externalSubmitUrl" method="post" style="display:none;">
-                    <input type="hidden" name="assignmentId" id="assignmentId" value="">
-                    <input type="hidden" name="hitId" id="hitId" value="">
-                    <input type="hidden" name="workerId" id="workerId" value="">
-                    <input type="hidden" name="turkSubmitTo" id="turkSubmitTo" value="">
-                    <input type="submit" value="Commit" name="submitButton" id="submitButton">
-                    <!-- See for explanation: https://stackoverflow.com/questions/8950486/mysterious-externalsubmit-failure-on-an-externalquestion-in-mechanical-turk-i -->
-                </form>
-
             </div>
         </div>
 
-        <div id="mainContent" class="col-9">
-            <div class="centeredForLeft">
+        <div id="mainContent" class="col-md-7">
+            <div>
                 <!-- Empty List - build programmatically with the queries and results -->
                 <div id="explorationPage">
-                    <div id="explorationPane" class="pane listItems col-12" style="padding-top: 20;"></div>
-                    <div id="highlightTipMessage" class="hidden" style="margin-top: 15px; float: left; border: 1px solid #025f70; padding: 3px; border-radius: 3px; font-size: small; cursor: default; text-shadow: 0 0 5px #f9c837;">
-                        Tip: Highlight text to query
-                    </div>
-                    <button id="repeatQueryButton" class="queryButton" style="margin-top:10px; float: right; height: 34px; padding: 5; display: none;">
-                        <div class="myTooltip">
-                            <i class="fas fa-redo-alt"></i>
-                            <i class="fas fa-plus"></i>
-                            <div class="bottomTooltip">
-                                Show more on last query
-                                <i></i> <!-- for pointer in tooltip -->
+                    <div class="card">
+                        <div id="summary-header" class="card-header">Summary</div>
+                        <div class="card-body">
+                            <div id="explorationPane" class="pane listItems card">
+                                <li class="exploreItem">
+                                    Query the document set using the navigation to the left. A summary will be produced for your query.
+                                </li>
                             </div>
                         </div>
-                    </button>
-
+                    </div>
                 </div>
-
-                <div id="documentsPane" class="pane col-12 hidden" style="padding-top: 20;">
-                </div>
-                <div id="mentionsPane" class="pane col-12 hidden" style="padding-top: 20;">
-                </div>
-                <div id="propositionsPane" class="pane col-12 hidden" style="padding-top: 20;">
-                </div>
-
             </div>
         </div>
 

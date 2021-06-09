@@ -4,8 +4,9 @@ from typing import List
 
 import requests
 
+
 class HuggingFaceSummarizer:
-    def __init__(self, model_name="facebook/bart-large-cnn"):
+    def __init__(self, model_name="facebook/bart-large"):
         api_token = os.getenv("API_TOKEN")
         self.headers = {"Authorization": f"Bearer {api_token}"}
         self.url = f"https://api-inference.huggingface.co/models/{model_name}"

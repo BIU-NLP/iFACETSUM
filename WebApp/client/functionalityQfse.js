@@ -1,5 +1,4 @@
 const e = React.createElement;
-var enterQueryButton = document.getElementById("enterQueryButton");
 let globalQuery = [];
 const $queryArea = $('#queryArea');
 const $documentsListArea = $('#documentsListArea');
@@ -14,9 +13,7 @@ const $documentsPane = $('#documentsPane');
 const $mentionsPane = $('#mentionsPane');
 const $propositionsPane = $('#propositionsPane');
 const globalListItemCallbacks = [];
-var repeatQueryButton = document.getElementById("repeatQueryButton");
 //var moreInfoButton = document.getElementById("addMoreButton");
-var queryInputBox = document.getElementById("userInput");
 var exploreList = document.getElementById("explorationPane");
 var keywordList = document.getElementById("keywordsList");
 var keywordsArea = document.getElementById("keywordsArea");
@@ -80,9 +77,6 @@ function setNoTopicChosen() {
     document.getElementById("numDocumentsHeader").innerHTML = "";
     // hide the keywords area and the query box:
     keywordsArea.style.display = "none";
-    //queryInputBox.style.display = "none";
-    //enterQueryButton.style.display = "none";
-    queryInputBox.setAttribute("disabled", "");
 }
 
 /* Resets the keyphrases list and the the exploration pane. */
@@ -90,9 +84,9 @@ function resetPage() {
     while (exploreList.firstChild) {
         exploreList.removeChild(exploreList.firstChild);
     }
-    while (keywordList.firstChild) {
-        keywordList.removeChild(keywordList.firstChild);
-    }
+//    while (keywordList.firstChild) {
+//        keywordList.removeChild(keywordList.firstChild);
+//    }
     curLoadingInicatorElement = null;
 }
 
@@ -119,7 +113,7 @@ function setTopic(topicInfo) {
     var textLength = topicInfo['textLength'];
     questionnaireList = topicInfo['questionnaire'];
 
-    resetPage();
+//    resetPage();
     curTopicId = topicId;
     // set the event name and keyphrases of the event:
     document.getElementById("topicNameHeader").innerHTML = name;
@@ -145,10 +139,7 @@ function setTopic(topicInfo) {
 
     // show the keywords area and search box in case they were hidden:
     keywordsArea.style.display = "block";
-    queryInputBox.removeAttribute("disabled");
 
-    // put focus on the query box:
-    queryInputBox.focus();
 
     // set that the request has been responded to:
     isWaitingForInitial = false;
@@ -187,10 +178,6 @@ function initializeModal() {
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
 
     });
-}
-
-function queryInputLength(){
-	return queryInputBox.value.length;
 }
 
 
@@ -417,7 +404,7 @@ class LabelClustersItem extends React.Component {
             "div",
             {
                 "id": `accordion-${clusterLabel}`,
-                "className": "list-group-item label-list-group-item list-group accordion card"
+                "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card"
             },
             clustersItems
        );
@@ -445,9 +432,31 @@ class ClustersIdsList extends React.Component {
         return e(
             "div",
             {
-                "className": "list-group"
+                "className": "list-group card"
             },
-            labelClustersItems
+            [
+                e(
+                    "div",
+                    {
+                        "id": "navigation-header",
+                        "className": "card-header"
+                    },
+                    "Navigation"
+                ),
+                e(
+                    "div",
+                    {
+                        "className": "card-body"
+                    },
+                    e(
+                        "div",
+                        {
+                            "id": "navigation-card"
+                        },
+                        labelClustersItems
+                    )
+                )
+            ]
        );
     }
 }
@@ -546,7 +555,6 @@ function createKeywordListElement(keyPhrasesList) {
                 keywordLi.classList.add("keywordUsed"); // put the keyword in "used" state
                 lastQueryType = 'keyword';
                 query(text, clusterId, clusterType);
-                queryInputBox.focus();
             }
         }
         // bind the event to the keyword list item (we use bind because of the loop - see: https://stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values )
@@ -786,7 +794,6 @@ class TokensGroup extends React.Component {
         if (groupId !== undefined) {
             let showHighlight = groupId !== undefined;
 
-
             // Don't highlight if requested fixed clusters
             if (this.props.fixedClusters && !this.props.fixedClusters.includes(groupId)) {
                 showHighlight = false;
@@ -814,6 +821,8 @@ class TokensGroup extends React.Component {
                 );
 //              innerHtml.push(groupIcon);
 
+            } else {
+                className += " highlight-not-fixed";
             }
         }
 
@@ -1068,6 +1077,11 @@ class ListItem extends React.Component {
         }
 
         if (queryIdx) {
+            let summaryMsg = `The summary is based on ${origSentences.length} sentences`;
+            if (origSentences.length == 1) {
+                summaryMsg = `The text is the original sentence`;
+            }
+
             sentences.push(e(
                 'button',
                 {
@@ -1081,7 +1095,7 @@ class ListItem extends React.Component {
                     "data-query-idx": queryIdx,
                     "data-query-id": this.props.queryId
                 },
-                `This summary is based on ${origSentences.length} sentences`
+                summaryMsg
             ));
         }
 
@@ -1222,7 +1236,6 @@ function showQuestionnaire() {
 
     // hide the query area
     queryArea.style.display = "none";
-    repeatQueryButton.style.display = "none";
     //moreInfoButton.style.display = "none";
 
     // the right and left sides were unbalanced until now to give more room for the summary area
@@ -1371,34 +1384,6 @@ function fetchPropositionCluster(propositionClusterId) {
     });
 }
 
-function queryOnButtonClick(){
-	if (queryInputLength() > 0 && canSendRequest()) { //makes sure that an empty queryInputBox field doesn't create a li
-        query(queryInputBox.value); //makes text from queryInputBox field the li text
-        queryInputBox.value = ""; //Reset text queryInputBox field
-	}
-}
-
-function queryOnKeyUp(event) {
-    if (queryInputLength() > 0) {
-        if (event.which == 13 && canSendRequest()) { //this now looks to see if you hit "enter"/"return"
-            //the 13 is the enter key's keycode, this could also be display by event.keyCode === 13
-            query(queryInputBox.value); //makes text from queryInputBox field the li text
-            queryInputBox.value = ""; //Reset text queryInputBox field
-        }
-        else if (event.which != 13) {
-            if (queryInputLength() == 1 || lastQueryType != 'highlight') {
-                // if the last query type was not a highlight, then this is free text
-                // if it is highlight, then we consider the query type a highlight even if some text is written in
-                // if the length is 1 now, then this is the first character of a query, so it must be free text
-                lastQueryType = 'freetext';
-            }
-        }
-	}
-    else {
-        lastQueryType = '';
-    }
-}
-
 function queryRepeatOnButtonClick() {
     if (lastQuery == null) {
         alert("No query to repeat.")
@@ -1482,9 +1467,6 @@ if (debugMode) {
     showDebug();
 }
 
-enterQueryButton.addEventListener("click",queryOnButtonClick);
-queryInputBox.addEventListener("keyup", queryOnKeyUp);
-repeatQueryButton.addEventListener("click", queryRepeatOnButtonClick);
 //moreInfoButton.addEventListener("click", moreInfoOnButtonClick);
 stopExploringButton.addEventListener("click", stopExploringButtonOnClick);
 for (toolbarNavigationItem of $toolbarNavigationItems) {
