@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, Set
 
 from dataclasses_json import dataclass_json
 
@@ -58,7 +58,7 @@ class DocSent:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class ClusterQuery:
     cluster_id: int
     cluster_type: str
@@ -94,3 +94,6 @@ class QueryResult:
     result_sentences: List[QueryResultSentence]
     query: List[ClusterQuery]
     orig_sentences: List[QueryResultSentence]
+
+    def get_doc_sent_indices(self) -> Set[DocSent]:
+        return {DocSent(sent.doc_id, sent.sent_idx) for sent in self.orig_sentences}

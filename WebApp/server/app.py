@@ -225,7 +225,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         clusters_filtered = {}
         for cluster_idx, cluster in corpus.coref_clusters[cluster_type].items():
             # Return all if no query
-            query_is_empty = doc_sent_indices is None
+            query_is_empty = doc_sent_indices is None or not any(doc_sent_indices)
             cluster_sentences_shown_in_query = []
             if doc_sent_indices:
                 cluster_sentences_shown_in_query = [mention for mention in cluster['mentions'] if DocSent(mention['doc_id'], mention['sent_idx']) in doc_sent_indices]
@@ -367,43 +367,47 @@ class IntSummHandler(tornado.web.RequestHandler):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
         corpus = m_infoManager.getCorpus(clientId)
-        sentences = []
-        doc_sent_indices_to_use = None
-        if clusters_query:
-            doc_sent_indices = []
-            for cluster_query in clusters_query:
-                cluster = self._get_clusters(corpus, cluster_query.cluster_id, cluster_query.cluster_type)
-                doc_sent_indices.append({DocSent(mention['doc_id'], mention['sent_idx']) for mention in cluster['mentions']})
-            if any(doc_sent_indices):
-                doc_sent_indices_to_use = set.intersection(*doc_sent_indices)
-                sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
-        length_in_words = 0
-        query_result = QueryResult(None, [], clusters_query, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True)) for sent in sentences])
-        if any(sentences):
-            if len(sentences) > 1:
-                summarizer = get_item("bart_summarizer")
-                summary_sents = summarizer.summarize(sentences)
-            else:
-                # No need to summarize one sentence
-                summary_sents = [sent.spacy_rep for sent in sentences]
+        query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
+        query_result = query_results_analyzer.get_result_if_exists(clusters_query)
 
-            query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False)) for sent in summary_sents]
+        is_cached_result = False
+        if query_result is not None:
+            is_cached_result = True
+        else:
+            sentences = []
+            if clusters_query:
+                doc_sent_indices = []
+                for cluster_query in clusters_query:
+                    cluster = self._get_clusters(corpus, cluster_query.cluster_id, cluster_query.cluster_type)
+                    doc_sent_indices.append({DocSent(mention['doc_id'], mention['sent_idx']) for mention in cluster['mentions']})
+                if any(doc_sent_indices):
+                    doc_sent_indices_to_use = set.intersection(*doc_sent_indices)
+                    sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
-            # Save queries and mark similar sentences to those used
-            query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
-            query_results_analyzer.analyze_repeating(query_result)
-            query_result.query_idx = query_results_analyzer.add_query_results(query_result)
+            query_result = QueryResult(None, [], clusters_query, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId, sent.sentIndex) for sent in sentences])
+            if any(sentences):
+                if len(sentences) > 1:
+                    summarizer = get_item("bart_summarizer")
+                    summary_sents = summarizer.summarize(sentences)
+                else:
+                    # No need to summarize one sentence
+                    summary_sents = [sent.spacy_rep for sent in sentences]
 
-            length_in_words = 0
+                query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False)) for sent in summary_sents]
+
+                # Save queries and mark similar sentences to those used
+                query_results_analyzer.analyze_repeating(query_result)
+                query_result.query_idx = query_results_analyzer.add_query_results(query_result)
 
         reply = {
             "reply_query": {
                 "queryResult": query_result.to_dict(),
-                "textLength": length_in_words,
-                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, doc_sent_indices_to_use),
-                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, doc_sent_indices_to_use),
-                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus, doc_sent_indices_to_use)
+                "isCachedResult": is_cached_result,
+                "textLength": 0,
+                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, query_result.get_doc_sent_indices()),
+                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, query_result.get_doc_sent_indices()),
+                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus, query_result.get_doc_sent_indices())
             }
         }
 
