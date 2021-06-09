@@ -270,7 +270,7 @@ class ClusterIdItem extends React.Component {
 }
 
 function compareClustersObjects(cluster1, cluster2) {
-    return cluster1['cluster_id'] == cluster2['cluster_id'] && cluster1['event_type'] == cluster2['event_type'];
+    return cluster1['cluster_id'] == cluster2['cluster_id'] && cluster1['cluster_type'] == cluster2['cluster_type'];
 }
 
 class LabelClustersItem extends React.Component {
