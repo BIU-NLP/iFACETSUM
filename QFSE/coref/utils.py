@@ -10,6 +10,7 @@ from nltk import word_tokenize, sent_tokenize
 
 from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES, MAX_MENTIONS_IN_CLUSTER
+from QFSE.coref.coref_expr import get_clusters, parse_doc_id
 from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
@@ -51,7 +52,9 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
             data = f.read()
         default_cluster = EVENTS_DEFAULT_CLUSTER
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
-        file_name = "duc_entities.conll"
+        # file_name = "duc_entities.conll"
+        # file_name = "spacy_wd_coref_duc.json"
+        file_name = "duc_predictions_ments.json"
         with open(f"{path_to_dir}/data/coref/{file_name}") as f:
             data = f.read()
         default_cluster = ENTITIES_DEFAULT_CLUSTER
@@ -69,8 +72,13 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
 
         # TODO: Call external coref API with `formatted_topics`
 
-        documents, clusters = parse_conll_coref_file(data)
-        # documents, clusters = get_clusters(data, cluster_type)
+        is_conll_file = file_name.endswith(".conll")
+
+        if is_conll_file:
+            documents, clusters = parse_conll_coref_file(data)
+        else:
+            data = json.loads(data)
+            documents, clusters = get_clusters(data, cluster_type)
 
         clusters_objs = create_objs(clusters, cluster_type, default_cluster)
 
@@ -125,9 +133,7 @@ def parse_line(line):
         if line.startswith("#end document"):
             return DocumentLine(None, False)
     elif len(items) == 8:
-        row_id_splitted = items[2].split("_")
-        topic_id = row_id_splitted[0]
-        doc_id = "_".join(row_id_splitted[1:])
+        topic_id, doc_id = parse_doc_id(items[2])
         sent_idx = int(items[3])
         token_idx = int(items[4])
         token = items[5]

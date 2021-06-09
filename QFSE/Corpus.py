@@ -61,12 +61,12 @@ class Corpus():
         fileIndex = 0
         documentsText = []
         for root, subdirs, files in os.walk(self.dirPath):
-            for filename in files:
+            for filename in sorted(files):
                 filepath = os.path.join(root, filename)
                 with open(filepath, 'r') as f:
                     fContent = f.read().replace('\n', ' ')
-                    fId = '{}_{}'.format(fileIndex, filename)
-                    self.documents.append(Document(fId, fContent, filepath, self.representationStyle))
+                    # fId = '{}_{}'.format(fileIndex, filename)
+                    self.documents.append(Document(filename, fContent, filepath, self.representationStyle))
                     documentsText.append(fContent)
                     fileIndex += 1
 
