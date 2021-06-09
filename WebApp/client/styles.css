@@ -332,7 +332,7 @@ ul {
   font-size: 16px;
   border: none;
   outline: none;
-  color: white;
+  /* color: white; */
   padding: 14px 16px;
   background-color: inherit;
   font-family: inherit;
@@ -814,7 +814,6 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     color: var(--gray-dark);
     background: var(--light);
     */
-    cursor: pointer;
     padding-left: 4px;
 }
 
@@ -828,7 +827,6 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     border: 2px solid;
     color: var(--gray-dark);
     background: var(--light);*/
-    cursor: pointer;
     padding-left: 4px;
 }
 

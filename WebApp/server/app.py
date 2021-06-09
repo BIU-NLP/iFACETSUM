@@ -4,6 +4,8 @@ import os
 from collections import defaultdict
 from typing import List, Set, Dict, Union
 
+from nltk import word_tokenize
+
 from QFSE.Sentence import Sentence
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_ENTITIES
 from QFSE.coref.coref_labels import create_cluster_obj
@@ -262,19 +264,28 @@ class IntSummHandler(tornado.web.RequestHandler):
         token_to_mention = defaultdict(list)
 
         if is_original_sentences:
-            tokens = sent.spacy_rep
+            tokens = word_tokenize(sent.text)
 
             # Coref - if not running CD LM
-            hotfix_wrong_indices = False
+            hotfix_wrong_indices = True
+            first_token_idx = 0
             if hotfix_wrong_indices:
                 first_token_idx = sent.first_token_idx
 
+            # Entities
             for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
                 mention_start = mentions['start']
                 mention_end = mentions['end']
                 if hotfix_wrong_indices:
                     mention_start -= first_token_idx
                     mention_end -= first_token_idx
+                for token_idx in range(mention_start, mention_end + 1):
+                    token_to_mention[token_idx].append(mentions)
+
+            # Events
+            for mentions in sent.coref_clusters[COREF_TYPE_EVENTS]:
+                mention_start = mentions['start']
+                mention_end = mentions['end']
                 for token_idx in range(mention_start, mention_end + 1):
                     token_to_mention[token_idx].append(mentions)
 
@@ -309,7 +320,11 @@ class IntSummHandler(tornado.web.RequestHandler):
         tokens_groups: List[Union[TokensCluster, List[str]]] = []
         open_mentions_by_ids = {}
         for token_idx, token in enumerate(tokens):
-            token = token.text_with_ws
+            if isinstance(token, str):
+                # we used word_tokenize, can't reconstruct
+                token = token + " "
+            else:
+                token = token.text_with_ws
             if token_idx in token_to_mention:
                 mentions = token_to_mention[token_idx]
                 open_mentions_to_flush = {}
