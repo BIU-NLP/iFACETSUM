@@ -194,7 +194,7 @@ def get_proposition_clusters(formatted_topics, corpus):
             # document.coref_clusters[COREF_TYPE_PROPOSITIONS] = document_proposition_clusters
             mentions = [mention for mention in mentions if mention['cluster_idx'] not in clusters_ids_to_filter]
             for mention in mentions:
-                document.sentences[mention['sent_idx']].coref_clusters[PropositionClusters].append(mention)
+                document.sentences[mention['sent_idx']].coref_clusters[COREF_TYPE_PROPOSITIONS].append(mention)
 
     corpus.coref_clusters[COREF_TYPE_PROPOSITIONS] = propositions_clusters_dict['cluster_idx_to_mentions']
 
