@@ -188,7 +188,7 @@ def get_proposition_clusters(formatted_topics, corpus):
     propositions_clusters_dict = propositions_clusters.to_dict()
     doc_names_to_clusters = propositions_clusters_dict['doc_name_to_clusters']
     for document in corpus.documents:
-        doc_id = document.id.split("_")[1]
+        doc_id = document.id
         if doc_id in doc_names_to_clusters:
             mentions = doc_names_to_clusters[doc_id]
             # document.coref_clusters[COREF_TYPE_PROPOSITIONS] = document_proposition_clusters

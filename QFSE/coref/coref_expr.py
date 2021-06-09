@@ -6,7 +6,7 @@ from QFSE.coref.models import Mention
 def get_clusters(data, cluster_type) -> Tuple[Dict[str, List[Mention]], Dict[int, List[Mention]]]:
     clusters = dict()
     for ment in data:
-        doc_id = ment['doc_id'][ment['doc_id'].index("_")+1:]
+        topic_id, doc_id = parse_doc_id(ment['doc_id'])
         cluster_id = int(ment['coref_chain'])
         tok_star = int(ment['tokens_number'][0])
         tok_end = int(ment['tokens_number'][-1])
@@ -32,3 +32,11 @@ def get_clusters(data, cluster_type) -> Tuple[Dict[str, List[Mention]], Dict[int
             documents[mention.doc_id].append(mention)
 
     return documents, clusters
+
+
+def parse_doc_id(doc_id):
+    row_id_splitted = doc_id.split("_")
+    topic_id = row_id_splitted[0]
+    doc_id = "_".join(row_id_splitted[2:])  # Remove both topic id and document id
+
+    return topic_id, doc_id
