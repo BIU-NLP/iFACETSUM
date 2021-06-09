@@ -3,7 +3,7 @@ from QFSE.Utilities import get_item
 from QFSE.models import Cluster
 
 PROPOSITIONS_DEFAULT_CLUSTER = "Key statements"
-EVENTS_DEFAULT_CLUSTER = "Key topics"
+EVENTS_DEFAULT_CLUSTER = "Key concepts"
 ENTITIES_DEFAULT_CLUSTER = "Other"
 
 LABELS_MAP = {
@@ -32,11 +32,13 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
     labels_to_mentions = defaultdict(list)
     for mention in mentions:
         doc = nlp(mention.token)
+        label = "NO_LABEL"
         for ent in doc.ents:
             # Only if the whole string is an entity
             if ent.text == mention.token:
-                ents_counter[ent.label_] += 1
-                labels_to_mentions[ent.label_].append(mention)
+                label = ent.label_
+        ents_counter[label] += 1
+        labels_to_mentions[label].append(mention)
 
     mentions_used_for_representative = mentions
     cluster_label = None
