@@ -83,7 +83,7 @@ function onInitFunc() {
         startButton.addEventListener("click", startButtonClick);
     }
 
-    setAMTvalues(assignmentIdVal, hitIdVal, workerIdVal, turkSubmitToVal)
+//    setAMTvalues(assignmentIdVal, hitIdVal, workerIdVal, turkSubmitToVal)
 
     // hide the navigation bar if needed (e.g. for mechanical turk external question):
     if (allowNavigate == "0") {
@@ -249,15 +249,15 @@ function setQueryResponse(queryResultInfo) {
     globalQueriesResults[queryResult['query_idx']] = queryResult;
     createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
 
+    resetPage();
+
     // remove the loading ellipsis:
     if (curLoadingInicatorElement != null) {
         exploreList.removeChild(curLoadingInicatorElement);//exploreList.lastChild);
         curLoadingInicatorElement = null;
     }
 
-    if (!isCachedResult) {
-        insertSummaryItemInExplorationPane(queryResult, globalDocumentsMetas);
-    }
+    insertSummaryItemInExplorationPane(queryResult, globalDocumentsMetas);
     // scroll to bottom:
     //  exploreList.scrollTop = exploreList.scrollHeight;
 
