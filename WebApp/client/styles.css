@@ -72,16 +72,20 @@ p {
     display: none; /* initially not shown */
 }
 
-.pane, #navigation-card {
+#navigation-card {
+    height: 590px;
+    overflow-y: scroll;
+}
+
+.pane, #navigation-card > div {
     /* overflow-y: scroll; */
-    min-height: 510px;
+    min-height: 550px;
     /* padding-top: 20; */
     width: 100%;
 }
 
 ul {
 	text-align: left;
-	margin-top: 20px;
 }
 
 #backToIndex {
@@ -724,6 +728,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     margin-bottom: 10px;
     cursor: pointer;
     display: flex;
+    width: 100%;
 }
 
 .sentence-span {
@@ -817,9 +822,11 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     padding-left: 4px;
 }
 
+/*
 .highlight-not-fixed {
     border: 1px dashed;
 }
+*/
 
 .highlight-no-hover {
     border: 1px dashed;
@@ -939,4 +946,8 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 #explorationPane {
     border: 0;
+}
+
+#explorationPane ul {
+    padding: 0;  /* Cancel default padding, not related */
 }
