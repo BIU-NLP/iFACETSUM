@@ -166,7 +166,7 @@ function initializeModal() {
             {
                 "resultSentences": origSentences,
                 "numSentToShow": 10,
-                "showPopover": false, // Don't show a popover inside a modalfile:///Users/eranh/OneDrive/Bar%20Ilan/git/exploratron/WebApp/client/qfse.html?topicId=Native%20American%20Challenges&algorithm=cluster
+                "showPopover": false, // Don't show a popover inside a modal
                 "fixedClusters": fixedClusters // Show only clusters that were used to query
             }
         );
@@ -177,6 +177,28 @@ function initializeModal() {
         const $modalBody = $('#origSentencesModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
 
+    });
+
+    $('#historyModal').on('show.bs.modal', function(event) {
+        const queryResults = Object.values(globalQueriesResults);
+
+        const htmlElementToRenderInto = document.createElement("div");
+
+        const reactToRender = e(
+            SummaryList,
+            {
+                "queryResults": queryResults,
+                "numSentToShow": 10,
+                "showPopover": false, // Don't show a popover inside a modal
+                "showHistoryBtn": false // Don't show history button inside history modal
+            }
+        );
+
+
+        ReactDOM.render(reactToRender, htmlElementToRenderInto);
+
+        const $modalBody = $('#historyModal .modal-body');
+        $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
     });
 }
 
@@ -446,12 +468,12 @@ class ClustersIdsList extends React.Component {
                 e(
                     "div",
                     {
+                        "id": "navigation-card",
                         "className": "card-body"
                     },
                     e(
                         "div",
                         {
-                            "id": "navigation-card"
                         },
                         labelClustersItems
                     )
@@ -708,7 +730,22 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
     paneItem.appendChild(listElementQuery); //add to exploration list
 }
 
-function insertSummaryItemInExplorationPane(queryResult, documentsMetas) {
+function insertSummaryItemsInExplorationPane(queryResults) {
+    const listElementResult = document.createElement("div");
+
+    const liReact = e(
+        SummaryList,
+        {
+            "queryResults": queryResults
+        }
+    );
+
+    ReactDOM.render(liReact, listElementResult);
+
+    exploreList.appendChild(listElementResult);
+}
+
+function insertSummaryItemInExplorationPane(queryResult) {
     const queryIdx = queryResult['query_idx'];
     const resultSentences = queryResult['result_sentences'];
     const origSentences = queryResult['orig_sentences'];
@@ -1097,6 +1134,22 @@ class ListItem extends React.Component {
                 },
                 summaryMsg
             ));
+
+            if (this.props.showHistoryBtn) {
+                sentences.push(e(
+                    'button',
+                    {
+                        style: {
+                            "marginTop": "10px",
+                            "marginBottom": "10px",
+                            "cursor": "pointer"
+                        },
+                        "data-toggle": "modal",
+                        "data-target": "#historyModal"
+                    },
+                    `Show history`
+                ));
+            }
         }
 
         const minimizedClass = this.state.minimized ? " minimized" : "";
@@ -1108,6 +1161,51 @@ class ListItem extends React.Component {
            },
            sentences
        );
+    }
+}
+
+class SummaryList extends React.Component {
+    render() {
+        const queryResults = this.props.queryResults;
+        const showPopover = this.props.showPopover;
+        const numSentToShow = this.props.numSentToShow;
+        const showHistoryBtn = this.props.showHistoryBtn === undefined ? true : this.props.showHistoryBtn;
+
+        const queryResultItems = [];
+
+        for (const queryResult of queryResults) {
+            const queryIdx = queryResult['query_idx'];
+            const resultSentences = queryResult['result_sentences'];
+            const origSentences = queryResult['orig_sentences'];
+
+            const fixedClusters = [];
+            for (const clusterQuery of queryResult['query']) {
+                fixedClusters.push(parseInt(clusterQuery['cluster_id']));
+            }
+
+            if (resultSentences.length > 0) {
+                const queryResultItem = e(
+                    ListItem,
+                    {
+                        "queryIdx": queryIdx,
+                        "resultSentences": resultSentences,
+                        "origSentences": origSentences,
+                        "numSentToShow": numSentToShow || 3,
+                        "fixedClusters": fixedClusters,
+                        "showPopover": showPopover,
+                        "showHistoryBtn": showHistoryBtn
+                    }
+                );
+
+                queryResultItems.push(queryResultItem);
+            }
+        }
+
+        return e(
+            "ul",
+            {},
+            queryResultItems
+        )
     }
 }
 
