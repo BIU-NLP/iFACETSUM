@@ -62,6 +62,7 @@ class DocSent:
 class ClusterQuery:
     cluster_id: int
     cluster_type: str
+    token: str
 
 
 @dataclass_json
