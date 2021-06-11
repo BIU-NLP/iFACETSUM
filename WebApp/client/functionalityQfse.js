@@ -128,11 +128,6 @@ function setTopic(topicInfo) {
 //        ' on';
 
     createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
-    createKeywordListElement(keyPhrasesList);
-    createDocumentsListElement(documentsMetas);
-    createMentionsListElement(corefClustersMetas);
-    createPropositionsListElement(propositionClustersMetas);
-//    insertSummaryItemInExplorationPane(initialSummaryList, documentsMetas);
 
     // keep the text length so far:
     totalTextLength = textLength;
@@ -203,6 +198,14 @@ function initializeModal() {
 }
 
 
+function removeQueryItem(clusterQuery) {
+    if (canSendRequest()) {
+        globalQuery = globalQuery.filter(currClusterQuery => !compareClustersObjects(currClusterQuery, clusterQuery));
+        query(null, null, null);
+    }
+}
+
+
 class ClusterIdItem extends React.Component {
     query = () => {
         if (canSendRequest()) {
@@ -212,8 +215,7 @@ class ClusterIdItem extends React.Component {
             const clusterType = cluster['cluster_type'];
 
             if (this.props.clusterSelected) {
-                globalQuery = globalQuery.filter(clusterQuery => clusterQuery != this.props.clusterQuery);
-                query(null, null, null);
+                removeQueryItem(this.props.clusterQuery);
             } else {
                 query(text, clusterId, clusterType);
             }
@@ -225,11 +227,17 @@ class ClusterIdItem extends React.Component {
         const cluster = this.props.cluster;
         const clusterSelectedClassName = this.props.clusterSelected ? "selected" : "";
 
-        const allMentions = [];
+        const mentionCounter = {};
         for (const mention of cluster['mentions']) {
-            allMentions.push(mention['token']);
+            const token = mention['token'];
+            const mentionCount = mentionCounter[token] || 0;
+            mentionCounter[token] = mentionCount + 1
         }
 
+        const mentionWithCount = Object.keys(mentionCounter).map(key => [key, mentionCounter[key]]);
+        mentionWithCount.sort((first, second) => second[1] - first[1]);
+
+        const allMentionsText = mentionWithCount.map(mentionWithCount => `${mentionWithCount[0]} (${mentionWithCount[1]})`).join("\n");
 
         return e(
             "div",
@@ -269,7 +277,7 @@ class ClusterIdItem extends React.Component {
                     {
                         "className": "badge badge-primary badge-pill",
                         "data-toggle": "tooltip",
-                        "title": allMentions.join(", ")
+                        "title": allMentionsText
                     },
                     `${cluster['num_mentions_filtered']}`
                 )
@@ -504,7 +512,7 @@ function createClustersIdsList(corefClustersMetas, eventsClustersMetas, proposit
     ReactDOM.render(reactToRender, htmlElementToRenderInto);
 
     const $clustersIdsListContainer = $('#clustersIdsListContainer');
-    $clustersIdsListContainer[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+    $clustersIdsListContainer[0].replaceChildren(htmlElementToRenderInto);
 }
 
 function getClusterFromGlobalByQuery(clusterQuery) {
@@ -523,196 +531,73 @@ function categorizeClustersByLabels(clusters) {
         labelClusters.push(cluster);
     }
 
-    return labelsClusters
+    return labelsClusters;
 }
 
-/* Initializes the list of keyphrases. */
-function createKeywordListElement(keyPhrasesList) {
-    // add the keyphrases
-    for (var i = 0; i < keyPhrasesList.length; i++) {
-        const keyPhrase = keyPhrasesList[i];
+class QueryBadgeItem extends React.Component {
 
-        // create the keyphrase list item and add it to the keywordList div:
-        var liId = "li_keyword_"+i
-        var li = document.createElement("li");
-        li.setAttribute("id", liId);
-        let text = keyPhrase['text'];
-
-        const childElement = document.createElement("span");
-
-        if ('label' in keyPhrase) {
-            const mentionMarker = "*";
-            if (keyPhrase['label'] !== null) {
-                text = `${mentionMarker} ${keyPhrase['label']}: ${text}`;
-            } else {
-                text = `${mentionMarker} ${text}`;
-            }
-            childElement.setAttribute('data-keyphrase-cluster-id', keyPhrase['cluster_id']);
-            childElement.setAttribute('data-keyphrase-cluster-type', keyPhrase['cluster_type']);
-        }
-        childElement.setAttribute('data-keyphrase-text', text);
-        childElement.setAttribute('data-keyphrase', text);
-        childElement.innerText = text;
-        li.appendChild(childElement);
-        li.classList.add("keywordItem");
-        keywordList.appendChild(li);
-
-        // create the event when the keyword is clicked:
-        function keywordChosen(keywordLi) {
-            // if it was not already used, search this keyphrase:
-            //if (!isWaitingForResponse && !keywordLi.classList.contains("keywordUsed")) {
-
-            if (canSendRequest()) {
-                $innerSpan = $(keywordLi).find('[data-keyphrase]');
-                let clusterId = null;
-                let clusterType = null;
-                let text = $innerSpan.attr('data-keyphrase-text');
-                if ($innerSpan.attr('data-keyphrase-cluster-id')) {
-                    clusterId = $innerSpan.attr('data-keyphrase-cluster-id')
-                    clusterType = $innerSpan.attr('data-keyphrase-cluster-type')
-                }
-                if (text != "") {
-                    text = text.trim();
-                }
-                keywordLi.classList.add("keywordUsed"); // put the keyword in "used" state
-                lastQueryType = 'keyword';
-                query(text, clusterId, clusterType);
-            }
-        }
-        // bind the event to the keyword list item (we use bind because of the loop - see: https://stackoverflow.com/questions/19586137/addeventlistener-using-for-loop-and-passing-values )
-        li.addEventListener("click", keywordChosen.bind(this, li), false);
-    }
-}
-
-class PaneNavListItem extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
+    removeClicked = () => {
+        removeQueryItem(this.props.clusterQuery);
     }
 
     render() {
-        const listItemIdx = this.props.i;
-        const text = this.props.text;
-        const itemId = this.props.itemId;
-        const listType = this.props.listType;
+        const clusterQuery = this.props.clusterQuery;
+        const showHistoryBtn = this.props.showHistoryBtn;
+
+        let text = `${clusterQuery['token']} x`;
+        let properties = {
+             "className": "badge badge-pill badge-secondary query-badge-item",
+             onClick: this.removeClicked
+         };
+
+         // If we are not inside the history modal
+         if (showHistoryBtn) {
+            properties['className'] += ' clickable';
+         } else {
+            text = `${clusterQuery['token']}`
+            delete properties["onClick"];
+         }
 
         return e(
-            "li",
-            {
-                "id": `li_${listType}_${listItemIdx}`,
-                "className": "keywordItem",
-                "data-cluster-idx": itemId
-            },
+            "span",
+            properties,
             text
-       );
+        )
     }
 }
 
-function createDocumentsListElement(documentsMetas) {
-    for (const [i, documentMeta] of Object.values(documentsMetas).entries()) {
-       var listElementResult = document.createElement("div");
+class QueryBadgesList extends React.Component {
+    render() {
+        const globalQuery = this.props.globalQuery;
+        const showHistoryBtn = this.props.showHistoryBtn;
 
-        const liReact = e(
-            PaneNavListItem,
-            {
-                "i": i,
-                "text": documentMeta['id'],
-                "itemId": documentMeta['id'],
-                "listType": "document"
-            }
-        );
-
-        ReactDOM.render(liReact, listElementResult);
-        $documentsList.append(listElementResult);
-
-        function documentChosen(documentLi) {
-
-            if (canSendRequest()) {
-                let itemText = documentLi.innerText;
-                if (itemText != "") {
-                    itemText = itemText.trim();
+        const queryItems = [];
+        if (globalQuery.length > 0) {
+            queryItems.push(e(
+                "span",
+                {},
+                "Query:"
+            ));
+        }
+        for (const clusterQuery of globalQuery) {
+            queryItems.push(e(
+                QueryBadgeItem,
+                {
+                    "clusterQuery": clusterQuery,
+                    "showHistoryBtn": showHistoryBtn
                 }
-                $innerLi = $(documentLi).find('li');
-                const itemId = $innerLi.attr('data-cluster-idx');
-                $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
-                lastQueryType = 'keyword';
-                fetchDocument(itemId, itemText);
-            }
+            ))
         }
 
-        listElementResult.addEventListener("click", documentChosen.bind(this, listElementResult), false);
-    }
-
-}
-
-function createMentionsListElement(corefClustersMetas) {
-    for (const [i, corefClusterMeta] of Object.values(corefClustersMetas).entries()) {
-       var listElementResult = document.createElement("div");
-
-        const liReact = e(
-            PaneNavListItem,
+        return e(
+            "div",
             {
-                "i": i,
-                "text": corefClusterMeta['display_name'],
-                "itemId": corefClusterMeta['cluster_idx'],
-                "listType": "mention"
-            }
+                "className": "queryBadgesPane"
+            },
+            queryItems
         );
-
-        ReactDOM.render(liReact, listElementResult);
-        $mentionsList.append(listElementResult);
-
-        function corefClusterChosen(corefClusterLi) {
-
-            if (canSendRequest()) {
-                const itemText = corefClusterLi.innerText;
-                $innerLi = $(corefClusterLi).find('li');
-                const itemId = $innerLi.attr('data-cluster-idx');
-                $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
-                lastQueryType = 'keyword';
-                fetchCorefCluster(itemId, corefClusterType);
-            }
-        }
-
-        listElementResult.addEventListener("click", corefClusterChosen.bind(this, listElementResult), false);
     }
 }
-
-function createPropositionsListElement(propositionClustersMetas) {
-    for (const [i, propositionClusterMeta] of Object.values(propositionClustersMetas).entries()) {
-       var listElementResult = document.createElement("div");
-
-        const liReact = e(
-            PaneNavListItem,
-            {
-                "i": i,
-                "text": propositionClusterMeta['display_name'],
-                "itemId": propositionClusterMeta['cluster_idx'],
-                "listType": "mention"
-            }
-        );
-
-        ReactDOM.render(liReact, listElementResult);
-        $propositionsList.append(listElementResult);
-
-        function propositionClusterChosen(propositionClusterLi) {
-
-            if (canSendRequest()) {
-                const itemText = propositionClusterLi.innerText;
-                $innerLi = $(propositionClusterLi).find('li');
-                const itemId = $innerLi.attr('data-cluster-idx');
-                $innerLi[0].classList.add("keywordUsed"); // put the keyword in "used" state
-                lastQueryType = 'keyword';
-                fetchPropositionCluster(itemId);
-            }
-        }
-
-        listElementResult.addEventListener("click", propositionClusterChosen.bind(this, listElementResult), false);
-    }
-}
-
-
-
 
 function insertQueryItemInExplorationPane(txt, paneItem) {
     // a div is used to align the li item left:
@@ -743,38 +628,6 @@ function insertSummaryItemsInExplorationPane(queryResults) {
     ReactDOM.render(liReact, listElementResult);
 
     exploreList.appendChild(listElementResult);
-}
-
-function insertSummaryItemInExplorationPane(queryResult) {
-    const queryIdx = queryResult['query_idx'];
-    const resultSentences = queryResult['result_sentences'];
-    const origSentences = queryResult['orig_sentences'];
-
-    if (resultSentences.length > 0) {
-        // a div is used to align the li item right:
-        var listElementResult = document.createElement("div");
-        listElementResult.classList.add("floatright");
-
-        const liReact = e(
-            ListItem,
-            {
-                "queryIdx": queryIdx,
-                "resultSentences": resultSentences,
-                "origSentences": origSentences,
-                "numSentToShow": 3
-            }
-        );
-
-        ReactDOM.render(liReact, listElementResult);
-
-        exploreList.appendChild(listElementResult); //add to exploration list
-
-    //    // extend the list of all texts:
-    //    Array.prototype.push.apply(allTextsInSession, resultSentences);
-
-        // iteration done
-        iterationNum++;
-    }
 }
 
 function openDocument(e) {
@@ -1178,12 +1031,22 @@ class SummaryList extends React.Component {
             const resultSentences = queryResult['result_sentences'];
             const origSentences = queryResult['orig_sentences'];
 
-            const fixedClusters = [];
-            for (const clusterQuery of queryResult['query']) {
-                fixedClusters.push(parseInt(clusterQuery['cluster_id']));
-            }
+            const queryBadgeItem = e(
+                QueryBadgesList,
+                {
+                    "globalQuery": queryResult['query'],
+                    "showHistoryBtn": showHistoryBtn
+                }
+            );
+
+            queryResultItems.push(queryBadgeItem)
 
             if (resultSentences.length > 0) {
+                const fixedClusters = [];
+                for (const clusterQuery of queryResult['query']) {
+                    fixedClusters.push(parseInt(clusterQuery['cluster_id']));
+                }
+
                 const queryResultItem = e(
                     ListItem,
                     {
@@ -1390,11 +1253,21 @@ function showQuestionnaire() {
 
 /* Handle a query string. */
 function query(queryStr, clusterId, clusterType) {
+    resetPage();
+
     if (clusterType) {
         globalQuery.push({
             "cluster_id": clusterId,
-            "cluster_type": clusterType
+            "cluster_type": clusterType,
+            "token": queryStr
         });
+
+        const emptyQueryResults = [{
+            "query": globalQuery,
+            "result_sentences": []
+        }];
+
+        insertSummaryItemsInExplorationPane(emptyQueryResults);
     }
     createClustersIdsList(globalClustersMetas['entities'], globalClustersMetas['events'], globalClustersMetas['propositions']);
 

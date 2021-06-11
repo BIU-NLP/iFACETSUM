@@ -54,7 +54,8 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
         # file_name = "duc_entities.conll"
         # file_name = "spacy_wd_coref_duc.json"
-        file_name = "duc_predictions_ments.json"
+        # file_name = "duc_predictions_ments.json"
+        file_name = "wec_native_predicted_clusters.json"
         with open(f"{path_to_dir}/data/coref/{file_name}") as f:
             data = f.read()
         default_cluster = ENTITIES_DEFAULT_CLUSTER
