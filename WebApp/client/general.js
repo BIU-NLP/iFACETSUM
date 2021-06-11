@@ -238,6 +238,7 @@ function initializeTopic(topicId) { //, topicName) {
 }
 
 function setQueryResponse(queryResultInfo) {
+    resetPage();
     const isCachedResult = queryResultInfo['isCachedResult'];
     const queryResult = queryResultInfo['queryResult'];
     const corefClustersMetas = queryResultInfo['corefClustersMetas'];
@@ -249,15 +250,12 @@ function setQueryResponse(queryResultInfo) {
     globalQueriesResults[queryResult['query_idx']] = queryResult;
     createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
 
-    resetPage();
-
     // remove the loading ellipsis:
     if (curLoadingInicatorElement != null) {
         exploreList.removeChild(curLoadingInicatorElement);//exploreList.lastChild);
         curLoadingInicatorElement = null;
     }
 
-//    insertSummaryItemsInExplorationPane(Object.values(globalQueriesResults));
     insertSummaryItemsInExplorationPane([queryResult]);
 
     // scroll to bottom:
