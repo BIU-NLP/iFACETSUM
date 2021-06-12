@@ -6,7 +6,7 @@ import requests
 
 
 class HuggingFaceSummarizer:
-    def __init__(self, model_name="facebook/bart-large"):
+    def __init__(self, model_name):  # bart-large-cnn
         api_token = os.getenv("API_TOKEN")
         self.headers = {"Authorization": f"Bearer {api_token}"}
         self.url = f"https://api-inference.huggingface.co/models/{model_name}"
@@ -15,17 +15,19 @@ class HuggingFaceSummarizer:
         from QFSE.Utilities import get_item
 
         inputs = [". ".join([sent.text for sent in sentences])]
+        summary_sents = []
 
-        try:
-            def query(payload):
-                data = json.dumps(payload)
-                response = requests.request("POST", self.url, headers=self.headers, data=data)
-                return json.loads(response.content.decode("utf-8"))
+        query_api = False
 
-            summary_sents = [x['summary_text'] for x in query(inputs)]
-        except:
+        if query_api:
+            try:
+                summary_sents = [x['summary_text'] for x in self.query(inputs)]
+            except:
+                query_api = False
+
+        if not query_api:
             model, tokenizer = get_item("abstract_summarizer")
-            inputs = tokenizer(inputs, return_tensors="pt")
+            inputs = tokenizer(inputs, max_length=1024, return_tensors="pt")
 
             # Generate Summary
             summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
@@ -37,3 +39,8 @@ class HuggingFaceSummarizer:
         summary_sents = [nlp(summary_sent) for summary_sent in summary_sents]
 
         return summary_sents
+
+    def query(self, payload):
+        data = json.dumps(payload)
+        response = requests.request("POST", self.url, headers=self.headers, data=data)
+        return json.loads(response.content.decode("utf-8"))
