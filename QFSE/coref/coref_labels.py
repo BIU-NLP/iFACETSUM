@@ -57,4 +57,4 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
 
 
 def clean_text(text):
-    return text.lower().replace("the", "").trim()
+    return text.lower().replace("the", "").strip()
