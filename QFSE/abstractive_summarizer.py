@@ -3,6 +3,7 @@ import os
 from typing import List
 
 import requests
+import torch
 
 
 class HuggingFaceSummarizer:
@@ -26,12 +27,23 @@ class HuggingFaceSummarizer:
                 query_api = False
 
         if not query_api:
+            abstract_summarizer_model_name = get_item("abstract_summarizer_model_name")
             model, tokenizer = get_item("abstract_summarizer")
-            inputs = tokenizer(inputs, max_length=1024, return_tensors="pt")
+            if "bart" in abstract_summarizer_model_name:
+                inputs = tokenizer(inputs, max_length=1024, return_tensors="pt")
 
-            # Generate Summary
-            summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
-            summary_sents = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
+                # Generate Summary
+                summary_ids = model.generate(inputs['input_ids'], num_beams=2, early_stopping=True)
+                summary_sents = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=False) for g in summary_ids]
+            else:
+                input_ids = tokenizer(inputs[0], return_tensors="pt").input_ids
+                global_attention_mask = torch.zeros_like(input_ids)
+                # set global_attention_mask on first token
+                global_attention_mask[:, 0] = 1
+
+                sequences = model.generate(input_ids, global_attention_mask=global_attention_mask).sequences
+
+                summary_sents = tokenizer.batch_decode(sequences)
 
         # Bart doesn't split the sentences
         nlp = get_item("spacy")
