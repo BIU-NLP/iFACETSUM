@@ -892,8 +892,16 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     min-width: 300px;
 }
 
-.cluster-list-item, .cluster-list-item label {
+.cluster-list-item .form-check-input, .cluster-list-item .form-check-label {
     cursor: pointer;
+}
+
+.cluster-list-item .form-check-input {
+    margin-top: 7px; /* So the checkbox will be in the same height as the display_name */
+}
+
+.cluster-list-item .badge {
+    cursor: context-menu;
 }
 
 .list-group-item.selected {
@@ -968,3 +976,4 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     padding: 0 20px;
     text-align: left;
 }
+

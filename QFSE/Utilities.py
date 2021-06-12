@@ -50,23 +50,43 @@ def loadSpacy():
 @register("abstract_summarizer")
 def loadAbstractSummarizer():
     from transformers import BartTokenizer, BartForConditionalGeneration, BartConfig
+    from transformers import LEDForConditionalGeneration, LEDTokenizer
 
-    BART_DIRECTORY = './bart-large-cnn/'
+    model_name = get_item("abstract_summarizer_model_name")
 
-    if os.path.exists(BART_DIRECTORY):
-        model = BartForConditionalGeneration.from_pretrained(BART_DIRECTORY)
-        tokenizer = BartTokenizer.from_pretrained(BART_DIRECTORY)
+    MODEL_DIRECOTRY = f'./models/{model_name}/'
+
+    use_bart = "bart" in model_name
+    if os.path.exists(MODEL_DIRECOTRY):
+        if use_bart:
+            model = BartForConditionalGeneration.from_pretrained(MODEL_DIRECOTRY)
+            tokenizer = BartTokenizer.from_pretrained(MODEL_DIRECOTRY)
+        else:
+            model = LEDForConditionalGeneration.from_pretrained(MODEL_DIRECOTRY, return_dict_in_generate=True)
+            tokenizer = LEDTokenizer.from_pretrained(MODEL_DIRECOTRY)
     else:
-        model = BartForConditionalGeneration.from_pretrained('facebook/bart-large-cnn')
-        tokenizer = BartTokenizer.from_pretrained('facebook/bart-large-cnn')
-        model.save_pretrained(BART_DIRECTORY)
-        tokenizer.save_pretrained(BART_DIRECTORY)
+        if use_bart:
+            model = BartForConditionalGeneration.from_pretrained(model_name)
+            tokenizer = BartTokenizer.from_pretrained(model_name)
+        else:
+            model = LEDForConditionalGeneration.from_pretrained(model_name, return_dict_in_generate=True)
+            tokenizer = LEDTokenizer.from_pretrained(model_name)
+
+        model.save_pretrained(MODEL_DIRECOTRY)
+        tokenizer.save_pretrained(MODEL_DIRECOTRY)
     return model, tokenizer
+
+
+@register("abstract_summarizer_model_name")
+def get_abstract_summarizer_model_name():
+    # return "allenai/led-large-16384-arxiv"
+    return "facebook/bart-large-cnn"
+    # return "facebook/bart-large"
 
 
 @register("bart_summarizer")
 def loadBartSummarizer():
-    return HuggingFaceSummarizer()
+    return HuggingFaceSummarizer(get_item("abstract_summarizer_model_name"))
 
 
 def get_item(registry_key: str):

@@ -2,12 +2,15 @@ from collections import Counter, defaultdict
 from QFSE.Utilities import get_item
 from QFSE.models import Cluster
 
+
 PROPOSITIONS_DEFAULT_CLUSTER = "Key statements"
 EVENTS_DEFAULT_CLUSTER = "Key concepts"
 ENTITIES_DEFAULT_CLUSTER = "Other"
 
+# Note: If you change these also change UI
+
 LABELS_MAP = {
-    "GPE": "Geopolitical Entity",
+    "GPE": "Location",
     "EVENT": ENTITIES_DEFAULT_CLUSTER,
     "ORG": "Organization",
     "PERSON": "Person",
@@ -35,7 +38,7 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
         label = "NO_LABEL"
         for ent in doc.ents:
             # Only if the whole string is an entity
-            if ent.text == mention.token:
+            if clean_text(ent.text) == clean_text(mention.token):
                 label = ent.label_
         ents_counter[label] += 1
         labels_to_mentions[label].append(mention)
@@ -51,3 +54,7 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
     most_representative_mention = token_counter.most_common()[0][0]
     cluster_label = LABELS_MAP.get(cluster_label, default_cluster)
     return Cluster(cluster_id, cluster_type, mentions, cluster_label, most_representative_mention, len(mentions))
+
+
+def clean_text(text):
+    return text.token.lower().replace("the", "").trim()
