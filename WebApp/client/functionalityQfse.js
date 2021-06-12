@@ -207,6 +207,13 @@ function removeQueryItem(clusterQuery) {
 
 
 class ClusterIdItem extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            clusterSelected: this.props.clusterSelected
+        };
+    }
+
     query = () => {
         if (canSendRequest()) {
             const cluster = this.props.cluster;
@@ -215,8 +222,14 @@ class ClusterIdItem extends React.Component {
             const clusterType = cluster['cluster_type'];
 
             if (this.props.clusterSelected) {
+                this.setState({
+                    "clusterSelected": false
+                });
                 removeQueryItem(this.props.clusterQuery);
             } else {
+                this.setState({
+                    "clusterSelected": true
+                });
                 query(text, clusterId, clusterType);
             }
         }
@@ -225,7 +238,7 @@ class ClusterIdItem extends React.Component {
     render() {
 
         const cluster = this.props.cluster;
-        const clusterSelectedClassName = this.props.clusterSelected ? "selected" : "";
+        const clusterSelectedClassName = this.state.clusterSelected ? "selected" : "";
 
         const mentionCounter = {};
         for (const mention of cluster['mentions']) {
@@ -242,14 +255,14 @@ class ClusterIdItem extends React.Component {
         return e(
             "div",
             {
-                "className": `list-group-item d-flex justify-content-between align-items-center cluster-list-item ${clusterSelectedClassName}`,
-                onClick: this.query
+                "className": `list-group-item d-flex justify-content-between align-items-center cluster-list-item ${clusterSelectedClassName}`
             },
             [
                 e(
                     "div",
                     {
-                        "className": "form-check"
+                        "className": "form-check",
+                        onClick: this.query
                     },
                     [
                         e(
@@ -331,7 +344,8 @@ class LabelClustersItem extends React.Component {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
         const clustersQuery = this.props.clustersQuery;
-        const numSentToShow = this.props.numSentToShow || 10;
+        const numSentToShow = this.props.numSentToShow || 5;
+        const maxSentsToShow = this.props.maxSentsToShow || 20;
 
         const clustersItems = [];
         clustersItems.push(
@@ -346,7 +360,7 @@ class LabelClustersItem extends React.Component {
             )
         );
         for (let i = 0; i < labelClusters.length; i++) {
-            if (i < numSentToShow || !this.state.minimized) {
+            if (i < numSentToShow || (!this.state.minimized && i < maxSentsToShow)) {
 
                 const cluster = labelClusters[i];
 
@@ -372,7 +386,7 @@ class LabelClustersItem extends React.Component {
             }
         }
 
-        if (clustersItems.length < labelClusters.length) {
+        if (clustersItems.length < labelClusters.length && clustersItems.length < maxSentsToShow) {
             if (this.state.minimized) {
                 const readMoreBtn = e(
                     "div",
@@ -443,20 +457,25 @@ class LabelClustersItem extends React.Component {
 
 class ClustersIdsList extends React.Component {
     render() {
-        const labelsClusters = this.props.labelsClusters;
+        const allClusters = this.props.allClusters;
         const clustersQuery = this.props.clustersQuery;
 
         const labelClustersItems = [];
-        for (const labelClusters of labelsClusters) {
-            const labelClustersItem = e(
-                LabelClustersItem,
-                {
-                    "labelClusters": labelClusters,
-                    "clustersQuery": clustersQuery
-                }
-            )
+        const CLUSTERS_LABELS_ORDER = ["Key concepts", "Key statements", "Person", "Organization", "Location", "Nationality, Religious, Political", "Date", "Other"];
+        for (const clusterLabel of CLUSTERS_LABELS_ORDER) {
+            if (Object.keys(allClusters).includes(clusterLabel)) {
+                const labelClusters = allClusters[clusterLabel];
 
-            labelClustersItems.push(labelClustersItem);
+                const labelClustersItem = e(
+                    LabelClustersItem,
+                    {
+                        "labelClusters": labelClusters,
+                        "clustersQuery": clustersQuery
+                    }
+                )
+
+                labelClustersItems.push(labelClustersItem);
+            }
         }
 
         return e(
@@ -503,7 +522,7 @@ function createClustersIdsList(corefClustersMetas, eventsClustersMetas, proposit
     const reactToRender = e(
         ClustersIdsList,
         {
-            "labelsClusters": Object.values(allClusters),
+            "allClusters": allClusters,
             "clustersQuery": globalQuery
         }
     );
@@ -1269,7 +1288,6 @@ function query(queryStr, clusterId, clusterType) {
 
         insertSummaryItemsInExplorationPane(emptyQueryResults);
     }
-    createClustersIdsList(globalClustersMetas['entities'], globalClustersMetas['events'], globalClustersMetas['propositions']);
 
     queryStr = "";
     for (const clusterQuery of globalQuery) {

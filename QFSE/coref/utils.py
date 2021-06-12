@@ -47,8 +47,9 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
     path_to_dir = os.getcwd()
 
     if cluster_type == COREF_TYPE_EVENTS:
-        file_name = "events_average_0.3_model_5_topic_level.conll"
-        with open(f"{path_to_dir}/data/{file_name}") as f:
+        # file_name = "events_average_0.3_model_5_topic_level.conll"
+        file_name = "CDLM_events.conll"
+        with open(f"{path_to_dir}/data/coref/{file_name}") as f:
             data = f.read()
         default_cluster = EVENTS_DEFAULT_CLUSTER
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
@@ -86,7 +87,7 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
         with open(cache_file_path, "wb") as f:
             pickle.dump((documents, clusters_objs), f)
 
-    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
+    clusters_ids_to_filter = get_clusters_ids_to_filter(clusters_objs)
     clusters_objs = {cluster_id: cluster for cluster_id, cluster in clusters_objs.items() if cluster_id not in clusters_ids_to_filter}
 
     coref_clusters = CorefClusters(documents, clusters_objs)
@@ -107,21 +108,27 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
     return coref_clusters
 
 
-def filter_clusters(parsed, all_clusters):
-    singleton_clusters = [cluster_idx for cluster_idx, mentions in all_clusters.items() if len(mentions) == 1]
+def get_clusters_ids_to_filter(clusters_objs):
+    # Max mentions
+    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
 
-    for doc_clusters in parsed.values():
-        for cluster_to_remove in singleton_clusters:
-            if cluster_to_remove in doc_clusters:
-                doc_clusters.pop(cluster_to_remove)
-    [all_clusters.pop(cluster_to_remove) for cluster_to_remove in singleton_clusters]
+    # Singletons
+    clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions == 1]
 
+    # Repeating clusters
+    clusters_seen = set()
+    for cluster_idx, cluster_obj in sorted(clusters_objs.items(), key=lambda item: item[1].num_mentions, reverse=True):
+        if cluster_obj.display_name.lower() not in clusters_seen:
+            clusters_seen.add(cluster_obj.display_name.lower())
+        else:
+            clusters_ids_to_filter.append(cluster_idx)
+
+    return clusters_ids_to_filter
 
 
 def parse_conll_coref_file(data) -> Tuple[Dict[str, List[Mention]], Dict[str, List[Mention]]]:
     lines = data.splitlines()
     parsed, all_clusters = parse_lines(lines)
-    filter_clusters(parsed, all_clusters)
     return parsed, all_clusters
 
 
