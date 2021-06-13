@@ -12,10 +12,13 @@ class HuggingFaceSummarizer:
         self.headers = {"Authorization": f"Bearer {api_token}"}
         self.url = f"https://api-inference.huggingface.co/models/{model_name}"
 
+    def _remove_dot_from_sentence(self, sent_text):
+        return sent_text[:-1] if sent_text.endswith(".") else sent_text
+
     def summarize(self, sentences) -> List[str]:
         from QFSE.Utilities import get_item
 
-        inputs = [". ".join([sent.text for sent in sentences])]
+        inputs = [". ".join([self._remove_dot_from_sentence(sent.text) for sent in sentences])]
         summary_sents = []
 
         query_api = False
@@ -41,9 +44,9 @@ class HuggingFaceSummarizer:
                 # set global_attention_mask on first token
                 global_attention_mask[:, 0] = 1
 
-                sequences = model.generate(input_ids, global_attention_mask=global_attention_mask).sequences
+                sequences = model.generate(input_ids, global_attention_mask=global_attention_mask, num_beams=2, max_length=500, early_stopping=True).sequences
 
-                summary_sents = tokenizer.batch_decode(sequences)
+                summary_sents = tokenizer.batch_decode(sequences, skip_special_tokens=True, clean_up_tokenization_spaces=False)
 
         # Bart doesn't split the sentences
         nlp = get_item("spacy")

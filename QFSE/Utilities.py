@@ -79,6 +79,7 @@ def loadAbstractSummarizer():
 
 @register("abstract_summarizer_model_name")
 def get_abstract_summarizer_model_name():
+    # return "allenai/led-large-16384"
     # return "allenai/led-large-16384-arxiv"
     return "facebook/bart-large-cnn"
     # return "facebook/bart-large"
