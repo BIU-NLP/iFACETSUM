@@ -255,7 +255,9 @@ class ClusterIdItem extends React.Component {
         return e(
             "div",
             {
-                "className": `list-group-item d-flex justify-content-between align-items-center cluster-list-item ${clusterSelectedClassName}`
+                "className": `list-group-item d-flex justify-content-between align-items-center cluster-list-item ${clusterSelectedClassName}`,
+                "data-cluster-id": cluster['cluster_id'],
+                "data-cluster-type": cluster['cluster_type']
             },
             [
                 e(
@@ -556,7 +558,11 @@ function categorizeClustersByLabels(clusters) {
 class QueryBadgeItem extends React.Component {
 
     removeClicked = () => {
-        removeQueryItem(this.props.clusterQuery);
+        const clusterQuery = this.props.clusterQuery;
+        const clusterId = clusterQuery['cluster_id'];
+        const clusterType = clusterQuery['cluster_type'];
+        // Use the checkbox button to make the checkbox click
+        $(`[data-cluster-id=${clusterId}][data-cluster-type=${clusterType}] .form-check-input`).click();
     }
 
     render() {
