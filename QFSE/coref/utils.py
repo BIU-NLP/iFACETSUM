@@ -14,6 +14,7 @@ from QFSE.coref.coref_expr import get_clusters, parse_doc_id
 from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
+from data.Config import COREF_LOCATIONS
 
 
 def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
@@ -43,25 +44,21 @@ def convert_corpus_to_coref_input_format(corpus: Corpus, topic_id: str):
     return docs_formatted
 
 
-def get_coref_clusters(formatted_topics, corpus, cluster_type):
+def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
     path_to_dir = os.getcwd()
 
+    file_path = COREF_LOCATIONS[corpus.topic_id][cluster_type]
+
     if cluster_type == COREF_TYPE_EVENTS:
-        # file_name = "events_average_0.3_model_5_topic_level.conll"
-        file_name = "CDLM_events.conll"
-        with open(f"{path_to_dir}/data/coref/{file_name}") as f:
+        with open(f"{path_to_dir}/{file_path}") as f:
             data = f.read()
         default_cluster = EVENTS_DEFAULT_CLUSTER
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
-        # file_name = "duc_entities.conll"
-        # file_name = "spacy_wd_coref_duc.json"
-        # file_name = "duc_predictions_ments.json"
-        file_name = "wec_native_predicted_clusters.json"
-        with open(f"{path_to_dir}/data/coref/{file_name}") as f:
+        with open(f"{path_to_dir}/{file_path}") as f:
             data = f.read()
         default_cluster = ENTITIES_DEFAULT_CLUSTER
 
-    cache_file_path = f"{path_to_dir}/data/{file_name}.cache"
+    cache_file_path = f"{path_to_dir}/{file_path}.cache"
     try:
         with open(cache_file_path, "rb") as f:
             documents, clusters_objs = pickle.load(f)
@@ -74,7 +71,7 @@ def get_coref_clusters(formatted_topics, corpus, cluster_type):
 
         # TODO: Call external coref API with `formatted_topics`
 
-        is_conll_file = file_name.endswith(".conll")
+        is_conll_file = file_path.endswith(".conll")
 
         if is_conll_file:
             documents, clusters = parse_conll_coref_file(data)

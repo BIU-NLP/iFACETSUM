@@ -824,6 +824,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     background: var(--light);
     */
     padding-left: 4px;
+    padding-right: 4px;
 }
 
 /*

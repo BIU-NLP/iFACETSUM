@@ -793,17 +793,19 @@ class TokensGroup extends React.Component {
                 flushRunningText(innerHtml, runningText);
                 innerHtml.push(innerTokensGroup);
             } else {
-                if (!isCluster) {
-                    let tokens = tokensGroup;
+                extractTokens(tokensGroup);
 
-                    for (const token of tokens) {
+                function extractTokens(token) {
+                    if (token.hasOwnProperty('tokens')) {
+                        recursiveExtractTokens(token['tokens']);
+                    } else {
                         runningText['tokens'].push(token);
                     }
-                } else {
-                    for (const tokens of tokensGroup['tokens']) {
-                        for (const token of tokens) {
-                            runningText['tokens'].push(token);
-                        }
+                }
+
+                function recursiveExtractTokens(tokens) {
+                    for (const token of tokens) {
+                        extractTokens(token);
                     }
                 }
             }

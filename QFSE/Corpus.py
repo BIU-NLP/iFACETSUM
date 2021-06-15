@@ -28,7 +28,8 @@ QUESTIONNAIRE_ID_TO_NAME = {
 }
 
 class Corpus():
-    def __init__(self, directoryPath, referenceSummariesDirectory, questionnaireDirpath, representationStyle=REPRESENTATION_STYLE_W2V):
+    def __init__(self, topic_id: str, directoryPath, referenceSummariesDirectory, questionnaireDirpath, representationStyle=REPRESENTATION_STYLE_W2V):
+        self.topic_id = topic_id
         self.dirPath = directoryPath
         self.representationStyle = representationStyle
         #self.tfidfList = [] # list of all tf-idf scores over all documents, ordered by score (highest first)
