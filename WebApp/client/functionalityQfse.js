@@ -719,8 +719,8 @@ class TokensGroup extends React.Component {
         let onMouseEnterFunc;
         let onMouseLeaveFunc;
 
+        let showHighlight = groupId !== undefined;
         if (groupId !== undefined) {
-            let showHighlight = groupId !== undefined;
 
             // Don't highlight if requested fixed clusters
             if (this.props.fixedClusters && !this.props.fixedClusters.includes(groupId)) {
@@ -754,11 +754,30 @@ class TokensGroup extends React.Component {
             }
         }
 
-        for (const tokensGroup of groups) {
-            let innerTokensGroup;
+        let runningText = {
+            "tokens": []
+        };
 
-            if (tokensGroup['cluster_id'] !== undefined) {
-                innerTokensGroup = e(
+        function flushRunningText(innerHtml, runningText) {
+            if (runningText['tokens'].length > 0) {
+                innerHtml.push(e(
+                    "span",
+                    {},
+                    runningText['tokens']
+                ));
+                runningText['tokens'] = [];
+            }
+        }
+
+        for (const tokensGroup of groups) {
+            let currGroupId = tokensGroup['cluster_id'];
+            const isCluster = currGroupId !== undefined;
+
+            const showCluster = isCluster && this.props.fixedClusters && this.props.fixedClusters.includes(currGroupId);
+
+
+            if (showCluster) {
+                const innerTokensGroup = e(
                   TokensGroup,
                   {
                     "groups": tokensGroup['tokens'],
@@ -771,22 +790,26 @@ class TokensGroup extends React.Component {
                     "fixedClusters": this.props.fixedClusters
                   }
                 );
+                flushRunningText(innerHtml, runningText);
                 innerHtml.push(innerTokensGroup);
             } else {
-                let groupClass = "";
+                if (!isCluster) {
+                    let tokens = tokensGroup;
 
-                for (const token of tokensGroup) {
-                    innerTokensGroup = e(
-                         "span",
-                         {
-                            "className": groupClass
-                         },
-                         token
-                    );
-                    innerHtml.push(innerTokensGroup);
+                    for (const token of tokens) {
+                        runningText['tokens'].push(token);
+                    }
+                } else {
+                    for (const tokens of tokensGroup['tokens']) {
+                        for (const token of tokens) {
+                            runningText['tokens'].push(token);
+                        }
+                    }
                 }
             }
         }
+
+        flushRunningText(innerHtml, runningText);
 
         let elementParams = {
             "className": "sentence-span " + className,
