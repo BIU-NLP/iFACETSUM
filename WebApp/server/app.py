@@ -185,7 +185,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         if topicId in config.CORPORA_LOCATIONS:
             referenceSummsFolder = os.path.join(config.CORPORA_LOCATIONS[topicId], config.CORPUS_REFSUMMS_RELATIVE_PATH)
             questionnaireFilepath = os.path.join(config.CORPORA_LOCATIONS[topicId], config.CORPUS_QUESTIONNAIRE_RELATIVE_PATH)
-            corpus = Corpus(config.CORPORA_LOCATIONS[topicId], referenceSummsFolder, questionnaireFilepath, representationStyle=REPRESENTATION_STYLE)
+            corpus = Corpus(topicId, config.CORPORA_LOCATIONS[topicId], referenceSummsFolder, questionnaireFilepath, representationStyle=REPRESENTATION_STYLE)
         else:
             return self.getErrorJson('Topic ID not supported: {}'.format(topicId))
 

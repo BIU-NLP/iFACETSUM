@@ -11,6 +11,7 @@ from QFSE.coref.coref_labels import create_objs, PROPOSITIONS_DEFAULT_CLUSTER
 from QFSE.coref.models import Mention
 from QFSE.models import PropositionClusters
 from QFSE.propositions.models import PropositionLine, PropositionCluster
+from data.Config import COREF_LOCATIONS
 
 
 def parse_line(line):
@@ -164,13 +165,13 @@ def parse_propositions_file(df, corpus) -> Tuple[Dict[int, List[Mention]], Dict[
 def get_proposition_clusters(formatted_topics, corpus):
     import os
     path_to_dir = os.getcwd()
-    file_name = "devDUC2006_InDoc_D0601A_checkpoint-2000.csv"
-    cache_file_path = f"{path_to_dir}/data/{file_name}.cache"
+    file_path = COREF_LOCATIONS[corpus.topic_id][COREF_TYPE_PROPOSITIONS]
+    cache_file_path = f"{path_to_dir}/{file_path}.cache"
     try:
         with open(cache_file_path, "rb") as f:
             documents, clusters_objs = pickle.load(f)
     except:
-        df = pd.read_csv(f"{path_to_dir}/data/{file_name}")
+        df = pd.read_csv(f"{path_to_dir}/{file_path}")
 
         # TODO: Call external proposition alignment with `formatted_topics`
 
