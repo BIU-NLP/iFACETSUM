@@ -569,7 +569,20 @@ class QueryBadgeItem extends React.Component {
         const clusterQuery = this.props.clusterQuery;
         const showHistoryBtn = this.props.showHistoryBtn;
 
-        let text = `${clusterQuery['token']} x`;
+        let textItems = [
+            e(
+                "span",
+                {
+                    "className": "query-badge-item-text"
+                },
+                `${clusterQuery['token']}`,
+            ),
+            e(
+                "span",
+                {},
+                " x"
+            )
+        ];
         let properties = {
              "className": "badge badge-pill badge-secondary query-badge-item",
              onClick: this.removeClicked
@@ -579,14 +592,14 @@ class QueryBadgeItem extends React.Component {
          if (showHistoryBtn) {
             properties['className'] += ' clickable';
          } else {
-            text = `${clusterQuery['token']}`
+            textItems.pop(textItems[textItems.length-1])
             delete properties["onClick"];
          }
 
         return e(
             "span",
             properties,
-            text
+            textItems
         )
     }
 }
@@ -599,7 +612,7 @@ class QueryBadgesList extends React.Component {
         const queryItems = [];
         if (globalQuery.length > 0) {
             queryItems.push(e(
-                "span",
+                "div",
                 {},
                 "Query:"
             ));
