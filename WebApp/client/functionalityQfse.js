@@ -47,6 +47,30 @@ var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
 
+const KEY_CONCEPTS_LABEL = "Key concepts";
+const KEY_STATEMENTS_LABEL = "Key statements";
+const PERSON_LABEL = "Person";
+const ORGANIZATION_LABEL = "Organization";
+const LOCATION_LABEL = "Location";
+const NORP_LABEL = "Nationality, Religious, Political";
+const DATE_LABEL = "Date";
+const MISC_LABEL = "Miscellaneous";
+
+const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, MISC_LABEL];
+
+const CLUSTER_LABEL_TO_TOOLTIP = {};
+const default_tooltip = "co-occurring in the document set, press a cluster to get its summary and filtered navigation";
+CLUSTER_LABEL_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[PERSON_LABEL]  = `People ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organizations ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[LOCATION_LABEL] = `Locations ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[NORP_LABEL] = `Nationality, religious or political entities ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[DATE_LABEL] = `Dates ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
+
+
+
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
 var RATING_PARAMS = {
     1 : {
@@ -342,6 +366,7 @@ class LabelClustersItem extends React.Component {
         $popoverElements.popover();
     }
 
+
     render() {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
@@ -354,9 +379,10 @@ class LabelClustersItem extends React.Component {
             e(
                 "div",
                 {
-                    "className": "card-header",
+                    "className": "card-header clusters-label",
                     "data-parent": `#accordion-${clusterLabel}`,
-                    "data-toggle": "collapse"
+                    "data-toggle": "tooltip",
+                    "title": CLUSTER_LABEL_TO_TOOLTIP[clusterLabel]
                 },
                 clusterLabel
             )
@@ -457,13 +483,13 @@ class LabelClustersItem extends React.Component {
     }
 }
 
+
 class ClustersIdsList extends React.Component {
     render() {
         const allClusters = this.props.allClusters;
         const clustersQuery = this.props.clustersQuery;
 
         const labelClustersItems = [];
-        const CLUSTERS_LABELS_ORDER = ["Key concepts", "Key statements", "Person", "Organization", "Location", "Nationality, Religious, Political", "Date", "Other"];
         for (const clusterLabel of CLUSTERS_LABELS_ORDER) {
             if (Object.keys(allClusters).includes(clusterLabel)) {
                 const labelClusters = allClusters[clusterLabel];
@@ -569,7 +595,20 @@ class QueryBadgeItem extends React.Component {
         const clusterQuery = this.props.clusterQuery;
         const showHistoryBtn = this.props.showHistoryBtn;
 
-        let text = `${clusterQuery['token']} x`;
+        let textItems = [
+            e(
+                "span",
+                {
+                    "className": "query-badge-item-text"
+                },
+                `${clusterQuery['token']}`,
+            ),
+            e(
+                "span",
+                {},
+                " x"
+            )
+        ];
         let properties = {
              "className": "badge badge-pill badge-secondary query-badge-item",
              onClick: this.removeClicked
@@ -579,14 +618,14 @@ class QueryBadgeItem extends React.Component {
          if (showHistoryBtn) {
             properties['className'] += ' clickable';
          } else {
-            text = `${clusterQuery['token']}`
+            textItems.pop(textItems[textItems.length-1])
             delete properties["onClick"];
          }
 
         return e(
             "span",
             properties,
-            text
+            textItems
         )
     }
 }
@@ -598,10 +637,15 @@ class QueryBadgesList extends React.Component {
 
         const queryItems = [];
         if (globalQuery.length > 0) {
+            let text = "Query: "
+            if (showHistoryBtn) {
+                text = "The following query is filtering the navigation and is used to create the summary: ";
+            }
+
             queryItems.push(e(
                 "span",
                 {},
-                "Query:"
+                text
             ));
         }
         for (const clusterQuery of globalQuery) {
@@ -655,6 +699,37 @@ function insertSummaryItemsInExplorationPane(queryResults) {
     exploreList.appendChild(listElementResult);
 }
 
+function insertQueryItems() {
+    const listElementResult = document.createElement("div");
+
+    if (globalQuery.length > 0) {
+        const liReact = e(
+            "div",
+            {
+                "className": "card"
+            },
+            e(
+                "div",
+                {
+                    "className": "card-body",
+                    "id": "queryCard"
+                },
+                e(
+                    QueryBadgesList,
+                    {
+                        "globalQuery": globalQuery,
+                        "showHistoryBtn": true
+                    }
+                )
+            )
+        );
+
+        ReactDOM.render(liReact, listElementResult);
+    }
+
+    $('#queryContainer')[0].replaceChildren(listElementResult);
+}
+
 function openDocument(e) {
     const docId = e.target.textContent;
     $('#navigationDocumentsButton').click();
@@ -706,8 +781,8 @@ class TokensGroup extends React.Component {
         let onMouseEnterFunc;
         let onMouseLeaveFunc;
 
+        let showHighlight = groupId !== undefined;
         if (groupId !== undefined) {
-            let showHighlight = groupId !== undefined;
 
             // Don't highlight if requested fixed clusters
             if (this.props.fixedClusters && !this.props.fixedClusters.includes(groupId)) {
@@ -741,11 +816,30 @@ class TokensGroup extends React.Component {
             }
         }
 
-        for (const tokensGroup of groups) {
-            let innerTokensGroup;
+        let runningText = {
+            "tokens": []
+        };
 
-            if (tokensGroup['cluster_id'] !== undefined) {
-                innerTokensGroup = e(
+        function flushRunningText(innerHtml, runningText) {
+            if (runningText['tokens'].length > 0) {
+                innerHtml.push(e(
+                    "span",
+                    {},
+                    runningText['tokens']
+                ));
+                runningText['tokens'] = [];
+            }
+        }
+
+        for (const tokensGroup of groups) {
+            let currGroupId = tokensGroup['cluster_id'];
+            const isCluster = currGroupId !== undefined;
+
+            const showCluster = isCluster && this.props.fixedClusters && this.props.fixedClusters.includes(currGroupId);
+
+
+            if (showCluster) {
+                const innerTokensGroup = e(
                   TokensGroup,
                   {
                     "groups": tokensGroup['tokens'],
@@ -758,22 +852,28 @@ class TokensGroup extends React.Component {
                     "fixedClusters": this.props.fixedClusters
                   }
                 );
+                flushRunningText(innerHtml, runningText);
                 innerHtml.push(innerTokensGroup);
             } else {
-                let groupClass = "";
+                extractTokens(tokensGroup);
 
-                for (const token of tokensGroup) {
-                    innerTokensGroup = e(
-                         "span",
-                         {
-                            "className": groupClass
-                         },
-                         token
-                    );
-                    innerHtml.push(innerTokensGroup);
+                function extractTokens(token) {
+                    if (token.hasOwnProperty('tokens')) {
+                        recursiveExtractTokens(token['tokens']);
+                    } else {
+                        runningText['tokens'].push(token);
+                    }
+                }
+
+                function recursiveExtractTokens(tokens) {
+                    for (const token of tokens) {
+                        extractTokens(token);
+                    }
                 }
             }
         }
+
+        flushRunningText(innerHtml, runningText);
 
         let elementParams = {
             "className": "sentence-span " + className,
@@ -1048,6 +1148,7 @@ class SummaryList extends React.Component {
         const showPopover = this.props.showPopover;
         const numSentToShow = this.props.numSentToShow;
         const showHistoryBtn = this.props.showHistoryBtn === undefined ? true : this.props.showHistoryBtn;
+        const showQuery = !showHistoryBtn;
 
         const queryResultItems = [];
 
@@ -1056,15 +1157,17 @@ class SummaryList extends React.Component {
             const resultSentences = queryResult['result_sentences'];
             const origSentences = queryResult['orig_sentences'];
 
-            const queryBadgeItem = e(
-                QueryBadgesList,
-                {
-                    "globalQuery": queryResult['query'],
-                    "showHistoryBtn": showHistoryBtn
-                }
-            );
+            if (showQuery) {
+                const queryBadgeItem = e(
+                    QueryBadgesList,
+                    {
+                        "globalQuery": queryResult['query'],
+                        "showHistoryBtn": showHistoryBtn
+                    }
+                );
 
-            queryResultItems.push(queryBadgeItem)
+                queryResultItems.push(queryBadgeItem)
+            }
 
             if (resultSentences.length > 0) {
                 const fixedClusters = [];
@@ -1294,6 +1397,9 @@ function query(queryStr, clusterId, clusterType) {
 
         insertSummaryItemsInExplorationPane(emptyQueryResults);
     }
+
+    /* Even if the query is empty we want to refresh the view */
+    insertQueryItems();
 
     queryStr = "";
     for (const clusterQuery of globalQuery) {

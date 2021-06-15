@@ -5,7 +5,7 @@ from QFSE.models import Cluster
 
 PROPOSITIONS_DEFAULT_CLUSTER = "Key statements"
 EVENTS_DEFAULT_CLUSTER = "Key concepts"
-ENTITIES_DEFAULT_CLUSTER = "Other"
+ENTITIES_DEFAULT_CLUSTER = "Miscellaneous"
 
 # Note: If you change these also change UI
 
