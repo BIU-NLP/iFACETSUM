@@ -989,3 +989,11 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 .query-badge-item-text {
     max-width: 450px;
 }
+
+#queryRow {
+    text-align: left; /* send the query badges to the left */
+}
+
+#queryCard {
+    padding: 0;  /* The card is too big to only contain the query */
+}

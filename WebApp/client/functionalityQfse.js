@@ -463,7 +463,7 @@ class ClustersIdsList extends React.Component {
         const clustersQuery = this.props.clustersQuery;
 
         const labelClustersItems = [];
-        const CLUSTERS_LABELS_ORDER = ["Key concepts", "Key statements", "Person", "Organization", "Location", "Nationality, Religious, Political", "Date", "Other"];
+        const CLUSTERS_LABELS_ORDER = ["Key concepts", "Key statements", "Person", "Organization", "Location", "Nationality, Religious, Political", "Date", "Miscellaneous"];
         for (const clusterLabel of CLUSTERS_LABELS_ORDER) {
             if (Object.keys(allClusters).includes(clusterLabel)) {
                 const labelClusters = allClusters[clusterLabel];
@@ -611,10 +611,15 @@ class QueryBadgesList extends React.Component {
 
         const queryItems = [];
         if (globalQuery.length > 0) {
+            let text = "Query: "
+            if (showHistoryBtn) {
+                text = "The following query is filtering the navigation and is used to create the summary: ";
+            }
+
             queryItems.push(e(
-                "div",
+                "span",
                 {},
-                "Query:"
+                text
             ));
         }
         for (const clusterQuery of globalQuery) {
@@ -666,6 +671,37 @@ function insertSummaryItemsInExplorationPane(queryResults) {
     ReactDOM.render(liReact, listElementResult);
 
     exploreList.appendChild(listElementResult);
+}
+
+function insertQueryItems() {
+    const listElementResult = document.createElement("div");
+
+    if (globalQuery.length > 0) {
+        const liReact = e(
+            "div",
+            {
+                "className": "card"
+            },
+            e(
+                "div",
+                {
+                    "className": "card-body",
+                    "id": "queryCard"
+                },
+                e(
+                    QueryBadgesList,
+                    {
+                        "globalQuery": globalQuery,
+                        "showHistoryBtn": true
+                    }
+                )
+            )
+        );
+
+        ReactDOM.render(liReact, listElementResult);
+    }
+
+    $('#queryContainer')[0].replaceChildren(listElementResult);
 }
 
 function openDocument(e) {
@@ -1086,6 +1122,7 @@ class SummaryList extends React.Component {
         const showPopover = this.props.showPopover;
         const numSentToShow = this.props.numSentToShow;
         const showHistoryBtn = this.props.showHistoryBtn === undefined ? true : this.props.showHistoryBtn;
+        const showQuery = !showHistoryBtn;
 
         const queryResultItems = [];
 
@@ -1094,15 +1131,17 @@ class SummaryList extends React.Component {
             const resultSentences = queryResult['result_sentences'];
             const origSentences = queryResult['orig_sentences'];
 
-            const queryBadgeItem = e(
-                QueryBadgesList,
-                {
-                    "globalQuery": queryResult['query'],
-                    "showHistoryBtn": showHistoryBtn
-                }
-            );
+            if (showQuery) {
+                const queryBadgeItem = e(
+                    QueryBadgesList,
+                    {
+                        "globalQuery": queryResult['query'],
+                        "showHistoryBtn": showHistoryBtn
+                    }
+                );
 
-            queryResultItems.push(queryBadgeItem)
+                queryResultItems.push(queryBadgeItem)
+            }
 
             if (resultSentences.length > 0) {
                 const fixedClusters = [];
@@ -1332,6 +1371,9 @@ function query(queryStr, clusterId, clusterType) {
 
         insertSummaryItemsInExplorationPane(emptyQueryResults);
     }
+
+    /* Even if the query is empty we want to refresh the view */
+    insertQueryItems();
 
     queryStr = "";
     for (const clusterQuery of globalQuery) {
