@@ -47,6 +47,30 @@ var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
 
+const KEY_CONCEPTS_LABEL = "Key concepts";
+const KEY_STATEMENTS_LABEL = "Key statements";
+const PERSON_LABEL = "Person";
+const ORGANIZATION_LABEL = "Organization";
+const LOCATION_LABEL = "Location";
+const NORP_LABEL = "Nationality, Religious, Political";
+const DATE_LABEL = "Date";
+const MISC_LABEL = "Miscellaneous";
+
+const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, MISC_LABEL];
+
+const CLUSTER_LABEL_TO_TOOLTIP = {};
+const default_tooltip = "co-occurring in the document set, press a cluster to get its summary and filtered navigation";
+CLUSTER_LABEL_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[PERSON_LABEL]  = `People ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organizations ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[LOCATION_LABEL] = `Locations ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[NORP_LABEL] = `Nationality, religious or political entities ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[DATE_LABEL] = `Dates ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
+
+
+
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
 var RATING_PARAMS = {
     1 : {
@@ -342,6 +366,7 @@ class LabelClustersItem extends React.Component {
         $popoverElements.popover();
     }
 
+
     render() {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
@@ -354,9 +379,10 @@ class LabelClustersItem extends React.Component {
             e(
                 "div",
                 {
-                    "className": "card-header",
+                    "className": "card-header clusters-label",
                     "data-parent": `#accordion-${clusterLabel}`,
-                    "data-toggle": "collapse"
+                    "data-toggle": "tooltip",
+                    "title": CLUSTER_LABEL_TO_TOOLTIP[clusterLabel]
                 },
                 clusterLabel
             )
@@ -457,13 +483,13 @@ class LabelClustersItem extends React.Component {
     }
 }
 
+
 class ClustersIdsList extends React.Component {
     render() {
         const allClusters = this.props.allClusters;
         const clustersQuery = this.props.clustersQuery;
 
         const labelClustersItems = [];
-        const CLUSTERS_LABELS_ORDER = ["Key concepts", "Key statements", "Person", "Organization", "Location", "Nationality, Religious, Political", "Date", "Miscellaneous"];
         for (const clusterLabel of CLUSTERS_LABELS_ORDER) {
             if (Object.keys(allClusters).includes(clusterLabel)) {
                 const labelClusters = allClusters[clusterLabel];
