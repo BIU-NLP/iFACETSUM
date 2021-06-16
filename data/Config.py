@@ -83,7 +83,8 @@ COREF_LOCATIONS = {
         "entities": "data/coref/native/wec_entities/wec_native_predicted_clusters.json",
         # "events":  "data/coref/native/events_average_0.3_model_5_topic_level.conll",
         # "events":  "data/coref/native/cdlm_events/CDLM_events.conll",
-        "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix.json",
+        # "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix.json",
+        "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix2.json",
         # "events":  "data/coref/native/wec_events/wec_native_event_predictions_strict_fix.json",
         "propositions": "data/coref/native/propositions/devDUC2006_InDoc_D0601A_checkpoint-2000.csv"
     },
