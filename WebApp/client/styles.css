@@ -1001,3 +1001,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 .clusters-label {
     cursor: help;  /* there is a tooltip */
 }
+
+.query-badge-wrapper {
+    vertical-align: middle;  /* otherwise the query is in a different height from the text */
+}
