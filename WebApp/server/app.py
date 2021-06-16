@@ -286,6 +286,9 @@ class IntSummHandler(tornado.web.RequestHandler):
             for mentions in sent.coref_clusters[COREF_TYPE_EVENTS]:
                 mention_start = mentions['start']
                 mention_end = mentions['end']
+                if hotfix_wrong_indices:
+                    mention_start -= first_token_idx
+                    mention_end -= first_token_idx
                 for token_idx in range(mention_start, mention_end + 1):
                     token_to_mention[token_idx].append(mentions)
 
