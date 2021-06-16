@@ -650,11 +650,17 @@ class QueryBadgesList extends React.Component {
         }
         for (const clusterQuery of globalQuery) {
             queryItems.push(e(
-                QueryBadgeItem,
+                "span",
                 {
-                    "clusterQuery": clusterQuery,
-                    "showHistoryBtn": showHistoryBtn
-                }
+                    "className": "query-badge-wrapper"
+                },
+                e(
+                    QueryBadgeItem,
+                    {
+                        "clusterQuery": clusterQuery,
+                        "showHistoryBtn": showHistoryBtn
+                    }
+                )
             ))
         }
 
