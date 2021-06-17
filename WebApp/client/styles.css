@@ -72,10 +72,6 @@ p {
     display: none; /* initially not shown */
 }
 
-#navigation-card {
-    max-height: 400px;
-}
-
 .facets-values-list {
     min-height: 300px;  /* So the footer will always show in the same place */
 }

@@ -415,7 +415,7 @@ class LabelClustersItem extends React.Component {
         const clusterLabel = labelClusters[0]['cluster_label'];
         const clustersQuery = this.props.clustersQuery;
         const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 5;
-        const maxSentsToShow = this.props.maxSentsToShow || 20;
+        const maxSentsToShow = this.props.maxSentsToShow || 50;
         const minimized = this.state.minimized;
 
         const clustersItems = [];
