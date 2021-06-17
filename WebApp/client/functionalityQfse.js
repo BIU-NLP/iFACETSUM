@@ -72,7 +72,7 @@ CLUSTER_LABEL_TO_TOOLTIP[DATE_LABEL] = `Dates ${default_tooltip}`;
 CLUSTER_LABEL_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
 
 NUM_OF_SENTS_PER_CLUSTER_LABEL = {};
-NUM_OF_SENTS_PER_CLUSTER_LABEL[KEY_STATEMENTS_LABEL] = 3;
+NUM_OF_SENTS_PER_CLUSTER_LABEL[KEY_STATEMENTS_LABEL] = 2;
 
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
@@ -414,7 +414,7 @@ class LabelClustersItem extends React.Component {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
         const clustersQuery = this.props.clustersQuery;
-        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 5;
+        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 6;
         const maxSentsToShow = this.props.maxSentsToShow || 50;
         const minimized = this.state.minimized;
 
@@ -543,14 +543,14 @@ class ClustersIdsList extends React.Component {
                 "className": "list-group card"
             },
             [
-                e(
-                    "div",
-                    {
-                        "id": "navigation-header",
-                        "className": "card-header"
-                    },
-                    "Navigation"
-                ),
+//                e(
+//                    "div",
+//                    {
+//                        "id": "navigation-header",
+//                        "className": "card-header"
+//                    },
+//                    "Navigation"
+//                ),
                 e(
                     "div",
                     {
@@ -963,7 +963,7 @@ class ListItem extends React.Component {
             "minimized": false
         });
 
-        this.initializePopOver();
+//        this.initializePopOver();
     }
 
     minimize = () => {
@@ -1033,12 +1033,12 @@ class ListItem extends React.Component {
             this.setState(data);
         });
 
-        this.initializePopOver()
+//        this.initializePopOver()
     }
 
     componentDidUpdate = () => {
         // handles when clicking "read more"
-        this.initializePopOver()
+//        this.initializePopOver()
     }
 
     render() {
