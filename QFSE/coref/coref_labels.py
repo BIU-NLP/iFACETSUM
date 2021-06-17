@@ -5,18 +5,19 @@ from QFSE.models import Cluster
 
 PROPOSITIONS_DEFAULT_CLUSTER = "Key statements"
 EVENTS_DEFAULT_CLUSTER = "Key concepts"
-ENTITIES_DEFAULT_CLUSTER = "Miscellaneous"
+ENTITIES_DEFAULT_CLUSTER = "Entities"
+UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER = "Miscellaneous"
 
 # Note: If you change these also change UI
 
 LABELS_MAP = {
-    "GPE": "Location",
-    "EVENT": ENTITIES_DEFAULT_CLUSTER,
-    "ORG": "Organization",
-    "PERSON": "Person",
-    "DATE": "Date",
-    "NORP": "Nationality, Religious, Political",
-    "LOC": "Location"
+    "GPE": ENTITIES_DEFAULT_CLUSTER,
+    "EVENT": UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER,
+    "ORG": ENTITIES_DEFAULT_CLUSTER,
+    "PERSON": ENTITIES_DEFAULT_CLUSTER,
+    "DATE": ENTITIES_DEFAULT_CLUSTER,
+    "NORP": ENTITIES_DEFAULT_CLUSTER,
+    "LOC": ENTITIES_DEFAULT_CLUSTER
 }
 
 

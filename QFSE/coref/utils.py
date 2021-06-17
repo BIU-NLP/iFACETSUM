@@ -11,7 +11,8 @@ from nltk import word_tokenize, sent_tokenize
 from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES, MAX_MENTIONS_IN_CLUSTER
 from QFSE.coref.coref_expr import get_clusters, parse_doc_id
-from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER
+from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, \
+    UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
 from data.Config import COREF_LOCATIONS
@@ -56,7 +57,7 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
         with open(f"{path_to_dir}/{file_path}") as f:
             data = f.read()
-        default_cluster = ENTITIES_DEFAULT_CLUSTER
+        default_cluster = UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER
 
     cache_file_path = f"{path_to_dir}/{file_path}.cache"
     try:

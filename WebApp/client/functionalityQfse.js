@@ -54,13 +54,15 @@ const ORGANIZATION_LABEL = "Organization";
 const LOCATION_LABEL = "Location";
 const NORP_LABEL = "Nationality, Religious, Political";
 const DATE_LABEL = "Date";
+const ENTITIES_LABEL = "Entities";
 const MISC_LABEL = "Miscellaneous";
 
-const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, MISC_LABEL];
+const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, ENTITIES_LABEL, MISC_LABEL];
 
 const CLUSTER_LABEL_TO_TOOLTIP = {};
 const default_tooltip = "co-occurring in the document set, press a cluster to get its summary and filtered navigation";
 CLUSTER_LABEL_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
+CLUSTER_LABEL_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
 CLUSTER_LABEL_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
 CLUSTER_LABEL_TO_TOOLTIP[PERSON_LABEL]  = `People ${default_tooltip}`;
 CLUSTER_LABEL_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organizations ${default_tooltip}`;
@@ -69,6 +71,8 @@ CLUSTER_LABEL_TO_TOOLTIP[NORP_LABEL] = `Nationality, religious or political enti
 CLUSTER_LABEL_TO_TOOLTIP[DATE_LABEL] = `Dates ${default_tooltip}`;
 CLUSTER_LABEL_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
 
+NUM_OF_SENTS_PER_CLUSTER_LABEL = {};
+NUM_OF_SENTS_PER_CLUSTER_LABEL[KEY_STATEMENTS_LABEL] = 3;
 
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
@@ -111,6 +115,9 @@ function resetPage() {
 //    while (keywordList.firstChild) {
 //        keywordList.removeChild(keywordList.firstChild);
 //    }
+
+    $('#queriesModal').modal('hide');
+
     curLoadingInicatorElement = null;
 }
 
@@ -128,10 +135,8 @@ function setTopic(topicInfo) {
     const eventsClustersMetas = topicInfo['eventsClustersMetas'];
     const propositionClustersMetas = topicInfo['propositionClustersMetas'];
     globalPropositionClustersMetas = topicInfo['propositionClustersMetas'];
+    saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
 
-    globalClustersMetas['entities'] = corefClustersMetas;
-    globalClustersMetas['events'] = eventsClustersMetas;
-    globalClustersMetas['propositions'] = propositionClustersMetas;
 
     //var timeAllowed = topicInfo['timeAllowed'];
     var textLength = topicInfo['textLength'];
@@ -151,7 +156,7 @@ function setTopic(topicInfo) {
 //        '</div>' +
 //        ' on';
 
-    createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
+    createClustersIdsList();
 
     // keep the text length so far:
     totalTextLength = textLength;
@@ -217,6 +222,30 @@ function initializeModal() {
         ReactDOM.render(reactToRender, htmlElementToRenderInto);
 
         const $modalBody = $('#historyModal .modal-body');
+        $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+    });
+
+    $('#queriesModal').on('show.bs.modal', function(event) {
+        const clusterLabel = $(event.relatedTarget).attr('data-cluster-label');
+
+        const allClusters = globalClustersMetas['all'];
+        const labelClusters = allClusters[clusterLabel];
+        const clustersQuery = globalQuery;
+
+        const htmlElementToRenderInto = document.createElement("div");
+
+        let reactToRender = e(
+            LabelClustersItem,
+            {
+                "labelClusters": labelClusters,
+                "clustersQuery": clustersQuery,
+                "minimized": false
+            }
+        );
+
+        ReactDOM.render(reactToRender, htmlElementToRenderInto);
+
+        const $modalBody = $('#queriesModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
     });
 }
@@ -329,11 +358,24 @@ function compareClustersObjects(cluster1, cluster2) {
     return cluster1['cluster_id'] == cluster2['cluster_id'] && cluster1['cluster_type'] == cluster2['cluster_type'];
 }
 
+function saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas) {
+    globalClustersMetas['entities'] = corefClustersMetas;
+    globalClustersMetas['events'] = eventsClustersMetas;
+    globalClustersMetas['propositions'] = propositionClustersMetas;
+
+    const corefLabelsToClusters = categorizeClustersByLabels(Object.values(corefClustersMetas));
+    const eventsLabelsToClusters = categorizeClustersByLabels(Object.values(eventsClustersMetas));
+    const propositionLabelsToClusters = categorizeClustersByLabels(Object.values(propositionClustersMetas));
+
+    const allClusters = Object.assign(eventsLabelsToClusters, propositionLabelsToClusters, corefLabelsToClusters)
+    globalClustersMetas['all'] = allClusters;
+}
+
 class LabelClustersItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            minimized: true
+            minimized: this.props.minimized !== undefined ? this.props.minimized : true
         };
     }
 
@@ -364,6 +406,7 @@ class LabelClustersItem extends React.Component {
         const $this = $(ReactDOM.findDOMNode(this));
         const $popoverElements = $this.find('[data-toggle=popover]');
         $popoverElements.popover();
+
     }
 
 
@@ -371,8 +414,9 @@ class LabelClustersItem extends React.Component {
         const labelClusters = this.props.labelClusters;
         const clusterLabel = labelClusters[0]['cluster_label'];
         const clustersQuery = this.props.clustersQuery;
-        const numSentToShow = this.props.numSentToShow || 5;
+        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 5;
         const maxSentsToShow = this.props.maxSentsToShow || 20;
+        const minimized = this.state.minimized;
 
         const clustersItems = [];
         clustersItems.push(
@@ -388,7 +432,7 @@ class LabelClustersItem extends React.Component {
             )
         );
         for (let i = 0; i < labelClusters.length; i++) {
-            if (i < numSentToShow || (!this.state.minimized && i < maxSentsToShow)) {
+            if (i < numSentToShow || (!minimized && i < maxSentsToShow)) {
 
                 const cluster = labelClusters[i];
 
@@ -414,72 +458,59 @@ class LabelClustersItem extends React.Component {
             }
         }
 
+        let cardFooter;
         if (clustersItems.length < labelClusters.length && clustersItems.length < maxSentsToShow) {
-            if (this.state.minimized) {
-                const readMoreBtn = e(
+            if (minimized) {
+                cardFooter = e(
                     "div",
                     {
                         "className": "show-more-btn"
                     },
                     e(
-                        'a',
+                        'button',
                         {
-                            "href": "#",
-                            onClick: this.expand
+                            style: {
+                                "marginTop": "10px",
+                                "marginBottom": "10px",
+                                "cursor": "pointer"
+                            },
+                            "data-toggle": "modal",
+                            "data-target": "#queriesModal",
+                            "data-cluster-label": clusterLabel
                         },
                         [
-                            "Show more ",
-
-                            e(
-                                "i",
-                                {
-                                    "className": "fas fa-arrow-down"
-                                }
-                            )
+                            "Show all"
                         ]
                     )
                 );
-                clustersItems.push(readMoreBtn);
             }
          }
 
-        if (!this.state.minimized) {
-            const readLessBtn = e(
+        const minimizedClass = minimized ? " minimized" : "";
+
+        let facetsValuesList = e(
+             "div",
+             {
+                 "className": "facets-values-list"
+             },
+            clustersItems
+        );
+
+        if (minimized) {
+            facetsValuesList = e(
                 "div",
                 {
-                    "className": "show-less-btn"
+                    "id": `accordion-${clusterLabel}`,
+                    "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card col-3"
                 },
-                e(
-                    'a',
-                    {
-                        "href": "#",
-                        onClick: this.minimize
-                    },
-                    [
-                        "Show less ",
-
-                        e(
-                            "i",
-                            {
-                                "className": "fas fa-arrow-up"
-                            }
-                        )
-                    ]
-                )
-            );
-            clustersItems.push(readLessBtn);
+                [
+                    facetsValuesList,
+                    cardFooter
+                ]
+           );
         }
 
-        const minimizedClass = this.state.minimized ? " minimized" : "";
-
-        return e(
-            "div",
-            {
-                "id": `accordion-${clusterLabel}`,
-                "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card"
-            },
-            clustersItems
-       );
+        return facetsValuesList
     }
 }
 
@@ -529,6 +560,7 @@ class ClustersIdsList extends React.Component {
                     e(
                         "div",
                         {
+                            "className": "row"
                         },
                         labelClustersItems
                     )
@@ -539,18 +571,13 @@ class ClustersIdsList extends React.Component {
 }
 
 function createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas) {
-    const corefLabelsToClusters = categorizeClustersByLabels(Object.values(corefClustersMetas));
-    const eventsLabelsToClusters = categorizeClustersByLabels(Object.values(eventsClustersMetas));
-    const propositionLabelsToClusters = categorizeClustersByLabels(Object.values(propositionClustersMetas));
-
-    const allClusters = Object.assign(eventsLabelsToClusters, propositionLabelsToClusters, corefLabelsToClusters)
 
     const htmlElementToRenderInto = document.createElement("div");
 
     const reactToRender = e(
         ClustersIdsList,
         {
-            "allClusters": allClusters,
+            "allClusters": globalClustersMetas['all'],
             "clustersQuery": globalQuery
         }
     );
@@ -605,7 +632,9 @@ class QueryBadgeItem extends React.Component {
             ),
             e(
                 "span",
-                {},
+                {
+                    "className": "query-badge-remove"
+                },
                 " x"
             )
         ];
@@ -639,7 +668,7 @@ class QueryBadgesList extends React.Component {
         if (globalQuery.length > 0) {
             let text = "Query: "
             if (showHistoryBtn) {
-                text = "The following query is filtering the navigation and is used to create the summary: ";
+                text = "";
             }
 
             queryItems.push(e(
@@ -710,24 +739,11 @@ function insertQueryItems() {
 
     if (globalQuery.length > 0) {
         const liReact = e(
-            "div",
+            QueryBadgesList,
             {
-                "className": "card"
-            },
-            e(
-                "div",
-                {
-                    "className": "card-body",
-                    "id": "queryCard"
-                },
-                e(
-                    QueryBadgesList,
-                    {
-                        "globalQuery": globalQuery,
-                        "showHistoryBtn": true
-                    }
-                )
-            )
+                "globalQuery": globalQuery,
+                "showHistoryBtn": true
+            }
         );
 
         ReactDOM.render(liReact, listElementResult);

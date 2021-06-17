@@ -244,11 +244,9 @@ function setQueryResponse(queryResultInfo) {
     const corefClustersMetas = queryResultInfo['corefClustersMetas'];
     const eventsClustersMetas = queryResultInfo['eventsClustersMetas'];
     const propositionClustersMetas = queryResultInfo['propositionClustersMetas'];
-    globalClustersMetas['entities'] = corefClustersMetas;
-    globalClustersMetas['events'] = eventsClustersMetas;
-    globalClustersMetas['propositions'] = propositionClustersMetas;
     globalQueriesResults[queryResult['query_idx']] = queryResult;
-    createClustersIdsList(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
+    saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
+    createClustersIdsList();
 
     // remove the loading ellipsis:
     if (curLoadingInicatorElement != null) {
