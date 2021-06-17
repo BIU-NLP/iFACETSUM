@@ -12,7 +12,7 @@ CORPORA_LOCATIONS = {
                      # 'Stephen Lawrence Killing': 'data/DUC2006Clean/D0624/documents',
                      # 'Adoption': 'data/DUC2006Clean/D0627/documents',
                      # 'ADHD': 'data/DUC2006Clean/D0628/documents',
-                     # 'Computer Viruses': 'data/DUC2006Clean/D0629/documents',
+                     'Computer Viruses': 'data/DUC2006Clean/D0629/documents',
                      # 'Bookselling': 'data/DUC2006Clean/D0630/documents',
                      # 'Concorde Aircraft': 'data/DUC2006Clean/D0631/documents',
                      # 'Kursk Submarine': 'data/DUC2006Clean/D0640/documents',
@@ -20,7 +20,7 @@ CORPORA_LOCATIONS = {
                      # 'US Affordable Housing': 'data/DUC2006Clean/D0645/documents',
                      # 'Elian Gonzales': 'data/DUC2006Clean/D0647/documents',
                      # 'Jimmy Carter International': 'data/DUC2006Clean/D0650/documents',
-                     # 'Steroid Use': 'data/DUC2006Clean/D0602/documents',
+                     'Steroid Use': 'data/DUC2006Clean/D0602/documents',
                      # 'Global Warming': 'data/DUC2006Clean/D0606/documents'
                      # note this last topic is a sample for the AMT preview
 }
@@ -82,9 +82,9 @@ COREF_LOCATIONS = {
         # "entities": "data/coref/native/duc_predictions_ments.json",
         "entities": "data/coref/native/wec_entities/wec_native_predicted_clusters.json",
         # "events":  "data/coref/native/events_average_0.3_model_5_topic_level.conll",
-        # "events":  "data/coref/native/cdlm_events/CDLM_events.conll",
+        "events":  "data/coref/native/cdlm_events/CDLM_events.conll",
         # "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix.json",
-        "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix2.json",
+        # "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix2.json",
         # "events":  "data/coref/native/wec_events/wec_native_event_predictions_strict_fix.json",
         "propositions": "data/coref/native/propositions/devDUC2006_InDoc_D0601A_checkpoint-2000.csv"
     },
@@ -96,7 +96,15 @@ COREF_LOCATIONS = {
         "events": "data/coref/egypt/cdlm_events/dev_events_average_0.85_corpus_level.conll",
         "propositions": "data/coref/egypt/propositions/devDUC2006_InDoc_D0617_checkpoint-2000.csv"
     },
-    'Computer Viruses': {},
-    'Steroid Use': {},
+    'Computer Viruses': {
+        "entities": "data/coref/virus/wec_entities/wec_computer_predicted_clusters.json",
+        "events": "data/coref/virus/cdlm_events/dev_events_average_0.85_corpus_level.conll",
+        "propositions": "data/coref/virus/propositions/devDUC2006_InDoc_D0629_checkpoint-2000.csv"
+    },
+    'Steroid Use': {
+        "entities": "data/coref/steroid/wec_entities/wec_steroid_predicted_clusters.json",
+        "events": "data/coref/steroid/cdlm_events/dev_events_average_0.85_corpus_level.conll",
+        "propositions": "data/coref/steroid/propositions/devDUC2006_InDoc_D0602B_checkpoint-2000.csv"
+    },
     'Global Warming': {}
 }
