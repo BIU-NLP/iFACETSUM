@@ -73,12 +73,19 @@ p {
 }
 
 #navigation-card {
-    height: 590px;
-    overflow-y: scroll;
+    max-height: 400px;
+}
+
+.facets-values-list {
+    min-height: 300px;  /* So the footer will always show in the same place */
 }
 
 #explorationCard {
-    height: 590px;
+    height: 400px;
+}
+
+#navigation-card {
+    padding-top: 0; /* has padding by default from the card, redundant with the cards of the lists */
 }
 
 .pane, #navigation-card > div {
@@ -177,7 +184,8 @@ ul {
 }
 
 
-.exploreItem > button {
+/* buttons that should look like links */
+.exploreItem > button, .show-more-btn > button {
 	font-weight: normal;
 	background: none;
 	border: none;
@@ -245,7 +253,7 @@ ul {
 }
 
 #mainContentRow {
-  padding-top: 20px;
+  margin-top: 20px;
 }
 
 .componentSubtitle {
@@ -923,13 +931,13 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     border: 0;
 }
 
-#clustersIdsListContainer .label-clusters-item .card-header {
+.label-clusters-item .card-header {
     text-align: left;
     background-color: white;
     font-weight: 800
 }
 
-#clustersIdsListContainer .list-group-item .form-check {
+.list-group-item .form-check {
     width: 90%;  /* So the propositions won't touch the badge */
     text-align: left;
 }
@@ -941,6 +949,10 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     margin-left: 10px;
     color: var(--dark);
     text-decoration: underline dotted;
+}
+
+.show-more-btn {
+    padding: 0 20px;  /* to have the same padding as the list */
 }
 
 #queryArea {
@@ -980,7 +992,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .query-badge-item > span {
     display: inline-block;
-    padding: 2px;
+    padding: 6px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1004,4 +1016,12 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .query-badge-wrapper {
     vertical-align: middle;  /* otherwise the query is in a different height from the text */
+}
+
+.query-badge-remove {
+    border-left: 1px solid;  /* separates the wrod from the query */
+}
+
+.sentence-paragraph {
+    font-size: 20px;  /* make summary stand out */
 }
