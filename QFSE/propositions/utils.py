@@ -71,7 +71,7 @@ def _find_indices_by_char_idx(sent_idx, corpus_sent: str, corpus_tokens, span_te
     start_char_idx = corpus_sent.index(span_text_split[0])
     end_char_idx = corpus_sent.index(span_text_split[-1]) + len(span_text_split[-1]) - 1
 
-    sent_split_lengths = [len(x.text_with_ws) for x in corpus_tokens]
+    sent_split_lengths = [len(x) + 1 if isinstance(x, str) else len(x.text_with_ws) for x in corpus_tokens]
     sent_split_accumulated = [sent_split_lengths[i] + sum(sent_split_lengths[:i]) for i in range(len(sent_split_lengths))]
 
     span_start_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if start_char_idx + 1 < word_accumulated][0]
