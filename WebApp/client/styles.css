@@ -72,12 +72,8 @@ p {
     display: none; /* initially not shown */
 }
 
-#navigation-card {
-    max-height: 400px;
-}
-
 .facets-values-list {
-    min-height: 300px;  /* So the footer will always show in the same place */
+    min-height: 200px;  /* So the footer will always show in the same place */
 }
 
 #explorationCard {
@@ -745,7 +741,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .sentence-span {
     /* line-height: 42px; */
-    display: flex;
+    /* display: flex; */
     flex-wrap: wrap;
     /* white-space: pre; */
     cursor: default;
@@ -826,7 +822,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     border: 1px dashed;
     position: relative;
     line-height: 22px;
-    display: flex;
+    /* display: flex; */
     /* Removed colors
     color: var(--gray-dark);
     background: var(--light);
@@ -913,6 +909,12 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     cursor: context-menu;
 }
 
+/* Cancel the default list item padding to make a compact view in main screen */
+#clustersIdsListContainer .cluster-list-item {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
 .list-group-item.selected {
     /* background-color: #e6e6e7; */
 }
@@ -927,11 +929,12 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     border-bottom: #dcdcdc 1px solid;
 }
 
-#clustersIdsListContainer .card-header, #clustersIdsListContainer .list-group-item {
+/* Remove default border from card header and items both in popup and main screen */
+.facets-values-list .card-header, .facets-values-list .list-group-item, #clustersIdsListContainer .list-group-item {
     border: 0;
 }
 
-.label-clusters-item .card-header {
+.facets-values-list .card-header {
     text-align: left;
     background-color: white;
     font-weight: 800
