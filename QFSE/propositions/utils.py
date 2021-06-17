@@ -55,25 +55,34 @@ def find_indices_by_char_idx(sentences, sent_text, span_text):
     for sent_idx, curr_sent in enumerate(sentences):
         curr_sent_text = curr_sent.text
         if sent_text in curr_sent_text:
-            span_text_split = span_text.split("...")
-
-            start_char_idx = curr_sent_text.index(span_text_split[0])
-            end_char_idx = curr_sent_text.index(span_text_split[-1]) + len(span_text_split[-1]) - 1
-
-            sent_split_lengths = [len(x) + 1 for x in curr_sent.tokens]  # plus 1 for space
-            sent_split_accumulated = [sent_split_lengths[i] + sum(sent_split_lengths[:i]) for i in range(len(sent_split_lengths))]
-
-            span_start_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if start_char_idx + 1 < word_accumulated][0]
-            span_end_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if end_char_idx < word_accumulated][0]
-
-            if span_start_word_idx is None or span_end_word_idx is None:
-                logging.warning("Skipping proposition because couldn't find text")
-                return None, None, None
-
-            return sent_idx, span_start_word_idx, span_end_word_idx
+            return _find_indices_by_char_idx(sent_idx, curr_sent_text, curr_sent.tokens, span_text)
 
     logging.warning("Skipping proposition because couldn't find text")
     return None, None, None
+
+
+def _find_indices_by_char_idx(sent_idx, corpus_sent: str, corpus_tokens, span_text):
+    """
+    Gets the spacy token indices of a span in a text
+    """
+
+    span_text_split = span_text.split("...")
+
+    start_char_idx = corpus_sent.index(span_text_split[0])
+    end_char_idx = corpus_sent.index(span_text_split[-1]) + len(span_text_split[-1]) - 1
+
+    sent_split_lengths = [len(x.text_with_ws) for x in corpus_tokens]
+    sent_split_accumulated = [sent_split_lengths[i] + sum(sent_split_lengths[:i]) for i in range(len(sent_split_lengths))]
+
+    span_start_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if start_char_idx + 1 < word_accumulated][0]
+    span_end_word_idx = [i for i, word_accumulated in enumerate(sent_split_accumulated) if end_char_idx < word_accumulated][0]
+
+    if span_start_word_idx is None or span_end_word_idx is None:
+        logging.warning("Skipping proposition because couldn't find text")
+        return None, None, None
+
+    return sent_idx, span_start_word_idx, span_end_word_idx
+
 
 
 def parse_lines(df, corpus):

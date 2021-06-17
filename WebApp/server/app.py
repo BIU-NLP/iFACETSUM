@@ -7,6 +7,7 @@ from typing import List, Set, Dict, Union
 from nltk import word_tokenize
 
 from QFSE.Sentence import Sentence
+from QFSE.abstractive_coref.mentions_finder import MentionsFinder
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_ENTITIES
 from QFSE.coref.coref_labels import create_cluster_obj
 from QFSE.coref.models import Mention
@@ -259,45 +260,12 @@ class IntSummHandler(tornado.web.RequestHandler):
             "coref_tokens": self._split_sent_text_to_tokens(corpus_sent)
         } for corpus_sent in corpus_sents]
 
-    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool) -> List[Union[TokensCluster, List[str]]]:
+    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool, original_sentences=None) -> List[Union[TokensCluster, List[str]]]:
         tokens = sent
-        token_to_mention = defaultdict(list)
-
         if is_original_sentences:
             tokens = word_tokenize(sent.text)
 
-            # Coref - if not running CD LM
-            hotfix_wrong_indices = True
-            first_token_idx = 0
-            if hotfix_wrong_indices:
-                first_token_idx = sent.first_token_idx
-
-            # Entities
-            for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
-                mention_start = mentions['start']
-                mention_end = mentions['end']
-                if hotfix_wrong_indices:
-                    mention_start -= first_token_idx
-                    mention_end -= first_token_idx
-                for token_idx in range(mention_start, mention_end + 1):
-                    token_to_mention[token_idx].append(mentions)
-
-            # Events
-            for mentions in sent.coref_clusters[COREF_TYPE_EVENTS]:
-                mention_start = mentions['start']
-                mention_end = mentions['end']
-                # if hotfix_wrong_indices:
-                #     mention_start -= first_token_idx
-                #     mention_end -= first_token_idx
-                for token_idx in range(mention_start, mention_end + 1):
-                    token_to_mention[token_idx].append(mentions)
-
-            # Propositions
-            for mentions in sent.coref_clusters[COREF_TYPE_PROPOSITIONS]:
-                mention_start = mentions['start']
-                mention_end = mentions['end']
-                for token_idx in range(mention_start, mention_end + 1):
-                    token_to_mention[token_idx].append(mentions)
+        token_to_mention = self._get_token_to_mention(sent, is_original_sentences, original_sentences)
 
         # Split
 
@@ -332,19 +300,20 @@ class IntSummHandler(tornado.web.RequestHandler):
                 mentions = token_to_mention[token_idx]
                 open_mentions_to_flush = {}
                 for open_mention_id, open_mention in open_mentions_by_ids.items():
-                    open_mention_included = any(curr_mention for curr_mention in mentions if open_mention_id == curr_mention['cluster_idx'])
+                    open_mention_included = any(curr_mention for curr_mention in mentions if open_mention_id == self._get_mention_id(curr_mention))
                     if not open_mention_included:
                         open_mentions_to_flush[open_mention_id] = open_mention
                 flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_to_flush)
 
                 for mention in mentions:
-                    cluster_idx = mention['cluster_idx']
+                    cluster_idx = self._get_mention_id(mention)
                     if not any(open_mentions_by_ids) or cluster_idx not in open_mentions_by_ids:
-                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": cluster_idx, "cluster_type": mention['cluster_type']}
+                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": mention['cluster_idx'], "cluster_type": mention['cluster_type']}
 
+                # add the token only to one open mention
                 if any(open_mentions_by_ids):
-                    last_open_mention = list(open_mentions_by_ids.values())[-1]
-                    last_open_mention['tokens'].append([token])
+                    chosen_open_mention = self._choose_open_mention(list(open_mentions_by_ids.values()))
+                    chosen_open_mention['tokens'].append([token])
             else:
                 flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_by_ids)
                 tokens_groups.append([token])
@@ -353,6 +322,66 @@ class IntSummHandler(tornado.web.RequestHandler):
             flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_by_ids)
 
         return tokens_groups
+
+    def _choose_open_mention(self, open_mentions) -> dict:
+        """
+        Assuming propositions is longest, we want to add the token to others first
+        """
+
+        CLUSTERS_ORDER = {
+            COREF_TYPE_PROPOSITIONS: 1,
+            COREF_TYPE_EVENTS: 2,
+            COREF_TYPE_ENTITIES: 3
+        }
+
+        sorted_open_mentions = sorted(open_mentions, key=lambda x: CLUSTERS_ORDER[x['cluster_type']], reverse=True)
+
+        return sorted_open_mentions[0]
+
+    def _get_mention_id(self, mention):
+        return f"{mention['cluster_idx']}_{mention['cluster_type']}"
+
+    def _get_token_to_mention(self, sent, is_original_sentences: bool, original_sentences):
+        if not is_original_sentences:
+            token_to_mention = MentionsFinder().find_mentions(sent, original_sentences)
+        else:
+            token_to_mention = defaultdict(list)
+
+            # Coref - if not running CD LM
+            hotfix_wrong_indices = True
+            first_token_idx = 0
+            if hotfix_wrong_indices:
+                first_token_idx = sent.first_token_idx
+
+            # Entities
+            for mentions in sent.coref_clusters[COREF_TYPE_ENTITIES]:
+                mention_start = mentions['start']
+                mention_end = mentions['end']
+                if hotfix_wrong_indices:
+                    mention_start -= first_token_idx
+                    mention_end -= first_token_idx
+                for token_idx in range(mention_start, mention_end + 1):
+                    token_to_mention[token_idx].append(mentions)
+
+            # Events
+            for mentions in sent.coref_clusters[COREF_TYPE_EVENTS]:
+                mention_start = mentions['start']
+                mention_end = mentions['end']
+                # if hotfix_wrong_indices:
+                #     mention_start -= first_token_idx
+                #     mention_end -= first_token_idx
+                for token_idx in range(mention_start, mention_end + 1):
+                    token_to_mention[token_idx].append(mentions)
+
+            # Propositions
+            for mentions in sent.coref_clusters[COREF_TYPE_PROPOSITIONS]:
+                mention_start = mentions['start']
+                mention_end = mentions['end']
+                for token_idx in range(mention_start, mention_end + 1):
+                    token_to_mention[token_idx].append(mentions)
+
+        return token_to_mention
+
 
     def getQuerySummaryJson(self, clientJson):
         clientId = clientJson['clientId']
@@ -397,7 +426,7 @@ class IntSummHandler(tornado.web.RequestHandler):
                     # No need to summarize one sentence
                     summary_sents = [sent.spacy_rep for sent in sentences]
 
-                query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False)) for sent in summary_sents]
+                query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False, original_sentences=sentences)) for sent in summary_sents]
 
                 # Save queries and mark similar sentences to those used
                 query_results_analyzer.analyze_repeating(query_result)
