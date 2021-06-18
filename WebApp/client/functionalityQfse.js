@@ -191,7 +191,8 @@ function initializeModal() {
                 "resultSentences": origSentences,
                 "numSentToShow": 10,
                 "showPopover": false, // Don't show a popover inside a modal
-                "fixedClusters": fixedClusters // Show only clusters that were used to query
+                "fixedClusters": fixedClusters, // Show only clusters that were used to query
+                "isSummary": false
             }
         );
 
@@ -423,7 +424,7 @@ class LabelClustersItem extends React.Component {
             e(
                 "div",
                 {
-                    "className": "card-header clusters-label",
+                    "className": "card-header clean-card-header clusters-label",
                     "data-parent": `#accordion-${clusterLabel}`,
                     "data-toggle": "tooltip",
                     "title": CLUSTER_LABEL_TO_TOOLTIP[clusterLabel]
@@ -501,7 +502,7 @@ class LabelClustersItem extends React.Component {
                 "div",
                 {
                     "id": `accordion-${clusterLabel}`,
-                    "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card col-3"
+                    "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card col-md-3"
                 },
                 [
                     facetsValuesList,
@@ -1041,43 +1042,138 @@ class ListItem extends React.Component {
 //        this.initializePopOver()
     }
 
+    createDocIdToSentences = (sentences) => {
+        let docIdToSentences = {};
+
+        // Build docIdToSentences
+        for (const sentence of sentences) {
+            const docId = sentence['doc_id'];
+            const docIdSentences = docIdToSentences[docId] || [];
+            docIdToSentences[docId] = docIdSentences;
+            docIdSentences.push(sentence);
+        }
+
+        // Sort sentences by sent_idx
+        for (const docId of Object.keys(docIdToSentences)) {
+            const docSentences = docIdToSentences[docId];
+            docSentences.sort((first, second) => first['sent_idx'] - second['sent_idx']);
+        }
+
+        // Sort documents by number of sentences
+        const docIdsWithCounts = Object.keys(docIdToSentences).map(key => [key, docIdToSentences[key].length]);
+        docIdsWithCounts.sort((first, second) => second[1] - first[1]);
+
+        docIdToSentences = docIdsWithCounts.map(docIdWithCount => docIdToSentences[docIdWithCount[0]]);
+
+
+        return docIdToSentences
+    }
+
+    shouldShowMore = (numSentencesShown, numSentToShow) => {
+        return numSentencesShown < numSentToShow || !this.state.minimized
+    }
+
     render() {
         const queryIdx = this.props.queryIdx;
         const resultSentences = this.props.resultSentences;
         const origSentences = this.props.origSentences;
         const numSentToShow = this.props.numSentToShow || 1;
+        const isSummary = this.props.isSummary !== undefined ? this.props.isSummary : true;
         const sentences = [];
 
         // put the list of sentences separately line by line with a small margin in between:
-        for (var i = 0; i < resultSentences.length; i++) {
-            if (i < numSentToShow || !this.state.minimized) {
-                const docId = resultSentences[i]['doc_id'];
-                const sentIdx = resultSentences[i]['idx'];
-                const isFirstTimeSeen = resultSentences[i]['is_first_time_seen'];
-                let sentenceSeenClass = "";
-                if (isFirstTimeSeen === false) {
-                    sentenceSeenClass = "sentence-seen";
+        const docIdToSentences = this.createDocIdToSentences(resultSentences);
+        let numSentencesShown = 0;
+        const showSentIdx = !isSummary;
+
+        for (const docSentences of docIdToSentences) {
+            if (this.shouldShowMore(numSentencesShown, numSentToShow)) {
+                const docId = docSentences[0]['doc_id']
+
+                let documentSentencesElements = [];
+
+                for (var i = 0; i < docSentences.length; i++) {
+                    numSentencesShown += 1;
+                    if (this.shouldShowMore(numSentencesShown, numSentToShow)) {
+                        const sentIdx = docSentences[i]['sent_idx'];
+                        const isFirstTimeSeen = docSentences[i]['is_first_time_seen'];
+                        let sentenceSeenClass = "";
+                        if (isFirstTimeSeen === false) {
+                            sentenceSeenClass = "sentence-seen";
+                        }
+
+                        const sentItems = [];
+                        let colClass = "col-12";
+
+                        if (showSentIdx) {
+                            sentItems.push(e(
+                               "span",
+                               {
+                                   "className": "sentence-index col-1"
+                               },
+                               `#${sentIdx}`
+                           ));
+
+                           colClass = "col-11";
+                        }
+
+                        sentItems.push(e(
+                            "div",
+                            {
+                                "className": colClass,
+                            },
+                            e(
+                                TokensGroup,
+                                {
+                                    "groups": docSentences[i]['tokens'],
+                                    "startHighlightCluster": this.startHighlightCluster,
+                                    "stopHighlightCluster": this.stopHighlightCluster,
+                                    "highlightedClusters": this.state.highlightedClusters,
+                                    "showPopover": this.props.showPopover !== undefined ? this.props.showPopover : true,
+                                    "fixedClusters": this.props.fixedClusters
+                                }
+                            )
+                        ));
+
+                        const sentencePar = e(
+                            'div',
+                            {
+                               "className": `sentence-paragraph ${sentenceSeenClass} no-gutters row`,
+                               "data-sent-idx": sentIdx
+                            },
+                            sentItems
+                          );
+                          documentSentencesElements.push(sentencePar);
+                    }
                 }
 
-                const sentencePar = e(
-                    'p',
-                    {
-                       "className": `sentence-paragraph ${sentenceSeenClass}`,
-                       "data-sent-idx": sentIdx
-                    },
-                    e(
-                      TokensGroup,
-                      {
-                        "groups": resultSentences[i]['tokens'],
-                        "startHighlightCluster": this.startHighlightCluster,
-                        "stopHighlightCluster": this.stopHighlightCluster,
-                        "highlightedClusters": this.state.highlightedClusters,
-                        "showPopover": this.props.showPopover !== undefined ? this.props.showPopover : true,
-                        "fixedClusters": this.props.fixedClusters
-                      }
-                    )
-                  );
-                  sentences.push(sentencePar);
+                let documentElement = documentSentencesElements;
+
+
+                if (!isSummary) {
+                    documentElement = e(
+                        "div",
+                        {
+                            "className": "card clean-card"
+                        },
+                        [
+                            e(
+                                "div",
+                                {
+                                    "className": "card-header clean-card-header"
+                                },
+                                `Document: ${docId}`
+                            ),
+                            e(
+                                "div",
+                                {"className": "card-body"},
+                                documentSentencesElements
+                            )
+                        ]
+                    );
+               }
+
+                sentences.push(documentElement);
             }
         }
 
