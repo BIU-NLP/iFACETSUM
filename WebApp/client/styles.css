@@ -734,9 +734,9 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 .sentence-paragraph {
     margin-top: 10px;
     margin-bottom: 10px;
-    cursor: pointer;
     display: flex;
     width: 100%;
+    font-size: 20px;  /* make summary stand out */
 }
 
 .sentence-span {
@@ -930,15 +930,22 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 /* Remove default border from card header and items both in popup and main screen */
-.facets-values-list .card-header, .facets-values-list .list-group-item, #clustersIdsListContainer .list-group-item {
+
+.clean-card {
     border: 0;
 }
 
-.facets-values-list .card-header {
+.clean-card-header, .facets-values-list .list-group-item, #clustersIdsListContainer .list-group-item {
+    border: 0;
+}
+
+.clean-card-header {
     text-align: left;
     background-color: white;
     font-weight: 800
 }
+
+/* End clean card */
 
 .list-group-item .form-check {
     width: 90%;  /* So the propositions won't touch the badge */
@@ -1023,8 +1030,4 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .query-badge-remove {
     border-left: 1px solid;  /* separates the wrod from the query */
-}
-
-.sentence-paragraph {
-    font-size: 20px;  /* make summary stand out */
 }
