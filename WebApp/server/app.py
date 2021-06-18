@@ -228,13 +228,19 @@ class IntSummHandler(tornado.web.RequestHandler):
             # Return all if no query
             query_is_empty = doc_sent_indices is None or not any(doc_sent_indices)
             cluster_sentences_shown_in_query = []
+            doc_sent_indices_filtered = set()
             if doc_sent_indices:
-                cluster_sentences_shown_in_query = [mention for mention in cluster['mentions'] if DocSent(mention['doc_id'], mention['sent_idx']) in doc_sent_indices]
+                for mention in cluster['mentions']:
+                    doc_sent_index = DocSent(mention['doc_id'], mention['sent_idx'])
+                    if doc_sent_index in doc_sent_indices:
+                        cluster_sentences_shown_in_query.append(mention)
+                        doc_sent_indices_filtered.add(doc_sent_index)
 
             should_return_cluster = query_is_empty or any(cluster_sentences_shown_in_query)
 
             if should_return_cluster:
                 cluster['num_mentions_filtered'] = cluster['num_mentions'] if query_is_empty else len(cluster_sentences_shown_in_query)
+                cluster['num_sents_filtered'] = cluster['num_sents'] if query_is_empty else len(doc_sent_indices_filtered)
                 # cluster['display_name_filtered'] = cluster['display_name'] if query_is_empty else create_cluster_obj(cluster_idx, cluster_type, [Mention.from_dict(mention) for mention in cluster_sentences_shown_in_query]).display_name
                 clusters_filtered[cluster_idx] = cluster
 
