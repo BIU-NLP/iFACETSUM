@@ -57,6 +57,10 @@ const DATE_LABEL = "Date";
 const ENTITIES_LABEL = "Entities";
 const MISC_LABEL = "Miscellaneous";
 
+//const FIELD_TO_SORT_CLUSTERS = "num_mentions_filtered";
+const FIELD_TO_SORT_CLUSTERS = "num_sents_filtered";
+
+
 const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, ENTITIES_LABEL, MISC_LABEL];
 
 const CLUSTER_LABEL_TO_TOOLTIP = {};
@@ -259,12 +263,17 @@ function removeQueryItem(clusterQuery) {
     }
 }
 
+function isClusterSelected(cluster) {
+     const globalQueryFiltered = globalQuery.filter(currClusterQuery => compareClustersObjects(currClusterQuery, cluster));
+     return globalQueryFiltered.length > 0 ? globalQueryFiltered[0] : null;
+ }
+
 
 class ClusterIdItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            clusterSelected: this.props.clusterSelected
+            "clusterSelected": isClusterSelected(this.props.cluster)
         };
     }
 
@@ -275,11 +284,13 @@ class ClusterIdItem extends React.Component {
             const clusterId = cluster['cluster_id'];
             const clusterType = cluster['cluster_type'];
 
-            if (this.props.clusterSelected) {
+            const clusterQuery = isClusterSelected(cluster);
+
+            if (clusterQuery !== null) {
                 this.setState({
                     "clusterSelected": false
                 });
-                removeQueryItem(this.props.clusterQuery);
+                removeQueryItem(clusterQuery);
             } else {
                 this.setState({
                     "clusterSelected": true
@@ -292,13 +303,14 @@ class ClusterIdItem extends React.Component {
     render() {
 
         const cluster = this.props.cluster;
-        const clusterSelectedClassName = this.state.clusterSelected ? "selected" : "";
+        const clusterSelected = isClusterSelected(cluster);
+        const clusterSelectedClassName = clusterSelected ? "selected" : "";
 
         const mentionCounter = {};
         for (const mention of cluster['mentions']) {
             const token = mention['token'];
             const mentionCount = mentionCounter[token] || 0;
-            mentionCounter[token] = mentionCount + 1
+            mentionCounter[token] = mentionCount + 1;
         }
 
         const mentionWithCount = Object.keys(mentionCounter).map(key => [key, mentionCounter[key]]);
@@ -348,7 +360,7 @@ class ClusterIdItem extends React.Component {
                         "data-toggle": "tooltip",
                         "title": allMentionsText
                     },
-                    `${cluster['num_mentions_filtered']}`
+                    `${cluster[FIELD_TO_SORT_CLUSTERS]}`
                 )
             ]
        );
@@ -416,7 +428,7 @@ class LabelClustersItem extends React.Component {
         const clusterLabel = labelClusters[0]['cluster_label'];
         const clustersQuery = this.props.clustersQuery;
         const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 6;
-        const maxSentsToShow = this.props.maxSentsToShow || 50;
+        const maxSentsToShow = this.props.maxSentsToShow || 999;
         const minimized = this.state.minimized;
 
         const clustersItems = [];
@@ -437,21 +449,10 @@ class LabelClustersItem extends React.Component {
 
                 const cluster = labelClusters[i];
 
-                let clusterSelected = false;
-                let clusterQuery = null;
-                for (clusterQuery of clustersQuery) {
-                    if (compareClustersObjects(clusterQuery, cluster)) {
-                        clusterSelected = true;
-                        break;
-                    }
-                }
-
                 const clusterIdItemReact = e(
                     ClusterIdItem,
                     {
-                        "cluster": cluster,
-                        "clusterSelected": clusterSelected,
-                        "clusterQuery": clusterQuery
+                        "cluster": cluster
                     }
                 )
 
@@ -597,7 +598,7 @@ function getClusterFromGlobalByQuery(clusterQuery) {
 function categorizeClustersByLabels(clusters) {
     // Convert list of clusters to labels clusters
     const labelsClusters = {};
-    clusters = clusters.sort((a,b) => b['num_mentions_filtered'] - a['num_mentions_filtered']);
+    clusters = clusters.sort((a,b) => b[FIELD_TO_SORT_CLUSTERS] - a[FIELD_TO_SORT_CLUSTERS]);
     for (const cluster of clusters) {
         const clusterLabel = cluster['cluster_label'];
         cluster['cluster_label'] = clusterLabel;

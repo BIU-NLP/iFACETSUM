@@ -31,6 +31,7 @@ class Cluster:
     cluster_label: str
     display_name: str
     num_mentions: int
+    num_sents: int
 
 
 @dataclass_json

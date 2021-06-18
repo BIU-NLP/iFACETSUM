@@ -18,7 +18,9 @@ class HuggingFaceSummarizer:
     def summarize(self, sentences) -> List[str]:
         from QFSE.Utilities import get_item
 
-        inputs = [". ".join([self._remove_dot_from_sentence(sent.text) for sent in sentences])]
+        # Sort sentences to avoid the summary from changing if input is too long. Sorting by sent_idx prefers multiple documents over the same one
+        sentences_sorted = sorted(sentences, key=lambda sent: sent.sentIndex)
+        inputs = [". ".join([self._remove_dot_from_sentence(sent.text) for sent in sentences_sorted])]
         summary_sents = []
 
         query_api = False
