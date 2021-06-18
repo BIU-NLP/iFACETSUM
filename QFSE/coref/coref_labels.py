@@ -34,6 +34,7 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
 
     ents_counter = Counter()
     labels_to_mentions = defaultdict(list)
+    unique_sents_ids = set()
     for mention in mentions:
         doc = nlp(mention.token)
         label = "NO_LABEL"
@@ -43,6 +44,7 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
                 label = ent.label_
         ents_counter[label] += 1
         labels_to_mentions[label].append(mention)
+        unique_sents_ids.add(f"{mention.doc_id} {mention.sent_idx}")
 
     mentions_used_for_representative = mentions
     cluster_label = None
@@ -54,7 +56,7 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
         token_counter[mention.token] += 1
     most_representative_mention = token_counter.most_common()[0][0]
     cluster_label = LABELS_MAP.get(cluster_label, default_cluster)
-    return Cluster(cluster_id, cluster_type, mentions, cluster_label, most_representative_mention, len(mentions))
+    return Cluster(cluster_id, cluster_type, mentions, cluster_label, most_representative_mention, len(mentions), len(unique_sents_ids))
 
 
 def clean_text(text):
