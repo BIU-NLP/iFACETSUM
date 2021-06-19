@@ -935,6 +935,10 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     border: 0;
 }
 
+.clean-card .card-body, .clean-card .card-header {
+    padding: 0;
+}
+
 .clean-card-header, .facets-values-list .list-group-item, #clustersIdsListContainer .list-group-item {
     border: 0;
 }
