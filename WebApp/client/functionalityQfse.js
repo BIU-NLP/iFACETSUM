@@ -56,22 +56,17 @@ const MISC_LABEL = "Miscellaneous";
 const FIELD_TO_SORT_CLUSTERS = "num_sents_filtered";
 
 
-const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, ENTITIES_LABEL, MISC_LABEL];
+const CLUSTERS_FACETS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, ENTITIES_LABEL, MISC_LABEL];
 
-const CLUSTER_LABEL_TO_TOOLTIP = {};
+const CLUSTER_FACET_TO_TOOLTIP = {};
 const default_tooltip = "co-occurring in the document set, press a cluster to get its summary and filtered navigation";
-CLUSTER_LABEL_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[PERSON_LABEL]  = `People ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organizations ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[LOCATION_LABEL] = `Locations ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[NORP_LABEL] = `Nationality, religious or political entities ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[DATE_LABEL] = `Dates ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
 
-NUM_OF_SENTS_PER_CLUSTER_LABEL = {};
-NUM_OF_SENTS_PER_CLUSTER_LABEL[KEY_STATEMENTS_LABEL] = 2;
+NUM_OF_SENTS_PER_FACET = {};
+NUM_OF_SENTS_PER_FACET[KEY_STATEMENTS_LABEL] = 2;
 
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
@@ -220,10 +215,10 @@ function initializeModal() {
     });
 
     $('#queriesModal').on('show.bs.modal', function(event) {
-        const clusterLabel = $(event.relatedTarget).attr('data-cluster-label');
+        const clusterFacet = $(event.relatedTarget).attr('data-cluster-facet');
 
         const allClusters = globalClustersMetas['all'];
-        const labelClusters = allClusters[clusterLabel];
+        const labelClusters = allClusters[clusterFacet];
         const clustersQuery = globalQuery;
 
         const htmlElementToRenderInto = document.createElement("div");
@@ -263,7 +258,7 @@ function initializeModal() {
                 "resultSentences": replyDocument['doc']['orig_sentences'],
                 "numSentToShow": 999,
                 "showPopover": false, // Don't show a popover inside a modal
-                "fixedSentsIndices": [22],
+                "fixedSentsIndices": fixedSentsIds,
                 "isSummary": false
             }
         );
@@ -323,6 +318,9 @@ class ClusterIdItem extends React.Component {
     render() {
 
         const cluster = this.props.cluster;
+        const displayName = cluster['display_name'];
+        const clusterLabel = cluster['cluster_label'];
+        const clusterFacet = cluster['cluster_facet'];
         const clusterSelected = isClusterSelected(cluster);
         const clusterSelectedClassName = clusterSelected ? "selected" : "";
 
@@ -337,6 +335,11 @@ class ClusterIdItem extends React.Component {
         mentionWithCount.sort((first, second) => second[1] - first[1]);
 
         const allMentionsText = mentionWithCount.map(mentionWithCount => `${mentionWithCount[0]} (${mentionWithCount[1]})`).join("\n");
+
+        let final_display_name = displayName;
+        if (clusterLabel !== clusterFacet) {
+            final_display_name = `${clusterLabel}: ${displayName}`;
+        }
 
         return e(
             "div",
@@ -368,7 +371,7 @@ class ClusterIdItem extends React.Component {
                                 "className": "form-check-label"
                             },
                             [
-                                `${cluster['display_name']}`
+                                final_display_name
                             ]
                         )
                     ]
@@ -445,9 +448,9 @@ class LabelClustersItem extends React.Component {
 
     render() {
         const labelClusters = this.props.labelClusters;
-        const clusterLabel = labelClusters[0]['cluster_label'];
+        const clusterFacet = labelClusters[0]['cluster_facet'];
         const clustersQuery = this.props.clustersQuery;
-        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 6;
+        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_FACET[clusterFacet] || 6;
         const maxSentsToShow = this.props.maxSentsToShow || 999;
         const minimized = this.state.minimized;
 
@@ -457,11 +460,10 @@ class LabelClustersItem extends React.Component {
                 "div",
                 {
                     "className": "card-header clean-card-header clusters-label",
-                    "data-parent": `#accordion-${clusterLabel}`,
                     "data-toggle": "tooltip",
-                    "title": CLUSTER_LABEL_TO_TOOLTIP[clusterLabel]
+                    "title": CLUSTER_FACET_TO_TOOLTIP[clusterFacet]
                 },
-                clusterLabel
+                clusterFacet
             )
         );
         for (let i = 0; i < labelClusters.length; i++) {
@@ -498,7 +500,7 @@ class LabelClustersItem extends React.Component {
                             },
                             "data-toggle": "modal",
                             "data-target": "#queriesModal",
-                            "data-cluster-label": clusterLabel
+                            "data-cluster-facet": clusterFacet
                         },
                         [
                             "Show all"
@@ -522,7 +524,6 @@ class LabelClustersItem extends React.Component {
             facetsValuesList = e(
                 "div",
                 {
-                    "id": `accordion-${clusterLabel}`,
                     "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card col-md-3"
                 },
                 [
@@ -543,9 +544,9 @@ class ClustersIdsList extends React.Component {
         const clustersQuery = this.props.clustersQuery;
 
         const labelClustersItems = [];
-        for (const clusterLabel of CLUSTERS_LABELS_ORDER) {
-            if (Object.keys(allClusters).includes(clusterLabel)) {
-                const labelClusters = allClusters[clusterLabel];
+        for (const clusterFacet of CLUSTERS_FACETS_ORDER) {
+            if (Object.keys(allClusters).includes(clusterFacet)) {
+                const labelClusters = allClusters[clusterFacet];
 
                 const labelClustersItem = e(
                     LabelClustersItem,
@@ -620,10 +621,10 @@ function categorizeClustersByLabels(clusters) {
     const labelsClusters = {};
     clusters = clusters.sort((a,b) => b[FIELD_TO_SORT_CLUSTERS] - a[FIELD_TO_SORT_CLUSTERS]);
     for (const cluster of clusters) {
-        const clusterLabel = cluster['cluster_label'];
-        cluster['cluster_label'] = clusterLabel;
-        const labelClusters = labelsClusters[clusterLabel] || [];
-        labelsClusters[clusterLabel] = labelClusters;
+        const clusterFacet = cluster['cluster_facet'];
+        cluster['cluster_facet'] = clusterFacet;
+        const labelClusters = labelsClusters[clusterFacet] || [];
+        labelsClusters[clusterFacet] = labelClusters;
         labelClusters.push(cluster);
     }
 

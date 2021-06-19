@@ -29,6 +29,7 @@ class Cluster:
     cluster_type: str
     mentions: List[Mention]
     cluster_label: str
+    cluster_facet: str
     display_name: str
     num_mentions: int
     num_sents: int
