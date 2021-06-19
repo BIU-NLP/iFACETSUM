@@ -26,15 +26,14 @@ var totalTextLength = 0;
 let globalDocumentsMetas = null;
 let globalQueriesResults = {};
 const globalClustersMetas = {};
+const globalState = {};
 var pageBaseUrl = "qfse.html";
 var summaryType = "qfse";
 var timeAllowed = -1;
-var lastQueryType = '';
 var lastQuery = null;
 var iterationNum = 0; // keeps track of how many iterations there are (0 is the initial summary)
 var iterationStarRatingType = 0; // 0=none , 1=rating , 2=newInfo
 var lastIterationRated = false; // each iteration's summary must be rated before continuing to the next iteration
-var numSentencesInQueryResponse = 2; // the number of sentences requested as a response to a query
 var allTextsInSession = [];
 var questionnaireList = [];
 var assignmentId = '';
@@ -241,6 +240,37 @@ function initializeModal() {
         ReactDOM.render(reactToRender, htmlElementToRenderInto);
 
         const $modalBody = $('#queriesModal .modal-body');
+        $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+    });
+
+    $('#documentModal').on('show.bs.modal', function(event) {
+        const replyDocument = globalState['document'];
+        const docId = replyDocument['doc']['doc_id'];
+
+        const htmlElementToRenderInto = document.createElement("div");
+
+        const lastQueryIdx = globalState['lastQueryIdx'];
+        const docIdToSentences = createDocIdToSentences(globalQueriesResults[lastQueryIdx]['orig_sentences']);
+
+        const fixedSentsIds = [];
+        for (const sent of docIdToSentences[docId]) {
+            fixedSentsIds.push(sent['sent_idx']);
+        }
+
+        const reactToRender = e(
+            ListItem,
+            {
+                "resultSentences": replyDocument['doc']['orig_sentences'],
+                "numSentToShow": 999,
+                "showPopover": false, // Don't show a popover inside a modal
+                "fixedSentsIndices": [22],
+                "isSummary": false
+            }
+        );
+
+        ReactDOM.render(reactToRender, htmlElementToRenderInto);
+
+        const $modalBody = $('#documentModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
     });
 }
@@ -746,12 +776,9 @@ function insertQueryItems() {
 }
 
 function openDocument(e) {
-    const docId = e.target.textContent;
-    $('#navigationDocumentsButton').click();
+    const docId = $(e.target).attr('data-doc-id');
     fetchDocument(docId, docId);
-
 }
-$(document).on('click', '.open-document', openDocument);
 
 function openCorefCluster(e) {
     const corefId = $(e.target).attr('data-coref-cluster-idx');
@@ -806,16 +833,10 @@ class TokensGroup extends React.Component {
 
             if (showHighlight) {
                 const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
-                className = "highlight-" + groupColor;
+                className = `highlight-${groupColor}`;
+                className += " highlight-hover";
                 onMouseEnterFunc = () => this.props.startHighlightCluster(groupId);
                 onMouseLeaveFunc = () => this.props.stopHighlightCluster(groupId);
-
-                if (this.props.highlightedClusters.includes(groupId)) {
-                    className += " highlight-hover";
-                } else {
-                    className += " highlight-no-hover";
-                }
-
 
                 const groupIcon = e(
                     "span",
@@ -850,7 +871,9 @@ class TokensGroup extends React.Component {
             let currGroupId = tokensGroup['cluster_id'];
             const isCluster = currGroupId !== undefined;
 
-            const showCluster = isCluster && this.props.fixedClusters && this.props.fixedClusters.includes(currGroupId);
+            const noFixedClusters = this.props.fixedClusters === undefined;
+            const isInFixedClusters = this.props.fixedClusters && this.props.fixedClusters.includes(currGroupId);
+            const showCluster = isCluster && (isInFixedClusters || noFixedClusters);
 
 
             if (showCluster) {
@@ -921,6 +944,37 @@ class TokensGroup extends React.Component {
         )
     }
 }
+
+function createDocIdToSentences(sentences) {
+    let docIdToSentences = {};
+
+    // Build docIdToSentences
+    for (const sentence of sentences) {
+        const docId = sentence['doc_id'];
+        const docIdSentences = docIdToSentences[docId] || [];
+        docIdToSentences[docId] = docIdSentences;
+        docIdSentences.push(sentence);
+    }
+
+    return docIdToSentences;
+}
+
+function createSortedSentences(sentences) {
+    const docIdToSentences = createDocIdToSentences(sentences);
+
+    // Sort sentences by sent_idx
+    for (const docId of Object.keys(docIdToSentences)) {
+        const docSentences = docIdToSentences[docId];
+        docSentences.sort((first, second) => first['sent_idx'] - second['sent_idx']);
+    }
+
+    // Sort documents by number of sentences
+    const docIdsWithCounts = Object.keys(docIdToSentences).map(key => [key, docIdToSentences[key].length]);
+    docIdsWithCounts.sort((first, second) => second[1] - first[1]);
+
+    return docIdsWithCounts.map(docIdWithCount => docIdToSentences[docIdWithCount[0]]);
+}
+
 
 class ListItem extends React.Component {
     constructor(props) {
@@ -1034,33 +1088,6 @@ class ListItem extends React.Component {
 //        this.initializePopOver()
     }
 
-    createDocIdToSentences = (sentences) => {
-        let docIdToSentences = {};
-
-        // Build docIdToSentences
-        for (const sentence of sentences) {
-            const docId = sentence['doc_id'];
-            const docIdSentences = docIdToSentences[docId] || [];
-            docIdToSentences[docId] = docIdSentences;
-            docIdSentences.push(sentence);
-        }
-
-        // Sort sentences by sent_idx
-        for (const docId of Object.keys(docIdToSentences)) {
-            const docSentences = docIdToSentences[docId];
-            docSentences.sort((first, second) => first['sent_idx'] - second['sent_idx']);
-        }
-
-        // Sort documents by number of sentences
-        const docIdsWithCounts = Object.keys(docIdToSentences).map(key => [key, docIdToSentences[key].length]);
-        docIdsWithCounts.sort((first, second) => second[1] - first[1]);
-
-        docIdToSentences = docIdsWithCounts.map(docIdWithCount => docIdToSentences[docIdWithCount[0]]);
-
-
-        return docIdToSentences
-    }
-
     shouldShowMore = (numSentencesShown, numSentToShow) => {
         return numSentencesShown < numSentToShow || !this.state.minimized
     }
@@ -1068,17 +1095,18 @@ class ListItem extends React.Component {
     render() {
         const queryIdx = this.props.queryIdx;
         const resultSentences = this.props.resultSentences;
+        const fixedSentsIndices = this.props.fixedSentsIndices || [];
         const origSentences = this.props.origSentences;
         const numSentToShow = this.props.numSentToShow || 1;
         const isSummary = this.props.isSummary !== undefined ? this.props.isSummary : true;
         const sentences = [];
 
         // put the list of sentences separately line by line with a small margin in between:
-        const docIdToSentences = this.createDocIdToSentences(resultSentences);
+        const sortedSentences = createSortedSentences(resultSentences);
         let numSentencesShown = 0;
         const showSentIdx = !isSummary;
 
-        for (const docSentences of docIdToSentences) {
+        for (const docSentences of sortedSentences) {
             if (this.shouldShowMore(numSentencesShown, numSentToShow)) {
                 const docId = docSentences[0]['doc_id']
 
@@ -1098,10 +1126,16 @@ class ListItem extends React.Component {
                         let colClass = "col-12";
 
                         if (showSentIdx) {
+                            let sentIndexClasses = "sentence-index col-1";
+
+                            if (fixedSentsIndices.includes(sentIdx)) {
+                                sentIndexClasses += " fixed-sent-idx";
+                            }
+
                             sentItems.push(e(
                                "span",
                                {
-                                   "className": "sentence-index col-1"
+                                   "className": sentIndexClasses
                                },
                                `#${sentIdx}`
                            ));
@@ -1152,7 +1186,9 @@ class ListItem extends React.Component {
                             e(
                                 "div",
                                 {
-                                    "className": "card-header clean-card-header"
+                                    "className": "card-header clean-card-header doc-id-header",
+                                    "data-doc-id": docId,
+                                    "onClick": openDocument
                                 },
                                 `Document: ${docId}`
                             ),
@@ -1571,32 +1607,6 @@ function showQuestionnaire() {
     }, 500);
 }
 
-
-//function onTextMouseUp() {
-//    // get the currently selected text on the page:
-//    var text = "";
-//    if (window.getSelection) {
-//        text = window.getSelection().toString();
-//    } else if (document.selection && document.selection.type != "Control") {
-//        text = document.selection.createRange().text;
-//    }
-//
-//    // add a space at the end of the highlighted text if there isn't one:
-//    if (text != "") {
-//        text = text.trim();
-//        text += ' ';
-//    }
-//    // if there's no space before the newly added text, add one:
-//    if (queryInputBox.value != "" && !queryInputBox.value.endsWith(' ')) {
-//        text = ' ' + text;
-//    }
-//
-//    // put the selected text in the query box, and focus on the query box:
-//    queryInputBox.value += text; // set the search query to the highlighted text (append text)
-//    lastQueryType = 'highlight'
-//    queryInputBox.focus();
-//}
-
 /* Handle a query string. */
 function query(queryStr, clusterId, clusterType) {
     resetPage();
@@ -1620,11 +1630,6 @@ function query(queryStr, clusterId, clusterType) {
         queryStr += ` ${cluster['display_name']}`;
     }
 
-    // if no query type was set until now ('freetext' or 'highlight' or 'keyword'), then it must be that some text was copy-pasted into the query box:
-    if (lastQueryType == '') {
-        lastQueryType = 'copypaste';
-    }
-
     // if the new query is not a "more info" query, then keep remember it:
     if (queryStr != '') {
         lastQuery = [queryStr, clusterId, clusterType];
@@ -1632,16 +1637,11 @@ function query(queryStr, clusterId, clusterType) {
 
     // get query response info from the server:
     clustersQuery = globalQuery;
-    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "clusters_query": clustersQuery, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
+    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "clusters_query": clustersQuery, "query": queryStr}});
     // the response will be sent to function setQueryResponse asynchronously
 }
 
 function fetchDocument(documentId, documentName) {
-    insertQueryItemInExplorationPane(documentName, $documentsPane[0]);
-
-    // scroll to bottom:
-    $documentsPane[0].scrollTop = $documentsPane[0].scrollHeight;
-
     sendRequest({
         "clientId": clientId,
         "request_document": {
@@ -1679,24 +1679,6 @@ function fetchPropositionCluster(propositionClusterId) {
             "corefClusterType": "propositions"
         }
     });
-}
-
-function queryRepeatOnButtonClick() {
-    if (lastQuery == null) {
-        alert("No query to repeat.")
-    }
-    // if a query was run before, rerun it:
-    else if (canSendRequest()) {
-        lastQueryType = 'repeat';
-        query(...lastQuery); // run the last query
-    }
-}
-
-function moreInfoOnButtonClick() {
-    if (canSendRequest()) {
-        lastQueryType = 'moreinfo';
-        query(''); // run the query
-    }
 }
 
 function canSendRequest() {

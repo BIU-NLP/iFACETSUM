@@ -12,7 +12,7 @@ from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_E
 from QFSE.coref.coref_labels import create_cluster_obj
 from QFSE.coref.models import Mention
 from QFSE.models import SummarySent, Summary, Cluster, DocSent, ClusterQuery, QueryResult, QueryResultSentence, \
-    TokensCluster
+    TokensCluster, DocumentResult
 from QFSE.propositions.utils import get_proposition_clusters
 from QFSE.query_results_analyzer import QueryResultsAnalyzer
 
@@ -255,17 +255,6 @@ class IntSummHandler(tornado.web.RequestHandler):
             sentences_used.append(sent)
         return sentences_used
 
-    def _corpus_sents_to_response_sents(self, corpus_sents: List[Sentence]) -> List[dict]:
-        return [{
-            "text": corpus_sent.text,
-            "idx": corpus_sent.sentIndex,
-            "id": corpus_sent.sentId,
-            "doc_id": corpus_sent.docId,
-            "coref_clusters": corpus_sent.coref_clusters[COREF_TYPE_ENTITIES],
-            "proposition_clusters": corpus_sent.coref_clusters[COREF_TYPE_PROPOSITIONS],
-            "coref_tokens": self._split_sent_text_to_tokens(corpus_sent)
-        } for corpus_sent in corpus_sents]
-
     def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool, original_sentences=None) -> List[Union[TokensCluster, List[str]]]:
         tokens = sent
         if is_original_sentences:
@@ -388,15 +377,12 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         return token_to_mention
 
-
     def getQuerySummaryJson(self, clientJson):
         clientId = clientJson['clientId']
         topicId = clientJson['request_query']['topicId']
         clusters_query = clientJson['request_query']['clusters_query'] if 'clusters_query' in clientJson['request_query'] else None
         clusters_query = [ClusterQuery.from_dict(cluster_query) for cluster_query in clusters_query] if clusters_query else clusters_query
         query = clientJson['request_query']['query']
-        numSentences = clientJson['request_query']['summarySentenceCount']
-        queryType = clientJson['request_query']['type']
 
         if not m_infoManager.clientInitialized(clientId):
             return self.getErrorJson('Unknown client. Please reload page.')
@@ -479,14 +465,14 @@ class IntSummHandler(tornado.web.RequestHandler):
         client_id = client_json['clientId']
         doc_id = client_json['request_document']['docId']
 
-        doc = self.get_doc_by_id(m_infoManager.getSummarizer(client_id).corpus, doc_id)
+        corpus = m_infoManager.getCorpus(client_id)
+        doc = self.get_doc_by_id(corpus, doc_id)
+
+        doc_result = DocumentResult(doc_id, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId, sent.sentIndex) for sent in doc.sentences])
 
         reply = {
             "reply_document": {
-                "doc": {
-                    "id": doc_id,
-                    "sentences": self._corpus_sents_to_response_sents(doc.sentences)
-                }
+                "doc": doc_result.to_dict()
             }
         }
 

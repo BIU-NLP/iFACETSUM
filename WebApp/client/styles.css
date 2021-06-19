@@ -837,21 +837,12 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 */
 
-.highlight-no-hover {
-    border: 1px dashed;
-    margin: 4px 8px 4px 4px;
-    position: relative;
-    line-height: 22px;
-    display: flex;
-    /* Removed colors:
-    border: 2px solid;
-    color: var(--gray-dark);
-    background: var(--light);*/
-    padding-left: 4px;
-}
-
 .sentence-span.highlight-hover {
     margin: 4px 8px 4px 4px;
+    color: var(--red);
+}
+
+.fixed-sent-idx {
     color: var(--red);
 }
 
@@ -1038,5 +1029,9 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 .history-button, .original-sentences-button {
+    cursor: pointer;
+}
+
+.doc-id-header {
     cursor: pointer;
 }
