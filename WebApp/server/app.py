@@ -172,9 +172,6 @@ class IntSummHandler(tornado.web.RequestHandler):
     def getInitialSummaryJson(self, clientJson):
         clientId = clientJson['clientId']
         topicId = clientJson['request_get_initial_summary']['topicId']
-        summaryType = clientJson['request_get_initial_summary']['summaryType']
-        algorithm = clientJson['request_get_initial_summary']['algorithm']
-        summaryWordLength = clientJson['request_get_initial_summary']['summaryWordLength']
         questionnaireBatchIndex = clientJson['request_get_initial_summary']['questionnaireBatchIndex']
         timeAllowed = clientJson['request_get_initial_summary']['timeAllowed']
         assignmentId = clientJson['request_get_initial_summary']['assignmentId']

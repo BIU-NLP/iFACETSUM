@@ -199,7 +199,7 @@ function setTopicsList(topicsList) {
         var topicEle = document.createElement("a");
         topicEle.title = topicId; //topicName;
         //topicEle.href = pageBaseUrl + "?topicId="+topicId+"&topicName="+topicName+"&algorithm="+algorithm; //"#"+topicName;
-        topicEle.href = pageBaseUrl + "?topicId="+topicId+"&algorithm="+algorithm;
+        topicEle.href = pageBaseUrl + "?topicId="+topicId;
         topicEle.appendChild(document.createTextNode(topicId)); //topicName));
         topicsDropdown.appendChild(topicEle);
 
@@ -232,7 +232,7 @@ function initializeTopic(topicId) { //, topicName) {
         isWaitingForInitial = true;
 
         // get topic info from the server:
-        sendRequest({"clientId": clientId, "request_get_initial_summary": {"topicId":topicId, "summaryType":summaryType, "algorithm": algorithm, "summaryWordLength":initialSummWordLen, "questionnaireBatchIndex":questionnaireBatchInd, "timeAllowed": timeAllowed, "assignmentId": assignmentId, "hitId": hitId, "workerId": workerId, "turkSubmitTo": turkSubmitTo}});
+        sendRequest({"clientId": clientId, "request_get_initial_summary": {"topicId":topicId, "summaryType":summaryType, "summaryWordLength":initialSummWordLen, "questionnaireBatchIndex":questionnaireBatchInd, "timeAllowed": timeAllowed, "assignmentId": assignmentId, "hitId": hitId, "workerId": workerId, "turkSubmitTo": turkSubmitTo}});
     }
 }
 

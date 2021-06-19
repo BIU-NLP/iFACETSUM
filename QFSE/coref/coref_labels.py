@@ -1,4 +1,6 @@
 from collections import Counter, defaultdict
+from typing import List
+
 from QFSE.Utilities import get_item
 from QFSE.models import Cluster
 
@@ -10,7 +12,7 @@ UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER = "Miscellaneous"
 
 # Note: If you change these also change UI
 
-LABELS_MAP = {
+FACETS_MAP = {
     "GPE": ENTITIES_DEFAULT_CLUSTER,
     "EVENT": UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER,
     "ORG": ENTITIES_DEFAULT_CLUSTER,
@@ -18,6 +20,16 @@ LABELS_MAP = {
     "DATE": ENTITIES_DEFAULT_CLUSTER,
     "NORP": ENTITIES_DEFAULT_CLUSTER,
     "LOC": ENTITIES_DEFAULT_CLUSTER
+}
+
+LABELS_MAP = {
+    "GPE": "Location",
+    "EVENT": ENTITIES_DEFAULT_CLUSTER,
+    "ORG": "Organization",
+    "PERSON": "Person",
+    "DATE": "Date",
+    "NORP": "Organization",
+    "LOC": "Location"
 }
 
 
@@ -47,16 +59,27 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
         unique_sents_ids.add(f"{mention.doc_id} {mention.sent_idx}")
 
     mentions_used_for_representative = mentions
-    cluster_label = None
+    ner_label = None
     if any(ents_counter):
-        cluster_label = ents_counter.most_common()[0][0]
-        mentions_used_for_representative = labels_to_mentions[cluster_label]
+        ner_label = ents_counter.most_common()[0][0]
+        mentions_used_for_representative = labels_to_mentions[ner_label]
     token_counter = Counter()
     for mention in mentions_used_for_representative:
         token_counter[mention.token] += 1
-    most_representative_mention = token_counter.most_common()[0][0]
-    cluster_label = LABELS_MAP.get(cluster_label, default_cluster)
-    return Cluster(cluster_id, cluster_type, mentions, cluster_label, most_representative_mention, len(mentions), len(unique_sents_ids))
+    most_representative_mention = _get_shortest_most_common(token_counter)
+    cluster_label = LABELS_MAP.get(ner_label, default_cluster)
+    cluster_facet = FACETS_MAP.get(ner_label, default_cluster)
+    return Cluster(cluster_id, cluster_type, mentions, cluster_label, cluster_facet, most_representative_mention, len(mentions), len(unique_sents_ids))
+
+
+def _get_shortest_most_common(counter) -> str:
+    """
+    From the most common tokens, take the longest, written especially to avoid short propositions without context
+    """
+
+    most_common_count = counter.most_common(n=1)[0][1]
+    most_commons: List[str] = [token for token, count in counter.items() if count == most_common_count]
+    return max(most_commons, key=len)
 
 
 def clean_text(text):
