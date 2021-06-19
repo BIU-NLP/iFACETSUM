@@ -1622,6 +1622,8 @@ function query(queryStr, clusterId, clusterType) {
         insertSummaryItemsInExplorationPane([], isLoading=true);
     }
 
+    createClustersIdsList();
+
     /* Even if the query is empty we want to refresh the view */
     insertQueryItems();
 
