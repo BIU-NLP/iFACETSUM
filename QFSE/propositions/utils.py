@@ -84,51 +84,19 @@ def _find_indices_by_char_idx(sent_idx, corpus_sent: str, corpus_tokens, span_te
     return sent_idx, span_start_word_idx, span_end_word_idx
 
 
-
 def parse_lines(df, corpus):
 
     all_clusters = {}
     parsed = {}
 
-    df = df.drop_duplicates(subset=['topic', 'docSentText', 'docSpanText'])
-    df = df.drop_duplicates(subset=['topic', 'scuSentence', 'summarySpanText'])
+    # Remove same sentence exactly
     df = df[df['docSentText'] != df['scuSentence']]
 
-    sent_hash_to_cluster = {}
-
-    # Turn pairwise to clusters
-
-    for i, line in df.iterrows():
-        parsed_line = parse_line(line)
-        sent_one_hash = hash(parsed_line.summary_span_text)
-        sent_two_hash = hash(parsed_line.doc_span_text)
-
-        if sent_one_hash in sent_hash_to_cluster and sent_two_hash in sent_hash_to_cluster:
-            # If same cluster - add to any
-            if sent_hash_to_cluster[sent_one_hash] == sent_hash_to_cluster[sent_two_hash]:
-                sent_hash_to_cluster[sent_one_hash].proposition_lines.append(parsed_line)
-            # If not same cluster - merge
-            else:
-                sent_hash_to_cluster[sent_one_hash].proposition_lines.extend(sent_hash_to_cluster[sent_two_hash].proposition_lines)
-                sent_hash_to_cluster[sent_two_hash] = sent_hash_to_cluster[sent_one_hash]
-        elif sent_one_hash in sent_hash_to_cluster:
-            # Add to existing cluster
-            sent_hash_to_cluster[sent_two_hash] = sent_hash_to_cluster[sent_one_hash]
-            sent_hash_to_cluster[sent_two_hash].proposition_lines.append(parsed_line)
-        elif sent_two_hash in sent_hash_to_cluster:
-            # Add to existing cluster
-            sent_hash_to_cluster[sent_one_hash] = sent_hash_to_cluster[sent_two_hash]
-            sent_hash_to_cluster[sent_two_hash].proposition_lines.append(parsed_line)
-        else:
-            # New clusters
-            new_cluster = PropositionCluster([])
-            new_cluster.proposition_lines.append(parsed_line)
-            sent_hash_to_cluster[sent_one_hash] = new_cluster
-            sent_hash_to_cluster[sent_two_hash] = new_cluster
+    sent_hash_to_cluster: Dict[int, PropositionCluster] = _pairwise_to_connected_components(df)
 
     # Extract mentions from clusters
 
-    def create_mention_from_doc_or_scu(doc_file, span_offsets, sent_char_idx, sent_text, span_text, proposition_line, corpus, cluster_idx):
+    def create_mention_from_doc_or_scu(doc_file, span_offsets, sent_char_idx, sent_text, span_text, corpus, cluster_idx):
         # sent_start = span_offsets[0][0]
         # sent_end = span_offsets[-1][-1]
 
@@ -146,24 +114,79 @@ def parse_lines(df, corpus):
         return [x for x in seq if not (x in seen or seen_add(x))]
 
     cluster_idx = 0
-    for proposition_lines in dedup_seq_keep_order(sent_hash_to_cluster.values()):
+    mentions_seen = set()
+    for propositions_cluster in dedup_seq_keep_order(sent_hash_to_cluster.values()):
         cluster = []
+        mentions_seen_in_cluster = set()
 
-        for proposition_line in proposition_lines.proposition_lines:
-            doc_mention = create_mention_from_doc_or_scu(proposition_line.document_file, proposition_line.doc_span_offsets, proposition_line.doc_sent_char_idx, proposition_line.doc_sent_text, proposition_line.doc_span_text, proposition_line, corpus, cluster_idx)
-            scu_mention = create_mention_from_doc_or_scu(proposition_line.summary_file, proposition_line.summary_span_offsets, proposition_line.scu_sent_char_idx, proposition_line.scu_sentence, proposition_line.summary_span_text, proposition_line, corpus, cluster_idx)
-            if doc_mention is not None and scu_mention is not None:
-                cluster.extend([doc_mention, scu_mention])
-                doc_mentions = parsed.setdefault(proposition_line.document_file, [])
-                doc_mentions.append(doc_mention)
-                scu_mentions = parsed.setdefault(proposition_line.summary_file, [])
-                scu_mentions.append(scu_mention)
+        for proposition_line in propositions_cluster.proposition_lines:
+            doc_mention = create_mention_from_doc_or_scu(proposition_line.document_file, proposition_line.doc_span_offsets, proposition_line.doc_sent_char_idx, proposition_line.doc_sent_text, proposition_line.doc_span_text, corpus, cluster_idx)
+            scu_mention = create_mention_from_doc_or_scu(proposition_line.summary_file, proposition_line.summary_span_offsets, proposition_line.scu_sent_char_idx, proposition_line.scu_sentence, proposition_line.summary_span_text, corpus, cluster_idx)
+            if doc_mention is not None and scu_mention is not None and doc_mention:
+                # Avoid adding the same mention, in propositions it is unlikely and it is only because we work pairwise
+                if doc_mention.token not in mentions_seen_in_cluster:
+                    mentions_seen_in_cluster.add(doc_mention.token)
+                    mentions_seen.add(doc_mention.token)
+                    cluster.append(doc_mention)
+                    doc_mentions = parsed.setdefault(proposition_line.document_file, [])
+                    doc_mentions.append(doc_mention)
+
+                if scu_mention.token not in mentions_seen_in_cluster:
+                    mentions_seen.add(scu_mention.token)
+                    mentions_seen_in_cluster.add(scu_mention.token)
+                    cluster.append(scu_mention)
+                    scu_mentions = parsed.setdefault(proposition_line.summary_file, [])
+                    scu_mentions.append(scu_mention)
 
         if any(cluster):
             all_clusters[cluster_idx] = cluster
             cluster_idx = cluster_idx + 1
 
     return parsed, all_clusters
+
+
+def _pairwise_to_connected_components(df) -> Dict[int, PropositionCluster]:
+    """
+    Turns a dataframe where each row is a pair to a cluster based on connected components strategy
+    """
+
+    sent_hash_to_cluster = {}
+
+    for i, line in df.iterrows():
+        parsed_line = parse_line(line)
+        sent_one_hash = hash(parsed_line.summary_span_text)
+        sent_two_hash = hash(parsed_line.doc_span_text)
+
+        if sent_one_hash in sent_hash_to_cluster and sent_two_hash in sent_hash_to_cluster:
+            # If same cluster - add to any
+            if sent_hash_to_cluster[sent_one_hash] == sent_hash_to_cluster[sent_two_hash]:
+                sent_hash_to_cluster[sent_one_hash].proposition_lines.append(parsed_line)
+            # If not same cluster - merge
+            else:
+                sent_hash_to_cluster[sent_one_hash].proposition_lines.extend(sent_hash_to_cluster[sent_two_hash].proposition_lines)
+
+                proposition_lines_to_change = sent_hash_to_cluster[sent_two_hash].proposition_lines
+                for proposition_line in proposition_lines_to_change:
+                    sent_hash_to_cluster[hash(proposition_line.summary_span_text)] = sent_hash_to_cluster[sent_one_hash]
+                    sent_hash_to_cluster[hash(proposition_line.doc_span_text)] = sent_hash_to_cluster[sent_one_hash]
+
+        elif sent_one_hash in sent_hash_to_cluster:
+            # Add to existing cluster
+            sent_hash_to_cluster[sent_two_hash] = sent_hash_to_cluster[sent_one_hash]
+            sent_hash_to_cluster[sent_two_hash].proposition_lines.append(parsed_line)
+        elif sent_two_hash in sent_hash_to_cluster:
+            # Add to existing cluster
+            sent_hash_to_cluster[sent_one_hash] = sent_hash_to_cluster[sent_two_hash]
+            sent_hash_to_cluster[sent_two_hash].proposition_lines.append(parsed_line)
+        else:
+            # New clusters
+            new_cluster = PropositionCluster([])
+            new_cluster.proposition_lines.append(parsed_line)
+            sent_hash_to_cluster[sent_one_hash] = new_cluster
+            sent_hash_to_cluster[sent_two_hash] = new_cluster
+
+    return sent_hash_to_cluster
+
 
 
 def parse_propositions_file(df, corpus) -> Tuple[Dict[int, List[Mention]], Dict[int, List[Mention]]]:
