@@ -244,27 +244,22 @@ function setQueryResponse(queryResultInfo) {
     const propositionClustersMetas = queryResultInfo['propositionClustersMetas'];
     saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
     createClustersIdsList();
+    const queryIdx = queryResult ? queryResult['query_idx'] : null;
+    globalState['lastQueryIdx'] = queryIdx;
 
     if (queryResult) {
-        globalQueriesResults[queryResult['query_idx']] = queryResult;
+        globalQueriesResults[queryIdx] = queryResult;
         insertSummaryItemsInExplorationPane([queryResult]);
     } else {
         insertSummaryItemsInExplorationPane([]);
     }
-
-    lastQueryType = '';
-
-    if (iterationNum == 2) {
-        practiceTaskMessage("<u><b>Rate</b></u><br>After you read the response to your query, rate <span style='font-size:30px;'>&#x2B50;</span> its <i>novelty and usefulness</i>.<br>If you already saw all this information in the previously presented text, or none of it would interest the general reader, then give a low score.<br>The more new and generally interesting facts, the better.<br><br>Notice that in this rating, you should <u>disregard the relevance to the query</u>. You will get a chance to rate the relevance to the query at the end of the task.", function(){});
-    }
 }
 
-function setPaneResponse(docResult, $pane) {
-    const doc = docResult['doc'];
+function setDocumentResponse(replyDocument) {
+    globalState['document'] = replyDocument;
 
-    insertDocInPane(doc, $pane);
+    $('#documentModal').modal('toggle');
 }
-
 
 function submitFinal(successfulSave) {
     SubmitToAMT(function(success) {
@@ -350,7 +345,7 @@ function handleJsonReply(jsonObj) {
         setQueryResponse(jsonObj["reply_query"])
     }
     else if ("reply_document" in jsonObj) {
-        setPaneResponse(jsonObj["reply_document"], $documentsPane);
+        setDocumentResponse(jsonObj["reply_document"]);
     }
     else if ("reply_coref_cluster" in jsonObj) {
         const clusterType = jsonObj['reply_coref_cluster']['doc']['corefType'];

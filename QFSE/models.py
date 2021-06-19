@@ -99,3 +99,10 @@ class QueryResult:
 
     def get_doc_sent_indices(self) -> Set[DocSent]:
         return {DocSent(sent.doc_id, sent.sent_idx) for sent in self.orig_sentences}
+
+
+@dataclass_json
+@dataclass
+class DocumentResult:
+    doc_id: int
+    orig_sentences: List[QueryResultSentence]

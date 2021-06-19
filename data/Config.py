@@ -3,7 +3,7 @@ CORPORA_LOCATIONS = {
                      'Native American Challenges': 'data/DUC2006Clean/D0601/documents',
                      # 'Wetlands': 'data/DUC2006Clean/D0603/documents',
                      # 'Osteoarthritis': 'data/DUC2006Clean/D0605/documents',
-                     # "Automobile Safety": 'data/DUC2006Clean/D0608/documents',
+                     "Automobile Safety": 'data/DUC2006Clean/D0608/documents',
                      # 'Quebec Separatist Movement': 'data/DUC2006Clean/D0614/documents',
                      # 'Evolution Teaching': 'data/DUC2006Clean/D0615/documents',
                      # 'Russia in Chechnya': 'data/DUC2006Clean/D0616/documents',
@@ -21,7 +21,7 @@ CORPORA_LOCATIONS = {
                      # 'Elian Gonzales': 'data/DUC2006Clean/D0647/documents',
                      # 'Jimmy Carter International': 'data/DUC2006Clean/D0650/documents',
                      'Steroid Use': 'data/DUC2006Clean/D0602/documents',
-                     # 'Global Warming': 'data/DUC2006Clean/D0606/documents'
+                     'Global Warming': 'data/DUC2006Clean/D0606/documents'
                      # note this last topic is a sample for the AMT preview
 }
 
