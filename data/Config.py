@@ -89,7 +89,9 @@ COREF_LOCATIONS = {
         "propositions": "data/coref/native/propositions/devDUC2006_InDoc_D0601A_checkpoint-2000.csv"
     },
     "Automobile Safety": {
-
+        "entities": "data/coref/automobile/wec_entities/wec_automobile_predicted_clusters.json",
+        "events": "data/coref/automobile/cdlm_events/dev_events_average_0.85_corpus_level.conll",
+        "propositions": "data/coref/automobile/propositions/devDUC2006_InDoc_D0608_checkpoint-2000.csv"
     },
     'EgyptAir Crash': {
         "entities": "data/coref/egypt/wec_entities/wec_egyptAir_predicted_clusters.json",
@@ -106,5 +108,9 @@ COREF_LOCATIONS = {
         "events": "data/coref/steroid/cdlm_events/dev_events_average_0.85_corpus_level.conll",
         "propositions": "data/coref/steroid/propositions/devDUC2006_InDoc_D0602B_checkpoint-2000.csv"
     },
-    'Global Warming': {}
+    'Global Warming': {
+        "entities": "data/coref/global/wec_entities/wec_global_predicted_clusters.json",
+        "events": "data/coref/global/cdlm_events/dev_events_average_0.85_corpus_level.conll",
+        "propositions": "data/coref/global/propositions/devDUC2006_InDoc_D0606_checkpoint-2000.csv"
+    }
 }
