@@ -74,12 +74,12 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
 
 def _get_shortest_most_common(counter) -> str:
     """
-    From the most common tokens, take the shortest, written especially to avoid long propositions on screen
+    From the most common tokens, take the longest, written especially to avoid short propositions without context
     """
 
     most_common_count = counter.most_common(n=1)[0][1]
     most_commons: List[str] = [token for token, count in counter.items() if count == most_common_count]
-    return min(most_commons, key=len)
+    return max(most_commons, key=len)
 
 
 def clean_text(text):
