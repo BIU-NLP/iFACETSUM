@@ -1,4 +1,6 @@
 from collections import Counter, defaultdict
+from typing import List
+
 from QFSE.Utilities import get_item
 from QFSE.models import Cluster
 
@@ -64,10 +66,20 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
     token_counter = Counter()
     for mention in mentions_used_for_representative:
         token_counter[mention.token] += 1
-    most_representative_mention = token_counter.most_common()[0][0]
+    most_representative_mention = _get_shortest_most_common(token_counter)
     cluster_label = LABELS_MAP.get(ner_label, default_cluster)
     cluster_facet = FACETS_MAP.get(ner_label, default_cluster)
     return Cluster(cluster_id, cluster_type, mentions, cluster_label, cluster_facet, most_representative_mention, len(mentions), len(unique_sents_ids))
+
+
+def _get_shortest_most_common(counter) -> str:
+    """
+    From the most common tokens, take the shortest, written especially to avoid long propositions on screen
+    """
+
+    most_common_count = counter.most_common(n=1)[0][1]
+    most_commons: List[str] = [token for token, count in counter.items() if count == most_common_count]
+    return min(most_commons, key=len)
 
 
 def clean_text(text):
