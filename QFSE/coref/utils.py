@@ -108,10 +108,10 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
 
 def get_clusters_ids_to_filter(clusters_objs):
     # Max mentions
-    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
+    # clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
 
     # Singletons
-    clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions == 1]
+    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions == 1]
 
     # Repeating clusters
     clusters_seen = set()
