@@ -9,6 +9,7 @@ import pandas as pd
 from QFSE.consts import COREF_TYPE_PROPOSITIONS, MAX_MENTIONS_IN_CLUSTER
 from QFSE.coref.coref_labels import create_objs, PROPOSITIONS_DEFAULT_CLUSTER
 from QFSE.coref.models import Mention
+from QFSE.coref.utils import get_clusters_ids_to_filter
 from QFSE.models import PropositionClusters
 from QFSE.propositions.models import PropositionLine, PropositionCluster
 from data.Config import COREF_LOCATIONS
@@ -214,7 +215,7 @@ def get_proposition_clusters(formatted_topics, corpus):
         with open(cache_file_path, "wb") as f:
             pickle.dump((documents, clusters_objs), f)
 
-    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
+    clusters_ids_to_filter = get_clusters_ids_to_filter(clusters_objs)
     clusters_objs = {cluster_id: cluster for cluster_id, cluster in clusters_objs.items() if cluster_id not in clusters_ids_to_filter}
 
     propositions_clusters = PropositionClusters(documents, clusters_objs)
