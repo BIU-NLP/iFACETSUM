@@ -181,7 +181,7 @@ ul {
 
 
 /* buttons that should look like links */
-.exploreItem > button, .show-more-btn > button {
+#summaryHeader button, .exploreItem > button, .show-more-btn > button {
 	font-weight: normal;
 	background: none;
 	border: none;
@@ -969,10 +969,11 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     width: 100%;  /* Don't shrink based on clusters sizes */
 }
 
-#navigation-header, #summary-header {
+#navigation-header, #summaryHeader .main-component-title {
     text-align: left;
     font-size: 20px;
     border: 0;
+    float: left;
 }
 
 #navigation-header .card-body {
@@ -1030,4 +1031,8 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .query-badge-remove {
     border-left: 1px solid;  /* separates the wrod from the query */
+}
+
+.history-button, .original-sentences-button {
+    cursor: pointer;
 }

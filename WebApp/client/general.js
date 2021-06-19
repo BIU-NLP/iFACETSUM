@@ -227,7 +227,6 @@ function initializeTopic(topicId) { //, topicName) {
         // show that it is loading:
         document.getElementById("topicNameHeader").innerHTML = "Loading \"" + name + "\"...";
         document.getElementById("numDocumentsHeader").innerHTML = "";
-        //insertLoadingIndicatorInExplorationPane(exploreList);
 
         // set that the request is now being sent to the server:
         isWaitingForInitial = true;
@@ -239,25 +238,19 @@ function initializeTopic(topicId) { //, topicName) {
 
 function setQueryResponse(queryResultInfo) {
     resetPage();
-    const isCachedResult = queryResultInfo['isCachedResult'];
     const queryResult = queryResultInfo['queryResult'];
     const corefClustersMetas = queryResultInfo['corefClustersMetas'];
     const eventsClustersMetas = queryResultInfo['eventsClustersMetas'];
     const propositionClustersMetas = queryResultInfo['propositionClustersMetas'];
-    globalQueriesResults[queryResult['query_idx']] = queryResult;
     saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
     createClustersIdsList();
 
-    // remove the loading ellipsis:
-    if (curLoadingInicatorElement != null) {
-        exploreList.removeChild(curLoadingInicatorElement);//exploreList.lastChild);
-        curLoadingInicatorElement = null;
+    if (queryResult) {
+        globalQueriesResults[queryResult['query_idx']] = queryResult;
+        insertSummaryItemsInExplorationPane([queryResult]);
+    } else {
+        insertSummaryItemsInExplorationPane([]);
     }
-
-    insertSummaryItemsInExplorationPane([queryResult]);
-
-    // scroll to bottom:
-    //  exploreList.scrollTop = exploreList.scrollHeight;
 
     lastQueryType = '';
 
@@ -268,12 +261,6 @@ function setQueryResponse(queryResultInfo) {
 
 function setPaneResponse(docResult, $pane) {
     const doc = docResult['doc'];
-
-    // remove the loading ellipsis:
-    if (curLoadingInicatorElement != null) {
-        $pane[0].removeChild(curLoadingInicatorElement);//exploreList.lastChild);
-        curLoadingInicatorElement = null;
-    }
 
     insertDocInPane(doc, $pane);
 }
@@ -344,10 +331,6 @@ function sendRequest(jsonStr) {
 function handleJsonReply(jsonObj) {
     isWaitingForResponse = false;
     if ('error' in jsonObj) {
-        if (curLoadingInicatorElement != null) {
-            exploreList.removeChild(curLoadingInicatorElement);//exploreList.lastChild);
-            curLoadingInicatorElement = null;
-        }
         if (isWaitingForInitial) {
             isWaitingForInitial = false;
             setNoTopicChosen();
@@ -388,10 +371,6 @@ function handleJsonReply(jsonObj) {
         // nothing to do
     }
     else {
-        if (curLoadingInicatorElement != null) {
-            exploreList.removeChild(curLoadingInicatorElement);//exploreList.lastChild);
-            curLoadingInicatorElement = null;
-        }
         if (isWaitingForInitial) {
             isWaitingForInitial = false;
             setNoTopicChosen();
@@ -400,42 +379,6 @@ function handleJsonReply(jsonObj) {
     }
 }
 
-
-function insertLoadingIndicatorInExplorationPane(pane) {
-    var listElement = document.createElement("div");
-    //listElement.classList.add("floatright");
-    var li = document.createElement("li"); // create an li element
-    li.classList.add("exploreItem");
-    li.classList.add("loadingParent");
-
-    var loadingDiv = document.createElement("div");
-    loadingDiv.classList.add("loading");
-    loadingDiv.appendChild(document.createTextNode("Loading "));
-
-	var eleDot1 = document.createElement("div");
-    eleDot1.classList.add("dot");
-    eleDot1.classList.add("one");
-    eleDot1.appendChild(document.createTextNode("."));
-    loadingDiv.appendChild(eleDot1);
-    var eleDot2 = document.createElement("div");
-    eleDot2.classList.add("dot");
-    eleDot2.classList.add("two");
-    eleDot2.appendChild(document.createTextNode("."));
-    loadingDiv.appendChild(eleDot2);
-    var eleDot3 = document.createElement("div");
-    eleDot3.classList.add("dot");
-    eleDot3.classList.add("three");
-    eleDot3.appendChild(document.createTextNode("."));
-    loadingDiv.appendChild(eleDot3);
-
-    li.appendChild(loadingDiv);
-
-	listElement.appendChild(li);
-
-    pane.appendChild(listElement); //add to exploration list
-
-    curLoadingInicatorElement = listElement;
-}
 
 var stopwatchInterval = null;
 function startStopwatch(duration) {
