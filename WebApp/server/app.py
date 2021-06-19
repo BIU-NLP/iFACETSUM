@@ -2,7 +2,7 @@
 import sys
 import os
 from collections import defaultdict
-from typing import List, Set, Dict, Union
+from typing import List, Set, Dict, Union, Optional
 
 from nltk import word_tokenize
 
@@ -404,17 +404,21 @@ class IntSummHandler(tornado.web.RequestHandler):
         if topicId != m_infoManager.getTopicId(clientId):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
+
+        reply_query = {}
+
         corpus = m_infoManager.getCorpus(clientId)
+        doc_sent_indices: Optional[Set[DocSent]] = None
 
-        query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
-        query_result = query_results_analyzer.get_result_if_exists(clusters_query)
+        if clusters_query:
+            query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
+            query_result = query_results_analyzer.get_result_if_exists(clusters_query)
 
-        is_cached_result = False
-        if query_result is not None:
-            is_cached_result = True
-        else:
-            sentences = []
-            if clusters_query:
+            is_cached_result = False
+            if query_result is not None:
+                is_cached_result = True
+            else:
+                sentences = []
                 doc_sent_indices = []
                 for cluster_query in clusters_query:
                     cluster = self._get_clusters(corpus, cluster_query.cluster_id, cluster_query.cluster_type)
@@ -423,33 +427,42 @@ class IntSummHandler(tornado.web.RequestHandler):
                     doc_sent_indices_to_use = set.intersection(*doc_sent_indices)
                     sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
-            query_result = QueryResult(None, [], clusters_query, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId, sent.sentIndex) for sent in sentences])
-            if any(sentences):
-                if len(sentences) > 1:
-                    summarizer = get_item("bart_summarizer")
-                    summary_sents = summarizer.summarize(sentences)
-                else:
-                    # No need to summarize one sentence
-                    summary_sents = [sent.spacy_rep for sent in sentences]
+                query_result = QueryResult(None, [], clusters_query, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId, sent.sentIndex) for sent in sentences])
+                if any(sentences):
+                    if len(sentences) > 1:
+                        summarizer = get_item("bart_summarizer")
+                        summary_sents = summarizer.summarize(sentences)
+                    else:
+                        # No need to summarize one sentence
+                        summary_sents = [sent.spacy_rep for sent in sentences]
 
-                query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False, original_sentences=sentences)) for sent in summary_sents]
+                    query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False, original_sentences=sentences)) for sent in summary_sents]
 
-                # Save queries and mark similar sentences to those used
-                query_results_analyzer.analyze_repeating(query_result)
-                query_result.query_idx = query_results_analyzer.add_query_results(query_result)
+                    # Save queries and mark similar sentences to those used
+                    query_results_analyzer.analyze_repeating(query_result)
+                    query_result.query_idx = query_results_analyzer.add_query_results(query_result)
 
-        reply = {
-            "reply_query": {
+            reply_query = {
                 "queryResult": query_result.to_dict(),
                 "isCachedResult": is_cached_result,
                 "textLength": 0,
-                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, query_result.get_doc_sent_indices()),
-                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, query_result.get_doc_sent_indices()),
-                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus, query_result.get_doc_sent_indices())
+            }
+
+            doc_sent_indices = query_result.get_doc_sent_indices()
+
+        # Always return the clusters even if query is none
+        reply_query = {
+            **reply_query,
+            **{
+                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, doc_sent_indices),
+                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, doc_sent_indices),
+                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus, doc_sent_indices)
             }
         }
 
-        return json.dumps(reply)
+        return json.dumps({
+            "reply_query": reply_query
+        })
 
     def _get_sentences_for_query(self, doc_sent_indices: Set[DocSent], corpus):
         sentences = []
