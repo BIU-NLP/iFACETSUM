@@ -14,20 +14,16 @@ const $mentionsPane = $('#mentionsPane');
 const $propositionsPane = $('#propositionsPane');
 const globalListItemCallbacks = [];
 //var moreInfoButton = document.getElementById("addMoreButton");
-var exploreList = document.getElementById("explorationPane");
 var keywordList = document.getElementById("keywordsList");
 var keywordsArea = document.getElementById("keywordsArea");
 var topicsDropdown = document.getElementById("topicsDropdownContent");
 var stopExploringButton = document.getElementById('stopExploringButton');
 var curTopicId = null;
-var curLoadingInicatorElement = null;
 var isWaitingForResponse = false;
 var isWaitingForInitial = false;
 var questionnaireBatchInd = -1;
 var totalTextLength = 0;
 let globalDocumentsMetas = null;
-let globalCorefClustersMetas = null;
-let globalPropositionClustersMetas = null;
 let globalQueriesResults = {};
 const globalClustersMetas = {};
 var pageBaseUrl = "qfse.html";
@@ -113,16 +109,11 @@ function setNoTopicChosen() {
 
 /* Resets the keyphrases list and the the exploration pane. */
 function resetPage() {
-    while (exploreList.firstChild) {
-        exploreList.removeChild(exploreList.firstChild);
-    }
 //    while (keywordList.firstChild) {
 //        keywordList.removeChild(keywordList.firstChild);
 //    }
 
     $('#queriesModal').modal('hide');
-
-    curLoadingInicatorElement = null;
 }
 
 
@@ -135,11 +126,10 @@ function setTopic(topicInfo) {
     const documentsMetas = topicInfo['documentsMetas'];
     globalDocumentsMetas = documentsMetas;
     const corefClustersMetas = topicInfo['corefClustersMetas'];
-    globalCorefClustersMetas = topicInfo['corefClustersMetas'];
     const eventsClustersMetas = topicInfo['eventsClustersMetas'];
     const propositionClustersMetas = topicInfo['propositionClustersMetas'];
-    globalPropositionClustersMetas = topicInfo['propositionClustersMetas'];
     saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
+    insertSummaryItemsInExplorationPane([], isLoading=false);
 
 
     //var timeAllowed = topicInfo['timeAllowed'];
@@ -721,19 +711,20 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
     paneItem.appendChild(listElementQuery); //add to exploration list
 }
 
-function insertSummaryItemsInExplorationPane(queryResults) {
+function insertSummaryItemsInExplorationPane(queryResults, isLoading) {
     const listElementResult = document.createElement("div");
 
     const liReact = e(
-        SummaryList,
+        ExplorationPage,
         {
-            "queryResults": queryResults
+            "queryResults": queryResults,
+            "isLoading": isLoading
         }
     );
 
     ReactDOM.render(liReact, listElementResult);
 
-    exploreList.appendChild(listElementResult);
+    $('#explorationPage')[0].replaceChildren(listElementResult);
 }
 
 function insertQueryItems() {
@@ -975,58 +966,58 @@ class ListItem extends React.Component {
     }
 
     initializePopOver = () => {
-        const $this = $(ReactDOM.findDOMNode(this));
-        const $popoverElements = $this.find('[data-toggle=popover]');
-        $popoverElements.on('shown.bs.popover', function(event) {
-            const $target = $(event.target);
-            const clusterId = $target.attr('data-coref-cluster-idx');
-            const clusterType = $target.attr('data-coref-cluster-type');
-            const sentIdx = $target.closest('[data-sent-idx]').attr('data-sent-idx');
-
-            let clustersMeta = globalCorefClustersMetas;
-            if (clusterType === "propositions") {
-                clustersMeta = globalPropositionClustersMetas;
-            }
-
-            if (clustersMeta[clusterId].sentences === undefined) {
-                sendRequest({
-                    "clientId": clientId,
-                    "request_coref_cluster": {
-                        "corefClusterId": clusterId,
-                        "corefClusterType": clusterType
-                    }
-                });
-            } else {
-                let sentences = clustersMeta[clusterId]['sentences'];
-                sentences = sentences.filter(x => x['idx'] != sentIdx);
-
-                let liReact;
-                if (sentences.length > 0){
-                    liReact = e(
-                        ListItem,
-                        {
-                            "resultSentences": sentences,
-                            "numSentToShow": 999,
-                            "showPopover": false,  // Don't show a popover inside a popover
-                            "fixedClusters": [parseInt(clusterId)]
-                        }
-                    );
-                } else {
-                    liReact = e(
-                        "span",
-                        {},
-                        "This is the only sentence"
-                    );
-                }
-
-                const $popoverDataContent = $('#popover-loading');
-                ReactDOM.render(liReact, $popoverDataContent[0]);
-            }
-
-            // avoid more popups showing if mention inside mention
-            event.preventDefault();
-        });
-        $popoverElements.popover();
+//        const $this = $(ReactDOM.findDOMNode(this));
+//        const $popoverElements = $this.find('[data-toggle=popover]');
+//        $popoverElements.on('shown.bs.popover', function(event) {
+//            const $target = $(event.target);
+//            const clusterId = $target.attr('data-coref-cluster-idx');
+//            const clusterType = $target.attr('data-coref-cluster-type');
+//            const sentIdx = $target.closest('[data-sent-idx]').attr('data-sent-idx');
+//
+//            let clustersMeta = globalCorefClustersMetas;
+//            if (clusterType === "propositions") {
+//                clustersMeta = globalPropositionClustersMetas;
+//            }
+//
+//            if (clustersMeta[clusterId].sentences === undefined) {
+//                sendRequest({
+//                    "clientId": clientId,
+//                    "request_coref_cluster": {
+//                        "corefClusterId": clusterId,
+//                        "corefClusterType": clusterType
+//                    }
+//                });
+//            } else {
+//                let sentences = clustersMeta[clusterId]['sentences'];
+//                sentences = sentences.filter(x => x['idx'] != sentIdx);
+//
+//                let liReact;
+//                if (sentences.length > 0){
+//                    liReact = e(
+//                        ListItem,
+//                        {
+//                            "resultSentences": sentences,
+//                            "numSentToShow": 999,
+//                            "showPopover": false,  // Don't show a popover inside a popover
+//                            "fixedClusters": [parseInt(clusterId)]
+//                        }
+//                    );
+//                } else {
+//                    liReact = e(
+//                        "span",
+//                        {},
+//                        "This is the only sentence"
+//                    );
+//                }
+//
+//                const $popoverDataContent = $('#popover-loading');
+//                ReactDOM.render(liReact, $popoverDataContent[0]);
+//            }
+//
+//            // avoid more popups showing if mention inside mention
+//            event.preventDefault();
+//        });
+//        $popoverElements.popover();
     }
 
     componentDidMount = () => {
@@ -1210,45 +1201,6 @@ class ListItem extends React.Component {
             }
         }
 
-        if (queryIdx) {
-            let summaryMsg = `The summary is based on ${origSentences.length} sentences`;
-            if (origSentences.length == 1) {
-                summaryMsg = `The text is the original sentence`;
-            }
-
-            sentences.push(e(
-                'button',
-                {
-                    style: {
-                        "marginTop": "10px",
-                        "marginBottom": "10px",
-                        "cursor": "pointer"
-                    },
-                    "data-toggle": "modal",
-                    "data-target": "#origSentencesModal",
-                    "data-query-idx": queryIdx,
-                    "data-query-id": this.props.queryId
-                },
-                summaryMsg
-            ));
-
-            if (this.props.showHistoryBtn) {
-                sentences.push(e(
-                    'button',
-                    {
-                        style: {
-                            "marginTop": "10px",
-                            "marginBottom": "10px",
-                            "cursor": "pointer"
-                        },
-                        "data-toggle": "modal",
-                        "data-target": "#historyModal"
-                    },
-                    `Show history`
-                ));
-            }
-        }
-
         const minimizedClass = this.state.minimized ? " minimized" : "";
 
         return e(
@@ -1316,6 +1268,153 @@ class SummaryList extends React.Component {
             {},
             queryResultItems
         )
+    }
+}
+
+class LoadingSpinner extends React.Component {
+    render() {
+        return e(
+            "div",
+            {},
+            e(
+                "div",
+                {
+                    "className": "spinner-border text-primary",
+                    "role": "status"
+                },
+                e(
+                    "span",
+                    {"className": "sr-only"},
+                    "Loading..."
+                )
+            )
+        );
+    }
+}
+
+class ExplorationPageHeader extends React.Component {
+    render() {
+        const queryResults = this.props.queryResults;
+        const anyHistory = this.props.anyHistory;
+
+        const headerButtons = [];
+
+        if (anyHistory) {
+            const historyBtn = e(
+                'button',
+                {
+                    "className": "history-button",
+                    "data-toggle": "modal",
+                    "data-target": "#historyModal"
+                },
+                `History`
+            );
+
+            headerButtons.push(historyBtn);
+        }
+
+        // Can show original sentences only if there is one query on screen
+        if (queryResults && queryResults.length == 1) {
+            const query = queryResults[0];
+
+            const originalSentencesButton = e(
+                'button',
+                {
+                    "id": "original-sentences-button",
+                    "data-toggle": "modal",
+                    "data-target": "#origSentencesModal",
+                    "data-query-idx": query['query_idx'],
+                    "data-query-id": this.props.queryId
+                },
+                `Original sentences`
+            );
+
+            headerButtons.push(originalSentencesButton);
+        }
+
+        return e(
+            "div",
+            {
+                "id": "summaryHeader",
+                "className": "card-header"
+            },
+            [
+                e(
+                    "div",
+                    {
+                        "className": "main-component-title"
+                    },
+                    "Summary"
+                ),
+                headerButtons
+            ]
+        )
+    }
+}
+
+class ExplorationPage extends React.Component {
+    render() {
+        const queryResults = this.props.queryResults;
+        const isLoading = this.props.isLoading;
+
+        const exploreItems = [];
+
+        if (queryResults.length == 0) {
+            if (isLoading) {
+                exploreItems.push(e(
+                    LoadingSpinner
+                ));
+            } else {
+                const introMsg = "Query the document set using the navigation. A summary will be produced for your query and the navigation will be filtered based on co-occurrence with your query.";
+                exploreItems.push(
+                    e(
+                        "li",
+                        {
+                            "className": "exploreItem"
+                        },
+                        introMsg
+                    )
+                );
+            }
+        } else {
+            exploreItems.push(e(
+                SummaryList,
+                {
+                    "queryResults": queryResults
+                }
+            ));
+        }
+
+        return e(
+            "div",
+            {
+                "className": "card"
+            },
+            [
+                e(
+                    ExplorationPageHeader,
+                    {
+                        "queryResults": queryResults,
+                        "anyHistory": Object.keys(globalQueriesResults).length > 0
+                    }
+                ),
+                e(
+                    "div",
+                    {
+                        "id": "explorationCard",
+                        "className": "card-body"
+                    },
+                    e(
+                        "div",
+                        {
+                            "id": "explorationPane",
+                            "className": "pane listItems card"
+                        },
+                        exploreItems
+                    )
+                )
+            ]
+        );
     }
 }
 
@@ -1509,12 +1608,7 @@ function query(queryStr, clusterId, clusterType) {
             "token": queryStr
         });
 
-        const emptyQueryResults = [{
-            "query": globalQuery,
-            "result_sentences": []
-        }];
-
-        insertSummaryItemsInExplorationPane(emptyQueryResults);
+        insertSummaryItemsInExplorationPane([], isLoading=true);
     }
 
     /* Even if the query is empty we want to refresh the view */
@@ -1525,17 +1619,6 @@ function query(queryStr, clusterId, clusterType) {
         const cluster = getClusterFromGlobalByQuery(clusterQuery);
         queryStr += ` ${cluster['display_name']}`;
     }
-
-    if (globalQuery.length > 0) {
-        // create the query list item in the exploration pane:
-        /* insertQueryItemInExplorationPane(queryStr, exploreList); */
-
-        // put a loading ellipsis:
-        insertLoadingIndicatorInExplorationPane(exploreList);
-    }
-
-    // scroll to bottom:
-    exploreList.scrollTop = exploreList.scrollHeight;
 
     // if no query type was set until now ('freetext' or 'highlight' or 'keyword'), then it must be that some text was copy-pasted into the query box:
     if (lastQueryType == '') {
@@ -1556,8 +1639,6 @@ function query(queryStr, clusterId, clusterType) {
 function fetchDocument(documentId, documentName) {
     insertQueryItemInExplorationPane(documentName, $documentsPane[0]);
 
-    insertLoadingIndicatorInExplorationPane($documentsPane[0]);
-
     // scroll to bottom:
     $documentsPane[0].scrollTop = $documentsPane[0].scrollHeight;
 
@@ -1571,8 +1652,6 @@ function fetchDocument(documentId, documentName) {
 function fetchCorefCluster(corefClusterId, corefClusterType) {
     const corefClusterText = globalCorefClustersMetas[corefClusterId]['display_name'];
     insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
-
-    insertLoadingIndicatorInExplorationPane($mentionsPane[0]);
 
     // scroll to bottom:
     $mentionsPane[0].scrollTop = $mentionsPane[0].scrollHeight;
@@ -1589,8 +1668,6 @@ function fetchCorefCluster(corefClusterId, corefClusterType) {
 function fetchPropositionCluster(propositionClusterId) {
     const propositionClusterText = globalPropositionClustersMetas[propositionClusterId]['display_name'];
 //    insertQueryItemInExplorationPane(propositionClusterText, $propositionsPane[0]);
-
-    insertLoadingIndicatorInExplorationPane($propositionsPane[0]);
 
     // scroll to bottom:
     $propositionsPane[0].scrollTop = $propositionsPane[0].scrollHeight;
