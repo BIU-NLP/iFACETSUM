@@ -195,19 +195,13 @@ class InfoManager:
                     if self.clientHasChanges(clientId):# and self.clientIsReal(clientId):
                         saveDict = {}
                         saveDict['clientId'] = clientId
-                        saveDict['assignmentId'] = self.m_clientsInfo[clientId]['assignmentId']
-                        saveDict['hitId'] = self.m_clientsInfo[clientId]['hitId']
-                        saveDict['workerId'] = self.m_clientsInfo[clientId]['workerId']
-                        saveDict['turkSubmitTo'] = self.m_clientsInfo[clientId]['turkSubmitTo']
                         saveDict['topicId'] = self.m_clientsInfo[clientId]['topicId']
-                        saveDict['questionnaireBatchIndex'] = self.m_clientsInfo[clientId]['questionnaireBatchIndex']
-                        saveDict['timeAllowed'] = self.m_clientsInfo[clientId]['timeAllowed']
-                        #saveDict['startTime'] = self.m_clientsInfo[clientId]['startTime']
-                        saveDict['startTime'] = datetime.fromtimestamp(self.m_clientsInfo[clientId]['startTime']).strftime("%Y/%m/%d %H:%M:%S")
-                        saveDict['endTime'] = self.m_clientsInfo[clientId]['endTime']
-                        saveDict['totalTime'] = self.m_clientsInfo[clientId]['endTime'] - self.m_clientsInfo[clientId]['startTime']
-                        saveDict['exploreTime'] = self.m_clientsInfo[clientId]['exploreTime']
-                        saveDict['summType'] = str(type(self.m_clientsInfo[clientId]['summarizer']))
+                        # saveDict['timeAllowed'] = self.m_clientsInfo[clientId]['timeAllowed']
+                        # #saveDict['startTime'] = self.m_clientsInfo[clientId]['startTime']
+                        # saveDict['startTime'] = datetime.fromtimestamp(self.m_clientsInfo[clientId]['startTime']).strftime("%Y/%m/%d %H:%M:%S")
+                        # saveDict['endTime'] = self.m_clientsInfo[clientId]['endTime']
+                        # saveDict['totalTime'] = self.m_clientsInfo[clientId]['endTime'] - self.m_clientsInfo[clientId]['startTime']
+                        # saveDict['exploreTime'] = self.m_clientsInfo[clientId]['exploreTime']
                         saveDict['previous_results'] = [x.to_dict() for x in self.m_clientsInfo[clientId]['query_results_analyzer']._previous_results]
                         saveDict['ui_actions'] = [x.to_dict() for x in self.m_clientsInfo[clientId]['ui_actions']]
                         self.savedInfo[clientId] = saveDict

@@ -114,6 +114,9 @@ def get_clusters_ids_to_filter(clusters_objs):
     # Singletons
     clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions == 1 or cluster.num_sents == 1]
 
+    # Verbs
+    clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.pos_label == "VERB"]
+
     # Repeating clusters
     clusters_seen = set()
     for cluster_idx, cluster_obj in sorted(clusters_objs.items(), key=lambda item: item[1].num_mentions, reverse=True):

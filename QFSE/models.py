@@ -28,6 +28,7 @@ class Cluster:
     cluster_id: str
     cluster_type: str
     mentions: List[Mention]
+    pos_label: str
     cluster_label: str
     cluster_facet: str
     display_name: str
