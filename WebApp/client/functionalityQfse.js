@@ -1694,9 +1694,8 @@ function query(queryStr, clusterId, clusterType) {
             "cluster_type": clusterType,
             "token": queryStr
         });
-
-        insertSummaryItemsInExplorationPane([], isLoading=true);
     }
+    insertSummaryItemsInExplorationPane([], isLoading=true);
 
     createClustersIdsList();
 
