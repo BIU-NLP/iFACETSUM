@@ -121,23 +121,26 @@ def parse_lines(df, corpus):
         mentions_seen_in_cluster = set()
 
         for proposition_line in propositions_cluster.proposition_lines:
-            doc_mention = create_mention_from_doc_or_scu(proposition_line.document_file, proposition_line.doc_span_offsets, proposition_line.doc_sent_char_idx, proposition_line.doc_sent_text, proposition_line.doc_span_text, corpus, cluster_idx)
-            scu_mention = create_mention_from_doc_or_scu(proposition_line.summary_file, proposition_line.summary_span_offsets, proposition_line.scu_sent_char_idx, proposition_line.scu_sentence, proposition_line.summary_span_text, corpus, cluster_idx)
-            if doc_mention is not None and scu_mention is not None and doc_mention:
-                # Avoid adding the same mention, in propositions it is unlikely and it is only because we work pairwise
-                if doc_mention.token not in mentions_seen_in_cluster:
-                    mentions_seen_in_cluster.add(doc_mention.token)
-                    mentions_seen.add(doc_mention.token)
-                    cluster.append(doc_mention)
-                    doc_mentions = parsed.setdefault(proposition_line.document_file, [])
-                    doc_mentions.append(doc_mention)
+            try:
+                doc_mention = create_mention_from_doc_or_scu(proposition_line.document_file, proposition_line.doc_span_offsets, proposition_line.doc_sent_char_idx, proposition_line.doc_sent_text, proposition_line.doc_span_text, corpus, cluster_idx)
+                scu_mention = create_mention_from_doc_or_scu(proposition_line.summary_file, proposition_line.summary_span_offsets, proposition_line.scu_sent_char_idx, proposition_line.scu_sentence, proposition_line.summary_span_text, corpus, cluster_idx)
+                if doc_mention is not None and scu_mention is not None and doc_mention:
+                    # Avoid adding the same mention, in propositions it is unlikely and it is only because we work pairwise
+                    if doc_mention.token not in mentions_seen_in_cluster:
+                        mentions_seen_in_cluster.add(doc_mention.token)
+                        mentions_seen.add(doc_mention.token)
+                        cluster.append(doc_mention)
+                        doc_mentions = parsed.setdefault(proposition_line.document_file, [])
+                        doc_mentions.append(doc_mention)
 
-                if scu_mention.token not in mentions_seen_in_cluster:
-                    mentions_seen.add(scu_mention.token)
-                    mentions_seen_in_cluster.add(scu_mention.token)
-                    cluster.append(scu_mention)
-                    scu_mentions = parsed.setdefault(proposition_line.summary_file, [])
-                    scu_mentions.append(scu_mention)
+                    if scu_mention.token not in mentions_seen_in_cluster:
+                        mentions_seen.add(scu_mention.token)
+                        mentions_seen_in_cluster.add(scu_mention.token)
+                        cluster.append(scu_mention)
+                        scu_mentions = parsed.setdefault(proposition_line.summary_file, [])
+                        scu_mentions.append(scu_mention)
+            except:
+                logging.exception("Skipping proposition line")
 
         if any(cluster):
             all_clusters[cluster_idx] = cluster
@@ -210,7 +213,7 @@ def get_proposition_clusters(formatted_topics, corpus):
 
         documents, all_clusters = parse_propositions_file(df, corpus)
 
-        clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS, PROPOSITIONS_DEFAULT_CLUSTER)
+        clusters_objs = create_objs(all_clusters, COREF_TYPE_PROPOSITIONS, PROPOSITIONS_DEFAULT_CLUSTER, PROPOSITIONS_DEFAULT_CLUSTER)
 
         with open(cache_file_path, "wb") as f:
             pickle.dump((documents, clusters_objs), f)

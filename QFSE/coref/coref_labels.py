@@ -5,8 +5,8 @@ from QFSE.Utilities import get_item
 from QFSE.models import Cluster
 
 
-PROPOSITIONS_DEFAULT_CLUSTER = "Key statements"
-EVENTS_DEFAULT_CLUSTER = "Key concepts"
+PROPOSITIONS_DEFAULT_CLUSTER = "Statements"
+EVENTS_DEFAULT_CLUSTER = "Concepts"
 ENTITIES_DEFAULT_CLUSTER = "Entities"
 UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER = "Miscellaneous"
 
@@ -14,7 +14,7 @@ UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER = "Miscellaneous"
 
 FACETS_MAP = {
     "GPE": ENTITIES_DEFAULT_CLUSTER,
-    "EVENT": UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER,
+    "EVENT": ENTITIES_DEFAULT_CLUSTER,
     "ORG": ENTITIES_DEFAULT_CLUSTER,
     "PERSON": ENTITIES_DEFAULT_CLUSTER,
     "DATE": ENTITIES_DEFAULT_CLUSTER,
@@ -24,7 +24,7 @@ FACETS_MAP = {
 
 LABELS_MAP = {
     "GPE": "Location",
-    "EVENT": ENTITIES_DEFAULT_CLUSTER,
+    "EVENT": UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER,
     "ORG": "Organization",
     "PERSON": "Person",
     "DATE": "Date",
@@ -33,15 +33,15 @@ LABELS_MAP = {
 }
 
 
-def create_objs(clusters, cluster_type, default_cluster):
+def create_objs(clusters, cluster_type, default_label, default_cluster):
     clusters_objs = {}
     for cluster_id, mentions in clusters.items():
-        clusters_objs[cluster_id] = create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster)
+        clusters_objs[cluster_id] = create_cluster_obj(cluster_id, cluster_type, mentions, default_label, default_cluster)
 
     return clusters_objs
 
 
-def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
+def create_cluster_obj(cluster_id, cluster_type, mentions, default_label, default_facet):
     nlp = get_item("spacy")
 
     ents_counter = Counter()
@@ -67,8 +67,8 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_cluster):
     for mention in mentions_used_for_representative:
         token_counter[mention.token] += 1
     most_representative_mention = _get_shortest_most_common(token_counter)
-    cluster_label = LABELS_MAP.get(ner_label, default_cluster)
-    cluster_facet = FACETS_MAP.get(ner_label, default_cluster)
+    cluster_label = LABELS_MAP.get(ner_label, default_label)
+    cluster_facet = FACETS_MAP.get(ner_label, default_facet)
     return Cluster(cluster_id, cluster_type, mentions, cluster_label, cluster_facet, most_representative_mention, len(mentions), len(unique_sents_ids))
 
 

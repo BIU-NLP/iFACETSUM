@@ -12,7 +12,7 @@ from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES, MAX_MENTIONS_IN_CLUSTER
 from QFSE.coref.coref_expr import get_clusters, parse_doc_id
 from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, \
-    UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER
+    UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
 from data.Config import COREF_LOCATIONS
@@ -53,11 +53,13 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
     if cluster_type == COREF_TYPE_EVENTS:
         with open(f"{path_to_dir}/{file_path}") as f:
             data = f.read()
-        default_cluster = EVENTS_DEFAULT_CLUSTER
+        default_label = EVENTS_DEFAULT_CLUSTER
+        default_facet = EVENTS_DEFAULT_CLUSTER
     else:  # if cluster_type == COREF_TYPE_ENTITIES:
         with open(f"{path_to_dir}/{file_path}") as f:
             data = f.read()
-        default_cluster = UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER
+        default_label = UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER
+        default_facet = ENTITIES_DEFAULT_CLUSTER
 
     cache_file_path = f"{path_to_dir}/{file_path}.cache"
     try:
@@ -80,7 +82,7 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
             data = json.loads(data)
             documents, clusters = get_clusters(data, cluster_type)
 
-        clusters_objs = create_objs(clusters, cluster_type, default_cluster)
+        clusters_objs = create_objs(clusters, cluster_type, default_label, default_facet)
 
         with open(cache_file_path, "wb") as f:
             pickle.dump((documents, clusters_objs), f)
@@ -105,13 +107,12 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
 
     return coref_clusters
 
-
 def get_clusters_ids_to_filter(clusters_objs):
     # Max mentions
-    # clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
+    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
 
     # Singletons
-    clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions == 1]
+    clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions == 1 or cluster.num_sents == 1]
 
     # Repeating clusters
     clusters_seen = set()
