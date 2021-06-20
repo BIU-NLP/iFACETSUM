@@ -2,6 +2,7 @@
 import os
 import sys
 from collections import defaultdict
+from datetime import datetime
 from typing import List, Set, Dict, Union, Optional
 
 from nltk import word_tokenize
@@ -10,7 +11,7 @@ from QFSE.Sentence import Sentence
 from QFSE.abstractive_coref.mentions_finder import MentionsFinder
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_ENTITIES
 from QFSE.models import Summary, DocSent, ClusterQuery, QueryResult, QueryResultSentence, \
-    TokensCluster, DocumentResult
+    TokensCluster, DocumentResult, UIAction
 from QFSE.propositions.utils import get_proposition_clusters
 from QFSE.query_results_analyzer import QueryResultsAnalyzer
 
@@ -61,6 +62,7 @@ TYPE_ITERATION_RATING = 6
 TYPE_QUESTIONNAIRE_RATING = 7
 TYPE_REQUEST_DOCUMENT = 8
 TYPE_REQUEST_COREF_CLUSTER = 9
+TYPE_LOG_UI_ACTION = 10
 # summary types
 SUMMARY_TYPES = {'qfse_cluster': SummarizerClustering, 'increment_cluster': SummarizerAddMore,
                  'qfse_textrank': SummarizerTextRankPlusLexical}
@@ -119,6 +121,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                     returnJson = self.get_document(clientJson)
                 elif requestType == TYPE_REQUEST_COREF_CLUSTER:
                     returnJson = self.get_coref_cluster(clientJson)
+                elif requestType == TYPE_LOG_UI_ACTION:
+                    returnJson = self.log_ui_action(clientJson)
                 else:
                     returnJson = self.getErrorJson('Undefined JSON received.')
 
@@ -152,6 +156,8 @@ class IntSummHandler(tornado.web.RequestHandler):
             requestType = TYPE_REQUEST_DOCUMENT
         elif 'request_coref_cluster' in clientJson:
             requestType = TYPE_REQUEST_COREF_CLUSTER
+        elif 'request_log_ui_action' in clientJson:
+            requestType = TYPE_LOG_UI_ACTION
         else:
             requestType = TYPE_ERROR
 
@@ -201,6 +207,10 @@ class IntSummHandler(tornado.web.RequestHandler):
                                  questionnaireBatchIndex, timeAllowed, assignmentId, hitId, workerId, turkSubmitTo,
                                  QueryResultsAnalyzer())
         topicName = topicId
+
+        m_infoManager.add_ui_action_log(clientId, UIAction("initial", {
+            "topic_id": topicId
+        }, datetime.utcnow().isoformat()))
 
         reply = {
             "reply_get_initial_summary": {
@@ -259,7 +269,8 @@ class IntSummHandler(tornado.web.RequestHandler):
             sentences_used.append(sent)
         return sentences_used
 
-    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool, skip_mentions=False, original_sentences=None) -> List[
+    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool, skip_mentions=False,
+                                   original_sentences=None) -> List[
         Union[TokensCluster, List[str]]]:
         tokens = sent
         if is_original_sentences:
@@ -403,6 +414,8 @@ class IntSummHandler(tornado.web.RequestHandler):
         corpus = m_infoManager.getCorpus(clientId)
         doc_sent_indices: Optional[Set[DocSent]] = None
 
+        query_result = None
+
         if clusters_query:
             query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
             query_result = query_results_analyzer.get_result_if_exists(clusters_query)
@@ -419,7 +432,7 @@ class IntSummHandler(tornado.web.RequestHandler):
 
                 query_result = QueryResult(None, [], clusters_query, [
                     QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId,
-                                        sent.sentIndex) for sent in sentences])
+                                        sent.sentIndex) for sent in sentences], datetime.utcnow().isoformat())
                 if any(sentences):
                     if len(sentences) > 1:
                         summarizer = get_item("bart_summarizer")
@@ -443,6 +456,10 @@ class IntSummHandler(tornado.web.RequestHandler):
             }
 
             doc_sent_indices = query_result.get_doc_sent_indices()
+
+        m_infoManager.add_ui_action_log(clientId, UIAction("query", {
+            "query_idx": query_result.query_idx if query_result is not None else None
+        }, datetime.utcnow().isoformat()))
 
         # Always return the clusters even if query is none
         reply_query = {
@@ -493,7 +510,13 @@ class IntSummHandler(tornado.web.RequestHandler):
         corpus = m_infoManager.getCorpus(client_id)
         doc = self.get_doc_by_id(corpus, doc_id)
 
-        doc_result = DocumentResult(doc_id, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId, sent.sentIndex) for sent in doc.sentences])
+        doc_result = DocumentResult(doc_id, [
+            QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId,
+                                sent.sentIndex) for sent in doc.sentences])
+
+        m_infoManager.add_ui_action_log(client_id, UIAction("open_original_doc", {
+            "doc_id": doc_id
+        }, datetime.utcnow().isoformat()))
 
         reply = {
             "reply_document": {
@@ -505,7 +528,6 @@ class IntSummHandler(tornado.web.RequestHandler):
 
     def _is_sent_in_doc_sent_indices(self, doc_sent_indices, sent) -> bool:
         return DocSent(sent.docId, sent.sentIndex) in doc_sent_indices
-
 
     def get_doc_by_id(self, corpus, doc_id):
         found_docs = [x for x in corpus.documents if doc_id in x.id]
@@ -658,6 +680,19 @@ class IntSummHandler(tornado.web.RequestHandler):
         reply = {"error": msg}
         logging.info("Sending Error JSON: " + msg)
         return json.dumps(reply)
+
+    def log_ui_action(self, client_json):
+        client_id = client_json['clientId']
+        action = client_json['request_log_ui_action']['action']
+        action_details = client_json['request_log_ui_action']['actionDetails']
+
+        m_infoManager.add_ui_action_log(client_id, UIAction(action, action_details, datetime.utcnow().isoformat()))
+
+        return json.dumps({
+            "reply_log_ui_action": {
+                "status": "success"
+            }
+        })
 
 
 if __name__ == '__main__':
