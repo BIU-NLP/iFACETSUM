@@ -42,8 +42,8 @@ var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
 
-const KEY_CONCEPTS_LABEL = "Key concepts";
-const KEY_STATEMENTS_LABEL = "Key statements";
+const KEY_CONCEPTS_LABEL = "Concepts";
+const KEY_STATEMENTS_LABEL = "Statements";
 const PERSON_LABEL = "Person";
 const ORGANIZATION_LABEL = "Organization";
 const LOCATION_LABEL = "Location";
@@ -56,17 +56,24 @@ const MISC_LABEL = "Miscellaneous";
 const FIELD_TO_SORT_CLUSTERS = "num_sents_filtered";
 
 
-const CLUSTERS_FACETS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, ENTITIES_LABEL, MISC_LABEL];
+const CLUSTERS_FACETS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, ENTITIES_LABEL, PERSON_LABEL, LOCATION_LABEL, ORGANIZATION_LABEL, NORP_LABEL, MISC_LABEL];
 
 const CLUSTER_FACET_TO_TOOLTIP = {};
 const default_tooltip = "co-occurring in the document set, press a cluster to get its summary and filtered navigation";
 CLUSTER_FACET_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
-CLUSTER_FACET_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
 CLUSTER_FACET_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[PERSON_LABEL] = `Person entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organization entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[LOCATION_LABEL] = `Location entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[NORP_LABEL] = `${NORP_LABEL} entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[DATE_LABEL] = `${DATE_LABEL} entities ${default_tooltip}`;
 CLUSTER_FACET_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
 
 NUM_OF_SENTS_PER_FACET = {};
-NUM_OF_SENTS_PER_FACET[KEY_STATEMENTS_LABEL] = 2;
+NUM_OF_SENTS_PER_FACET[KEY_STATEMENTS_LABEL] = 3;
+
+LABELS_TO_FILTER = [DATE_LABEL];
 
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
@@ -160,18 +167,27 @@ function setTopic(topicInfo) {
     showPageToAnnotator();
 }
 
+function getFixedClustersBasedOnGlobalQueries(dataQueryIdx) {
+    const queryResult = globalQueriesResults[dataQueryIdx];
+    const origSentences = queryResult['orig_sentences'];
+
+    const fixedClusters = [];
+    for (const clusterQuery of queryResult['query']) {
+        fixedClusters.push(parseInt(clusterQuery['cluster_id']));
+    }
+
+    return fixedClusters;
+}
+
 function initializeModal() {
     $('#origSentencesModal').on('show.bs.modal', function(event) {
         const dataQueryIdx = $(event.relatedTarget).attr('data-query-idx');
         const queryResult = globalQueriesResults[dataQueryIdx];
         const origSentences = queryResult['orig_sentences'];
 
-        const htmlElementToRenderInto = document.createElement("div");
+        const fixedClusters = getFixedClustersBasedOnGlobalQueries(dataQueryIdx);
 
-        const fixedClusters = [];
-        for (const clusterQuery of queryResult['query']) {
-            fixedClusters.push(parseInt(clusterQuery['cluster_id']));
-        }
+        const htmlElementToRenderInto = document.createElement("div");
 
         const reactToRender = e(
             ListItem,
@@ -223,14 +239,38 @@ function initializeModal() {
 
         const htmlElementToRenderInto = document.createElement("div");
 
-        let reactToRender = e(
-            LabelClustersItem,
-            {
-                "labelClusters": labelClusters,
-                "clustersQuery": clustersQuery,
-                "minimized": false
+        const multiFacetLabel = ENTITIES_LABEL;
+
+        let reactToRender;
+        if (clusterFacet !== multiFacetLabel) {
+            reactToRender = e(
+                LabelClustersItem,
+                {
+                    "labelClusters": labelClusters,
+                    "clustersQuery": clustersQuery,
+                    "minimized": false
+                }
+            );
+        } else {
+            const entitiesClusters = {};
+            for (const cluster of globalClustersMetas["all"][ENTITIES_LABEL]) {
+                const clusterLabel = cluster['cluster_label'];
+                const currArray = entitiesClusters[clusterLabel] || [];
+                entitiesClusters[clusterLabel] = currArray;
+                currArray.push(cluster);
             }
-        );
+
+            // Multiple sub facets
+            reactToRender = e(
+                ClustersIdsList,
+                {
+                    "allClusters": entitiesClusters,
+                    "clustersQuery": globalQuery,
+                    "useLabelAsFacet": true,
+                    "minimized": false
+                }
+            );
+        }
 
         ReactDOM.render(reactToRender, htmlElementToRenderInto);
 
@@ -240,12 +280,14 @@ function initializeModal() {
 
     $('#documentModal').on('show.bs.modal', function(event) {
         const replyDocument = globalState['document'];
+        const dataQueryIdx = globalState['lastQueryIdx'];
         const docId = replyDocument['doc']['doc_id'];
 
         const htmlElementToRenderInto = document.createElement("div");
 
         const lastQueryIdx = globalState['lastQueryIdx'];
         const docIdToSentences = createDocIdToSentences(globalQueriesResults[lastQueryIdx]['orig_sentences']);
+        const fixedClusters = getFixedClustersBasedOnGlobalQueries(dataQueryIdx);
 
         const fixedSentsIds = [];
         for (const sent of docIdToSentences[docId]) {
@@ -258,6 +300,7 @@ function initializeModal() {
                 "resultSentences": replyDocument['doc']['orig_sentences'],
                 "numSentToShow": 999,
                 "showPopover": false, // Don't show a popover inside a modal
+                "fixedClusters": fixedClusters,
                 "fixedSentsIndices": fixedSentsIds,
                 "isSummary": false
             }
@@ -318,6 +361,8 @@ class ClusterIdItem extends React.Component {
     render() {
 
         const cluster = this.props.cluster;
+        const useLabelAsFacet = this.props.useLabelAsFacet;
+
         const displayName = cluster['display_name'];
         const clusterLabel = cluster['cluster_label'];
         const clusterFacet = cluster['cluster_facet'];
@@ -337,7 +382,7 @@ class ClusterIdItem extends React.Component {
         const allMentionsText = mentionWithCount.map(mentionWithCount => `${mentionWithCount[0]} (${mentionWithCount[1]})`).join("\n");
 
         let final_display_name = displayName;
-        if (clusterLabel !== clusterFacet) {
+        if (clusterLabel !== clusterFacet && clusterLabel !== MISC_LABEL && !useLabelAsFacet) {
             final_display_name = `${clusterLabel}: ${displayName}`;
         }
 
@@ -448,11 +493,16 @@ class LabelClustersItem extends React.Component {
 
     render() {
         const labelClusters = this.props.labelClusters;
+        const amountOfFacets = this.props.amountOfFacets;
+        const clusterLabel = labelClusters[0]['cluster_label'];
         const clusterFacet = labelClusters[0]['cluster_facet'];
         const clustersQuery = this.props.clustersQuery;
-        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_FACET[clusterFacet] || 6;
+        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_FACET[clusterFacet] || 8;
         const maxSentsToShow = this.props.maxSentsToShow || 999;
+        const useLabelAsFacet = this.props.useLabelAsFacet;
         const minimized = this.state.minimized;
+
+        const labelToUse = useLabelAsFacet ? clusterLabel : clusterFacet;
 
         const clustersItems = [];
         clustersItems.push(
@@ -461,9 +511,9 @@ class LabelClustersItem extends React.Component {
                 {
                     "className": "card-header clean-card-header clusters-label",
                     "data-toggle": "tooltip",
-                    "title": CLUSTER_FACET_TO_TOOLTIP[clusterFacet]
+                    "title": CLUSTER_FACET_TO_TOOLTIP[labelToUse]
                 },
-                clusterFacet
+                labelToUse
             )
         );
         for (let i = 0; i < labelClusters.length; i++) {
@@ -474,7 +524,8 @@ class LabelClustersItem extends React.Component {
                 const clusterIdItemReact = e(
                     ClusterIdItem,
                     {
-                        "cluster": cluster
+                        "cluster": cluster,
+                        "useLabelAsFacet": useLabelAsFacet
                     }
                 )
 
@@ -512,11 +563,21 @@ class LabelClustersItem extends React.Component {
 
         const minimizedClass = minimized ? " minimized" : "";
 
+        let numColumnsInGrid = Math.floor(12 / amountOfFacets);
+        if (numColumnsInGrid > 4) {
+            numColumnsInGrid = 4;
+        }
+
+        const colClass = `col-md-${numColumnsInGrid}`;
+
+        let facetsValuesListClasses = "facets-values-list ";
+        if (!minimized) {
+            facetsValuesListClasses += colClass;
+        }
+
         let facetsValuesList = e(
-             "div",
-             {
-                 "className": "facets-values-list"
-             },
+            "div",
+            {"className": facetsValuesListClasses},
             clustersItems
         );
 
@@ -524,7 +585,7 @@ class LabelClustersItem extends React.Component {
             facetsValuesList = e(
                 "div",
                 {
-                    "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card col-md-3"
+                    "className": `list-group-item label-list-group-item list-group accordion label-clusters-item card ${colClass}`
                 },
                 [
                     facetsValuesList,
@@ -542,22 +603,32 @@ class ClustersIdsList extends React.Component {
     render() {
         const allClusters = this.props.allClusters;
         const clustersQuery = this.props.clustersQuery;
+        const useLabelAsFacet = this.props.useLabelAsFacet;  // In multi facets, when opening show more we want the label to show as the facet
+        const minimized = this.props.minimized;
 
-        const labelClustersItems = [];
+        const facetsToUse = [];
         for (const clusterFacet of CLUSTERS_FACETS_ORDER) {
             if (Object.keys(allClusters).includes(clusterFacet)) {
-                const labelClusters = allClusters[clusterFacet];
-
-                const labelClustersItem = e(
-                    LabelClustersItem,
-                    {
-                        "labelClusters": labelClusters,
-                        "clustersQuery": clustersQuery
-                    }
-                )
-
-                labelClustersItems.push(labelClustersItem);
+                facetsToUse.push(clusterFacet);
             }
+        }
+
+        const labelClustersItems = [];
+        for (const clusterFacet of facetsToUse) {
+            const labelClusters = allClusters[clusterFacet];
+
+            const labelClustersItem = e(
+                LabelClustersItem,
+                {
+                    "labelClusters": labelClusters,
+                    "clustersQuery": clustersQuery,
+                    "useLabelAsFacet": useLabelAsFacet,
+                    "amountOfFacets": facetsToUse.length,
+                    "minimized": minimized
+                }
+            )
+
+            labelClustersItems.push(labelClustersItem);
         }
 
         return e(
@@ -622,10 +693,13 @@ function categorizeClustersByLabels(clusters) {
     clusters = clusters.sort((a,b) => b[FIELD_TO_SORT_CLUSTERS] - a[FIELD_TO_SORT_CLUSTERS]);
     for (const cluster of clusters) {
         const clusterFacet = cluster['cluster_facet'];
-        cluster['cluster_facet'] = clusterFacet;
-        const labelClusters = labelsClusters[clusterFacet] || [];
-        labelsClusters[clusterFacet] = labelClusters;
-        labelClusters.push(cluster);
+        const clusterLabel = cluster['cluster_label'];
+        if (!LABELS_TO_FILTER.includes(clusterLabel)) {
+            cluster['cluster_facet'] = clusterFacet;
+            const labelClusters = labelsClusters[clusterFacet] || [];
+            labelsClusters[clusterFacet] = labelClusters;
+            labelClusters.push(cluster);
+        }
     }
 
     return labelsClusters;
@@ -1134,11 +1208,13 @@ class ListItem extends React.Component {
                             }
 
                             sentItems.push(e(
-                               "span",
-                               {
-                                   "className": sentIndexClasses
-                               },
-                               `#${sentIdx}`
+                                "span",
+                                {
+                                    "className": sentIndexClasses,
+                                    "data-toggle": "tooltip",
+                                    "title": "Sentence index"
+                                },
+                                `#${sentIdx}`
                            ));
 
                            colClass = "col-11";

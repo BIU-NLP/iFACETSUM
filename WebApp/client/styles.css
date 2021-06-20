@@ -144,6 +144,12 @@ ul {
     text-decoration: underline dotted;
 }
 
+.doc-id-header {
+    color: var(--dark);
+    text-decoration: underline dotted;
+    font-size: 25px;
+}
+
 /*li {*/
 .exploreItem {
 	list-style: none;
@@ -901,7 +907,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 /* Cancel the default list item padding to make a compact view in main screen */
-#clustersIdsListContainer .cluster-list-item {
+.cluster-list-item {
     padding-top: 0;
     padding-bottom: 0;
 }
@@ -930,7 +936,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     padding: 0;
 }
 
-.clean-card-header, .facets-values-list .list-group-item, #clustersIdsListContainer .list-group-item {
+.clean-card-header, .label-list-group-item, .cluster-list-item {
     border: 0;
 }
 
@@ -1034,4 +1040,10 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .doc-id-header {
     cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .modal-fixed-lg {
+        min-width: 1200px;
+    }
 }
