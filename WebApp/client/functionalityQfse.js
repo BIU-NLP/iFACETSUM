@@ -206,6 +206,8 @@ function initializeModal() {
         const $modalBody = $('#origSentencesModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
 
+        logUIAction("orig_sentences_modal", {"query_idx": dataQueryIdx});
+
     });
 
     $('#historyModal').on('show.bs.modal', function(event) {
@@ -228,6 +230,9 @@ function initializeModal() {
 
         const $modalBody = $('#historyModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("historyModal", {});
+
     });
 
     $('#queriesModal').on('show.bs.modal', function(event) {
@@ -276,6 +281,10 @@ function initializeModal() {
 
         const $modalBody = $('#queriesModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("queriesModal", {
+            "clusterFacet": clusterFacet
+        });
     });
 
     $('#documentModal').on('show.bs.modal', function(event) {
@@ -310,6 +319,11 @@ function initializeModal() {
 
         const $modalBody = $('#documentModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("documentModal", {
+            "query_idx": dataQueryIdx,
+            "doc_id": docId
+        });
     });
 }
 
@@ -1727,6 +1741,7 @@ function fetchDocument(documentId, documentName) {
         }
     });
 }
+
 function fetchCorefCluster(corefClusterId, corefClusterType) {
     const corefClusterText = globalCorefClustersMetas[corefClusterId]['display_name'];
     insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
@@ -1757,6 +1772,18 @@ function fetchPropositionCluster(propositionClusterId) {
             "corefClusterType": "propositions"
         }
     });
+}
+
+function logUIAction(action, actionDetails) {
+    if (canSendRequest()) {
+        sendRequest({
+                "clientId": clientId,
+                "request_log_ui_action": {
+                    "action": action,
+                    "actionDetails": actionDetails
+                }
+            });;
+    }
 }
 
 function canSendRequest() {

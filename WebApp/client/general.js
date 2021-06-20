@@ -365,6 +365,9 @@ function handleJsonReply(jsonObj) {
     else if ("reply_set_questionnaire_rating" in jsonObj) {
         // nothing to do
     }
+    else if ("reply_log_ui_action" in jsonObj) {
+        // nothing to do
+    }
     else {
         if (isWaitingForInitial) {
             isWaitingForInitial = false;
