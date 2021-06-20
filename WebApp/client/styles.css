@@ -963,7 +963,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 .show-more-btn {
-    padding: 0 20px;  /* to have the same padding as the list */
+    float: left;
 }
 
 #queryArea {
