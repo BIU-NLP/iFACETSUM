@@ -107,6 +107,7 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
 
     return coref_clusters
 
+
 def get_clusters_ids_to_filter(clusters_objs):
     # Max mentions
     clusters_ids_to_filter = [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.num_mentions > MAX_MENTIONS_IN_CLUSTER]
@@ -117,15 +118,37 @@ def get_clusters_ids_to_filter(clusters_objs):
     # Verbs
     clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if cluster.pos_label == "VERB"]
 
-    # Repeating clusters
-    clusters_seen = set()
-    for cluster_idx, cluster_obj in sorted(clusters_objs.items(), key=lambda item: item[1].num_mentions, reverse=True):
-        if cluster_obj.display_name.lower() not in clusters_seen:
-            clusters_seen.add(cluster_obj.display_name.lower())
-        else:
-            clusters_ids_to_filter.append(cluster_idx)
+    # Noisy values (only 2 letters like "`s" or "QL")
+    clusters_ids_to_filter += [cluster_idx for cluster_idx, cluster in clusters_objs.items() if len(cluster.display_name) <= 2]
+
+    clusters_ids_to_filter += merge_repeating_clusters(clusters_objs)
 
     return clusters_ids_to_filter
+
+
+def merge_repeating_clusters(clusters_objs):
+    """
+    We merge clusters (because we want to go from specific to generic, and allow let the user go to specific by faceted-navigation)
+    """
+
+    clusters_ids_to_filter = []
+
+    clusters_seen = {}
+    for cluster_idx, cluster_obj in sorted(clusters_objs.items(), key=lambda item: item[1].num_mentions, reverse=True):
+        cluster_key = cluster_obj.display_name.lower()
+        if cluster_key not in clusters_seen:
+            clusters_seen[cluster_key] = cluster_obj
+        else:
+            clusters_ids_to_filter.append(cluster_idx)
+            _merge_clusters(clusters_seen[cluster_key], cluster_obj)
+
+    return clusters_ids_to_filter
+
+
+def _merge_clusters(cluster_one: Cluster, cluster_two: Cluster):
+    cluster_one.num_mentions += cluster_two.num_mentions
+    cluster_one.num_sents += cluster_two.num_sents
+    cluster_one.mentions += cluster_two.mentions
 
 
 def parse_conll_coref_file(data) -> Tuple[Dict[str, List[Mention]], Dict[str, List[Mention]]]:
