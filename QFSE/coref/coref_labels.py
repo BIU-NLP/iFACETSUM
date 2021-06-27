@@ -100,4 +100,4 @@ def _get_shortest_most_common(counter) -> str:
 
 
 def clean_text(text):
-    return text.lower().replace("the", "").strip()
+    return text.lower().replace("the", "").replace("'s", "").strip()

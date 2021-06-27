@@ -1,12 +1,20 @@
-# Exploratron
+# CorExplore
 
-Corpus exploration platform using advanced tools such as interactive summarization [1], multi document coreference resolution [2] and proposition alignment [3]
+CorExplore is a demo application for exploring a document-set on a topic.
+It provides information-seeking support by creating a faceted-navigation experience, using latest `CD Coreference Resolution`, `Proposition Alignment` and `Abstractive Summarization` technologies.
 
-## References
 
-<a id="1" href="https://arxiv.org/abs/2009.08380">[1]</a> Evaluating Interactive Summarization: an Expansion-Based Framework (Sahpira et. al, 2020)
+### How to run
 
-<a id="2" href="https://arxiv.org/abs/2009.11032">[2]</a> Streamlining Cross-Document Coreference Resolution: Evaluation and Modeling (Cattan et. al, 2020)
+1. git clone the project
+2. Run `pip install -r requirements.txt`
+2. Run `python WebApp/server/app.py`
+3. Open in a web browser the file `WebApp/client/qfse.html`
 
-<a id="3" href="https://arxiv.org/abs/2009.00590">[3]</a> SuperPAL: Supervised Proposition ALignment for Multi-Document Summarization and Derivative Sub-Tasks (Ernst et. al, 2020)
+### How to add your own data
 
+1. Change `Config.py` to point to your data directory, including the text files and the cluster files (either json or conll format).
+
+### How to create your own clusters
+
+See CorExplore paper for more details (soon).
