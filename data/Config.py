@@ -81,6 +81,7 @@ COREF_LOCATIONS = {
         # "entities": "data/coref/native/spacy_wd_coref_duc.json",
         # "entities": "data/coref/native/duc_predictions_ments.json",
         "entities": "data/coref/native/wec_entities/wec_native_predicted_clusters.json",
+        # "entities": "data/coref/native/wec_entities/wec_native_predictions_pronouns.json",
         # "events":  "data/coref/native/events_average_0.3_model_5_topic_level.conll",
         "events":  "data/coref/native/cdlm_events/CDLM_events.conll",
         # "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix.json",
