@@ -17,4 +17,20 @@ It provides information-seeking support by creating a faceted-navigation experie
 
 ### How to create your own clusters
 
-See CorExplore paper for more details (soon).
+To support reproducibility efforts and adding custom document-sets, all models used were released and available online.
+
+#### CD Event Co-reference Alignment
+
+1. Create event mentions using the models and scripts in https://github.com/ariecattan/event_extractor.
+2. Create pairwise mention scores and clusters using CDLM (link will be added soon).
+
+#### CD Entities Co-reference Alignment
+
+1. Create entities mentions using SpanBert, accessible from https://docs.allennlp.org/models/main/.
+2. Use the WEC model to score each pairwise (link will be added soon).
+3. Use agglomerative clustering to combine WD and CD mentions.
+
+#### Proposition Alignment
+
+1. Please refer to https://github.com/oriern/SuperPAL for instructions of extracting propositions using OIE and extracting pairwise scores.
+2. CorExplore's code takes care of converting the pairwise CSV from SuperPAL into clusters. 
