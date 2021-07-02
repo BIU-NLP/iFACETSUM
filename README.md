@@ -23,12 +23,13 @@ To support reproducibility efforts and adding custom document-sets, all models u
 
 1. Create event mentions using the models and scripts in https://github.com/ariecattan/event_extractor.
 2. Create pairwise mention scores and clusters using CDLM (link will be added soon).
+3. Use agglomerative clustering to combine mentions into clusters.
 
 #### CD Entities Co-reference Alignment
 
 1. Create entities mentions using SpanBert, accessible from https://docs.allennlp.org/models/main/.
 2. Use the WEC model to score each pairwise (link will be added soon).
-3. Use agglomerative clustering to combine WD and CD mentions.
+3. Use agglomerative clustering to combine WD and CD mentions into clusters.
 
 #### Proposition Alignment
 
