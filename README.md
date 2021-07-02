@@ -1,6 +1,6 @@
-# CorExplore
+# iFacetSum
 
-CorExplore is a demo application for exploring a document-set on a topic.
+iFacetSum is a demo application for exploring a document-set on a topic.
 It provides information-seeking support by creating a faceted-navigation experience, using latest `CD Coreference Resolution`, `Proposition Alignment` and `Abstractive Summarization` technologies.
 
 
@@ -33,4 +33,4 @@ To support reproducibility efforts and adding custom document-sets, all models u
 #### Proposition Alignment
 
 1. Please refer to https://github.com/oriern/SuperPAL for instructions of extracting propositions using OIE and extracting pairwise scores.
-2. CorExplore's code takes care of converting the pairwise CSV from SuperPAL into clusters. 
+2. iFacetSum's code takes care of converting the pairwise CSV from SuperPAL into clusters. 
