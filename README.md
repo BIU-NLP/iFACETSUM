@@ -1,6 +1,6 @@
-# i<span style="font-size:larger;">F</span>ACET<span style="font-size:larger;">S</span>UM
+# iFᴀᴄᴇᴛSᴜᴍ
 
-i<span style="font-size:larger;">F</span>ACET<span style="font-size:larger;">S</span>UM is a demo application for exploring a document-set on a topic.
+iFᴀᴄᴇᴛSᴜᴍ is a demo application for exploring a document-set on a topic.
 It provides information-seeking support by creating a faceted-navigation experience, using latest `CD Coreference Resolution`, `Proposition Alignment` and `Abstractive Summarization` technologies.
 
 
@@ -34,4 +34,4 @@ To support reproducibility efforts and adding custom document-sets, all models u
 #### Proposition Alignment
 
 1. Please refer to https://github.com/oriern/SuperPAL for instructions of extracting propositions using OIE and extracting pairwise scores.
-2.  i<span style="font-size:larger;">F</span>ACET<span style="font-size:larger;">S</span>UM's code takes care of converting the pairwise CSV from SuperPAL into clusters. 
+2. iFᴀᴄᴇᴛSᴜᴍ's code takes care of converting the pairwise CSV from SuperPAL into clusters. 
