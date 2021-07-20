@@ -9,7 +9,7 @@ It provides information-seeking support by creating a faceted-navigation experie
 1. git clone the project
 2. Run `pip install -r requirements.txt`
 2. Run `python WebApp/server/app.py`
-3. Open in a web browser the file `WebApp/client/qfse.html`
+3. Open in a web browser the file `WebApp/client/index.html`
 
 ### How to add your own data
 
