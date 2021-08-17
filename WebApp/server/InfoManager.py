@@ -8,6 +8,8 @@ from operator import itemgetter
 import json
 import os
 from datetime import datetime
+
+from QFSE.models import UIAction
 from data import Config
 
 class InfoManager:
@@ -22,7 +24,7 @@ class InfoManager:
         self.sentencesUsed = {}
         # run a thread that saves the data once in a while:
         threadSaveDataToDatabase = threading.Thread(target=self.saveDataBackgroundFunc, args=())
-        # threadSaveDataToDatabase.start()
+        threadSaveDataToDatabase.start()
 
     def createClientFunc(self, clientId):
         if clientId not in self.m_clientsInfo:
@@ -53,6 +55,7 @@ class InfoManager:
         self.m_clientsInfo[clientId]['comments'] = ''
         self.m_clientsInfo[clientId]['questionnaireRatings'] = {}
         self.m_clientsInfo[clientId]['query_results_analyzer'] = query_results_analyzer
+        self.m_clientsInfo[clientId]['ui_actions'] = []
         # self.m_clientsInfo[clientId]['suggestedQueries'] = suggQuerGen.getSuggestionsFromToIndices(0, numSuggQueries-1)
         logging.info('Client initialized: {}'.format(clientId))
 
@@ -132,6 +135,9 @@ class InfoManager:
         return self.handleRequest(clientId, self.setEndTimeFunc, [clientId],
                                   'Failed to set end time for client {}'.format(clientId))
 
+    def add_ui_action_log(self, clientId, ui_action: UIAction):
+        self.m_clientsInfo[clientId]['ui_actions'].append(ui_action)
+
     def saveDataBackgroundFunc(self):
         while True:
             time.sleep(Params.time_to_sleep_between_background_save)
@@ -154,11 +160,7 @@ class InfoManager:
         return False
 
     def clientHasChanges(self, clientId):
-        if ('haveChanges' in self.m_clientsInfo[clientId] and self.m_clientsInfo[clientId]['haveChanges']) or \
-                ('summarizer' in self.m_clientsInfo[clientId] and self.m_clientsInfo[clientId][
-                    'summarizer'].haveChanges):
-            return True
-        return False
+        return 'haveChanges' in self.m_clientsInfo[clientId] and self.m_clientsInfo[clientId]['haveChanges']
 
     def clientIsReal(self, clientId):
         '''
@@ -193,36 +195,17 @@ class InfoManager:
                     if self.clientHasChanges(clientId):# and self.clientIsReal(clientId):
                         saveDict = {}
                         saveDict['clientId'] = clientId
-                        saveDict['assignmentId'] = self.m_clientsInfo[clientId]['assignmentId']
-                        saveDict['hitId'] = self.m_clientsInfo[clientId]['hitId']
-                        saveDict['workerId'] = self.m_clientsInfo[clientId]['workerId']
-                        saveDict['turkSubmitTo'] = self.m_clientsInfo[clientId]['turkSubmitTo']
                         saveDict['topicId'] = self.m_clientsInfo[clientId]['topicId']
-                        saveDict['questionnaireBatchIndex'] = self.m_clientsInfo[clientId]['questionnaireBatchIndex']
-                        saveDict['timeAllowed'] = self.m_clientsInfo[clientId]['timeAllowed']
-                        #saveDict['startTime'] = self.m_clientsInfo[clientId]['startTime']
-                        saveDict['startTime'] = datetime.fromtimestamp(self.m_clientsInfo[clientId]['startTime']).strftime("%Y/%m/%d %H:%M:%S")
-                        saveDict['endTime'] = self.m_clientsInfo[clientId]['endTime']
-                        saveDict['totalTime'] = self.m_clientsInfo[clientId]['endTime'] - self.m_clientsInfo[clientId]['startTime']
-                        saveDict['exploreTime'] = self.m_clientsInfo[clientId]['exploreTime']
-                        saveDict['summType'] = str(type(self.m_clientsInfo[clientId]['summarizer']))
-                        saveDict['summaries'] = self.m_clientsInfo[clientId]['summarizer'].getInfoForJson(self.m_clientsInfo[clientId]['startTime'])
-                        saveDict['questionnaire'] = self.m_clientsInfo[clientId]['corpus'].getQuestionnaireAnswers(
-                            self.m_clientsInfo[clientId]['questionnaireBatchIndex'])
-                        saveDict['questionnaireRatings'] = self.m_clientsInfo[clientId]['questionnaireRatings']
-                        saveDict['suggestedQueries'] = self.m_clientsInfo[clientId]['suggestedQueries']
-                        saveDict['comments'] = self.m_clientsInfo[clientId]['comments']
-
-                        # keep the sentence text of the used sentences:
-                        sentenceIdsNeeded = [sentId for summInfo in saveDict['summaries'] for sentId in summInfo['summary']]
-                        for doc in self.m_clientsInfo[clientId]['corpus'].documents:
-                            for sent in doc.sentences:
-                                if sent.sentId in sentenceIdsNeeded and sent.sentId not in self.sentencesUsed:
-                                    self.sentencesUsed[sent.sentId] = sent.text
-
+                        # saveDict['timeAllowed'] = self.m_clientsInfo[clientId]['timeAllowed']
+                        # #saveDict['startTime'] = self.m_clientsInfo[clientId]['startTime']
+                        # saveDict['startTime'] = datetime.fromtimestamp(self.m_clientsInfo[clientId]['startTime']).strftime("%Y/%m/%d %H:%M:%S")
+                        # saveDict['endTime'] = self.m_clientsInfo[clientId]['endTime']
+                        # saveDict['totalTime'] = self.m_clientsInfo[clientId]['endTime'] - self.m_clientsInfo[clientId]['startTime']
+                        # saveDict['exploreTime'] = self.m_clientsInfo[clientId]['exploreTime']
+                        saveDict['previous_results'] = [x.to_dict() for x in self.m_clientsInfo[clientId]['query_results_analyzer']._previous_results]
+                        saveDict['ui_actions'] = [x.to_dict() for x in self.m_clientsInfo[clientId]['ui_actions']]
                         self.savedInfo[clientId] = saveDict
                         self.m_clientsInfo[clientId]['haveChanges'] = False
-                        self.m_clientsInfo[clientId]['summarizer'].haveChanges = False
                 except Exception as e:
                     logging.error('Error saving client: ' + str(e))
                     logging.error(traceback.format_exc())

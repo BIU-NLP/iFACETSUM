@@ -28,7 +28,9 @@ class Cluster:
     cluster_id: str
     cluster_type: str
     mentions: List[Mention]
+    pos_label: str
     cluster_label: str
+    cluster_facet: str
     display_name: str
     num_mentions: int
     num_sents: int
@@ -96,6 +98,22 @@ class QueryResult:
     result_sentences: List[QueryResultSentence]
     query: List[ClusterQuery]
     orig_sentences: List[QueryResultSentence]
+    result_created: str
 
     def get_doc_sent_indices(self) -> Set[DocSent]:
         return {DocSent(sent.doc_id, sent.sent_idx) for sent in self.orig_sentences}
+
+
+@dataclass_json
+@dataclass
+class DocumentResult:
+    doc_id: int
+    orig_sentences: List[QueryResultSentence]
+
+
+@dataclass_json
+@dataclass
+class UIAction:
+    action: str
+    action_details: dict
+    result_created: str

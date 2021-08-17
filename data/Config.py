@@ -3,7 +3,7 @@ CORPORA_LOCATIONS = {
                      'Native American Challenges': 'data/DUC2006Clean/D0601/documents',
                      # 'Wetlands': 'data/DUC2006Clean/D0603/documents',
                      # 'Osteoarthritis': 'data/DUC2006Clean/D0605/documents',
-                     # "Automobile Safety": 'data/DUC2006Clean/D0608/documents',
+                     "Automobile Safety": 'data/DUC2006Clean/D0608/documents',
                      # 'Quebec Separatist Movement': 'data/DUC2006Clean/D0614/documents',
                      # 'Evolution Teaching': 'data/DUC2006Clean/D0615/documents',
                      # 'Russia in Chechnya': 'data/DUC2006Clean/D0616/documents',
@@ -21,7 +21,7 @@ CORPORA_LOCATIONS = {
                      # 'Elian Gonzales': 'data/DUC2006Clean/D0647/documents',
                      # 'Jimmy Carter International': 'data/DUC2006Clean/D0650/documents',
                      'Steroid Use': 'data/DUC2006Clean/D0602/documents',
-                     # 'Global Warming': 'data/DUC2006Clean/D0606/documents'
+                     'Global Warming': 'data/DUC2006Clean/D0606/documents'
                      # note this last topic is a sample for the AMT preview
 }
 
@@ -81,6 +81,7 @@ COREF_LOCATIONS = {
         # "entities": "data/coref/native/spacy_wd_coref_duc.json",
         # "entities": "data/coref/native/duc_predictions_ments.json",
         "entities": "data/coref/native/wec_entities/wec_native_predicted_clusters.json",
+        # "entities": "data/coref/native/wec_entities/wec_native_predictions_pronouns.json",
         # "events":  "data/coref/native/events_average_0.3_model_5_topic_level.conll",
         "events":  "data/coref/native/cdlm_events/CDLM_events.conll",
         # "events":  "data/coref/native/wec_events/wec_native_event_predictions_loose_fix.json",
@@ -89,7 +90,9 @@ COREF_LOCATIONS = {
         "propositions": "data/coref/native/propositions/devDUC2006_InDoc_D0601A_checkpoint-2000.csv"
     },
     "Automobile Safety": {
-
+        "entities": "data/coref/automobile/wec_entities/wec_automobile_predicted_clusters.json",
+        "events": "data/coref/automobile/cdlm_events/dev_events_average_0.85_corpus_level.conll",
+        "propositions": "data/coref/automobile/propositions/devDUC2006_InDoc_D0608_checkpoint-2000.csv"
     },
     'EgyptAir Crash': {
         "entities": "data/coref/egypt/wec_entities/wec_egyptAir_predicted_clusters.json",
@@ -106,5 +109,9 @@ COREF_LOCATIONS = {
         "events": "data/coref/steroid/cdlm_events/dev_events_average_0.85_corpus_level.conll",
         "propositions": "data/coref/steroid/propositions/devDUC2006_InDoc_D0602B_checkpoint-2000.csv"
     },
-    'Global Warming': {}
+    'Global Warming': {
+        "entities": "data/coref/global/wec_entities/wec_global_predicted_clusters.json",
+        "events": "data/coref/global/cdlm_events/dev_events_average_0.85_corpus_level.conll",
+        "propositions": "data/coref/global/propositions/devDUC2006_InDoc_D0606_checkpoint-2000.csv"
+    }
 }
