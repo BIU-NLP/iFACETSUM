@@ -1,18 +1,17 @@
 # set the sys path to three directories up so that imports are relative to the qfse directory:
-import sys
 import os
+import sys
 from collections import defaultdict
-from typing import List, Set, Dict, Union
+from datetime import datetime
+from typing import List, Set, Dict, Union, Optional
 
 from nltk import word_tokenize
 
 from QFSE.Sentence import Sentence
 from QFSE.abstractive_coref.mentions_finder import MentionsFinder
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_ENTITIES
-from QFSE.coref.coref_labels import create_cluster_obj
-from QFSE.coref.models import Mention
-from QFSE.models import SummarySent, Summary, Cluster, DocSent, ClusterQuery, QueryResult, QueryResultSentence, \
-    TokensCluster
+from QFSE.models import Summary, DocSent, ClusterQuery, QueryResult, QueryResultSentence, \
+    TokensCluster, DocumentResult, UIAction
 from QFSE.propositions.utils import get_proposition_clusters
 from QFSE.query_results_analyzer import QueryResultsAnalyzer
 
@@ -23,17 +22,19 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s') # must be placed here due to import ordering
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s')  # must be placed here due to import ordering
 import traceback
 import ssl
 import WebApp.server.params as params
 
-from QFSE.Utilities import loadSpacy, loadBert, get_item
+from QFSE.Utilities import loadBert, get_item
 from QFSE.Utilities import REPRESENTATION_STYLE_SPACY, REPRESENTATION_STYLE_BERT
 
 # The SpaCy and BERT objects must be loaded before anything else, so that classes using them get the initialized objects.
 # The SpaCy and BERT objects are initialized only when needed since these init processes take a long time.
-REPRESENTATION_STYLE = REPRESENTATION_STYLE_SPACY #REPRESENTATION_STYLE_W2V REPRESENTATION_STYLE_BERT
+REPRESENTATION_STYLE = REPRESENTATION_STYLE_SPACY  # REPRESENTATION_STYLE_W2V REPRESENTATION_STYLE_BERT
 get_item("spacy")
 if REPRESENTATION_STYLE == REPRESENTATION_STYLE_BERT:
     loadBert()
@@ -61,11 +62,14 @@ TYPE_ITERATION_RATING = 6
 TYPE_QUESTIONNAIRE_RATING = 7
 TYPE_REQUEST_DOCUMENT = 8
 TYPE_REQUEST_COREF_CLUSTER = 9
+TYPE_LOG_UI_ACTION = 10
 # summary types
-SUMMARY_TYPES = {'qfse_cluster':SummarizerClustering, 'increment_cluster':SummarizerAddMore, 'qfse_textrank':SummarizerTextRankPlusLexical}
-SUGGESTED_QUERIES_TYPES = {'qfse_cluster':SuggestedQueriesNgramCount, 'increment_cluster':SuggestedQueriesNgramCount, 'qfse_textrank':SuggestedQueriesTextRank}
+SUMMARY_TYPES = {'qfse_cluster': SummarizerClustering, 'increment_cluster': SummarizerAddMore,
+                 'qfse_textrank': SummarizerTextRankPlusLexical}
+SUGGESTED_QUERIES_TYPES = {'qfse_cluster': SuggestedQueriesNgramCount, 'increment_cluster': SuggestedQueriesNgramCount,
+                           'qfse_textrank': SuggestedQueriesTextRank}
 # number of suggested queries to show
-NUM_SUGG_QUERIES_PRESENTED = {'qfse_cluster':10, 'increment_cluster':0, 'qfse_textrank':10}
+NUM_SUGG_QUERIES_PRESENTED = {'qfse_cluster': 10, 'increment_cluster': 0, 'qfse_textrank': 10}
 
 m_infoManager = InfoManager()
 
@@ -74,7 +78,7 @@ class IntSummHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "*")
-        #self.set_header("Access-Control-Allow-Headers", "x-requested-with")
+        # self.set_header("Access-Control-Allow-Headers", "x-requested-with")
         self.set_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
 
     def options(self):
@@ -117,6 +121,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                     returnJson = self.get_document(clientJson)
                 elif requestType == TYPE_REQUEST_COREF_CLUSTER:
                     returnJson = self.get_coref_cluster(clientJson)
+                elif requestType == TYPE_LOG_UI_ACTION:
+                    returnJson = self.log_ui_action(clientJson)
                 else:
                     returnJson = self.getErrorJson('Undefined JSON received.')
 
@@ -127,7 +133,7 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         logging.debug('Sending JSON data: ' + str(returnJson))
 
-        self.write(returnJson) # send JSON to client
+        self.write(returnJson)  # send JSON to client
 
     def getRequestTypeFromClientJson(self, clientJson):
         if 'request_get_topics' in clientJson:
@@ -150,6 +156,8 @@ class IntSummHandler(tornado.web.RequestHandler):
             requestType = TYPE_REQUEST_DOCUMENT
         elif 'request_coref_cluster' in clientJson:
             requestType = TYPE_REQUEST_COREF_CLUSTER
+        elif 'request_log_ui_action' in clientJson:
+            requestType = TYPE_LOG_UI_ACTION
         else:
             requestType = TYPE_ERROR
 
@@ -162,7 +170,8 @@ class IntSummHandler(tornado.web.RequestHandler):
         return requestType, clientId
 
     def getTopicsJson(self, clientJson):
-        topicsList = ', '.join('{{"topicId":"{}", "topicName":"{}"}}'.format(topicId, topicId) for topicId in config.CORPORA_LOCATIONS)
+        topicsList = ', '.join(
+            '{{"topicId":"{}", "topicName":"{}"}}'.format(topicId, topicId) for topicId in config.CORPORA_LOCATIONS)
         jsonReply = \
             "{\"reply_get_topics\": {" + \
             "  \"topicsList\": [" + topicsList + "]" + \
@@ -172,9 +181,6 @@ class IntSummHandler(tornado.web.RequestHandler):
     def getInitialSummaryJson(self, clientJson):
         clientId = clientJson['clientId']
         topicId = clientJson['request_get_initial_summary']['topicId']
-        summaryType = clientJson['request_get_initial_summary']['summaryType']
-        algorithm = clientJson['request_get_initial_summary']['algorithm']
-        summaryWordLength = clientJson['request_get_initial_summary']['summaryWordLength']
         questionnaireBatchIndex = clientJson['request_get_initial_summary']['questionnaireBatchIndex']
         timeAllowed = clientJson['request_get_initial_summary']['timeAllowed']
         assignmentId = clientJson['request_get_initial_summary']['assignmentId']
@@ -185,8 +191,10 @@ class IntSummHandler(tornado.web.RequestHandler):
         # make sure the topic ID is valid:
         if topicId in config.CORPORA_LOCATIONS:
             referenceSummsFolder = os.path.join(config.CORPORA_LOCATIONS[topicId], config.CORPUS_REFSUMMS_RELATIVE_PATH)
-            questionnaireFilepath = os.path.join(config.CORPORA_LOCATIONS[topicId], config.CORPUS_QUESTIONNAIRE_RELATIVE_PATH)
-            corpus = Corpus(topicId, config.CORPORA_LOCATIONS[topicId], referenceSummsFolder, questionnaireFilepath, representationStyle=REPRESENTATION_STYLE)
+            questionnaireFilepath = os.path.join(config.CORPORA_LOCATIONS[topicId],
+                                                 config.CORPUS_QUESTIONNAIRE_RELATIVE_PATH)
+            corpus = Corpus(topicId, config.CORPORA_LOCATIONS[topicId], referenceSummsFolder, questionnaireFilepath,
+                            representationStyle=REPRESENTATION_STYLE)
         else:
             return self.getErrorJson('Topic ID not supported: {}'.format(topicId))
 
@@ -199,6 +207,10 @@ class IntSummHandler(tornado.web.RequestHandler):
                                  questionnaireBatchIndex, timeAllowed, assignmentId, hitId, workerId, turkSubmitTo,
                                  QueryResultsAnalyzer())
         topicName = topicId
+
+        m_infoManager.add_ui_action_log(clientId, UIAction("initial", {
+            "topic_id": topicId
+        }, datetime.utcnow().isoformat()))
 
         reply = {
             "reply_get_initial_summary": {
@@ -239,8 +251,10 @@ class IntSummHandler(tornado.web.RequestHandler):
             should_return_cluster = query_is_empty or any(cluster_sentences_shown_in_query)
 
             if should_return_cluster:
-                cluster['num_mentions_filtered'] = cluster['num_mentions'] if query_is_empty else len(cluster_sentences_shown_in_query)
-                cluster['num_sents_filtered'] = cluster['num_sents'] if query_is_empty else len(doc_sent_indices_filtered)
+                cluster['num_mentions_filtered'] = cluster['num_mentions'] if query_is_empty else len(
+                    cluster_sentences_shown_in_query)
+                cluster['num_sents_filtered'] = cluster['num_sents'] if query_is_empty else len(
+                    doc_sent_indices_filtered)
                 # cluster['display_name_filtered'] = cluster['display_name'] if query_is_empty else create_cluster_obj(cluster_idx, cluster_type, [Mention.from_dict(mention) for mention in cluster_sentences_shown_in_query]).display_name
                 clusters_filtered[cluster_idx] = cluster
 
@@ -255,23 +269,16 @@ class IntSummHandler(tornado.web.RequestHandler):
             sentences_used.append(sent)
         return sentences_used
 
-    def _corpus_sents_to_response_sents(self, corpus_sents: List[Sentence]) -> List[dict]:
-        return [{
-            "text": corpus_sent.text,
-            "idx": corpus_sent.sentIndex,
-            "id": corpus_sent.sentId,
-            "doc_id": corpus_sent.docId,
-            "coref_clusters": corpus_sent.coref_clusters[COREF_TYPE_ENTITIES],
-            "proposition_clusters": corpus_sent.coref_clusters[COREF_TYPE_PROPOSITIONS],
-            "coref_tokens": self._split_sent_text_to_tokens(corpus_sent)
-        } for corpus_sent in corpus_sents]
-
-    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool, original_sentences=None) -> List[Union[TokensCluster, List[str]]]:
+    def _split_sent_text_to_tokens(self, sent, is_original_sentences: bool, skip_mentions=False,
+                                   original_sentences=None) -> List[
+        Union[TokensCluster, List[str]]]:
         tokens = sent
         if is_original_sentences:
             tokens = word_tokenize(sent.text)
 
-        token_to_mention = self._get_token_to_mention(sent, is_original_sentences, original_sentences)
+        token_to_mention = {}
+        if not skip_mentions:
+            token_to_mention = self._get_token_to_mention(sent, is_original_sentences, original_sentences)
 
         # Split
 
@@ -306,7 +313,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                 mentions = token_to_mention[token_idx]
                 open_mentions_to_flush = {}
                 for open_mention_id, open_mention in open_mentions_by_ids.items():
-                    open_mention_included = any(curr_mention for curr_mention in mentions if open_mention_id == self._get_mention_id(curr_mention))
+                    open_mention_included = any(curr_mention for curr_mention in mentions if
+                                                open_mention_id == self._get_mention_id(curr_mention))
                     if not open_mention_included:
                         open_mentions_to_flush[open_mention_id] = open_mention
                 flush_open_mentions(tokens_groups, open_mentions_by_ids, open_mentions_to_flush)
@@ -314,7 +322,8 @@ class IntSummHandler(tornado.web.RequestHandler):
                 for mention in mentions:
                     cluster_idx = self._get_mention_id(mention)
                     if not any(open_mentions_by_ids) or cluster_idx not in open_mentions_by_ids:
-                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": mention['cluster_idx'], "cluster_type": mention['cluster_type']}
+                        open_mentions_by_ids[cluster_idx] = {"tokens": [], "cluster_idx": mention['cluster_idx'],
+                                                             "cluster_type": mention['cluster_type']}
 
                 # add the token only to one open mention
                 if any(open_mentions_by_ids):
@@ -388,15 +397,11 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         return token_to_mention
 
-
     def getQuerySummaryJson(self, clientJson):
         clientId = clientJson['clientId']
         topicId = clientJson['request_query']['topicId']
-        clusters_query = clientJson['request_query']['clusters_query'] if 'clusters_query' in clientJson['request_query'] else None
-        clusters_query = [ClusterQuery.from_dict(cluster_query) for cluster_query in clusters_query] if clusters_query else clusters_query
+        clusters_query = self._get_clusters_query_from_request(clientJson['request_query'])
         query = clientJson['request_query']['query']
-        numSentences = clientJson['request_query']['summarySentenceCount']
-        queryType = clientJson['request_query']['type']
 
         if not m_infoManager.clientInitialized(clientId):
             return self.getErrorJson('Unknown client. Please reload page.')
@@ -404,52 +409,88 @@ class IntSummHandler(tornado.web.RequestHandler):
         if topicId != m_infoManager.getTopicId(clientId):
             return self.getErrorJson('Topic ID not yet initialized by client: {}'.format(topicId))
 
+        reply_query = {}
+
         corpus = m_infoManager.getCorpus(clientId)
+        doc_sent_indices: Optional[Set[DocSent]] = None
 
-        query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
-        query_result = query_results_analyzer.get_result_if_exists(clusters_query)
+        query_result = None
 
-        is_cached_result = False
-        if query_result is not None:
-            is_cached_result = True
-        else:
-            sentences = []
-            if clusters_query:
-                doc_sent_indices = []
-                for cluster_query in clusters_query:
-                    cluster = self._get_clusters(corpus, cluster_query.cluster_id, cluster_query.cluster_type)
-                    doc_sent_indices.append({DocSent(mention['doc_id'], mention['sent_idx']) for mention in cluster['mentions']})
+        if clusters_query:
+            query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
+            query_result = query_results_analyzer.get_result_if_exists(clusters_query)
+
+            is_cached_result = False
+            if query_result is not None:
+                is_cached_result = True
+            else:
+                sentences = []
+                doc_sent_indices = self._clusters_query_to_doc_sent_indices(clusters_query, corpus)
                 if any(doc_sent_indices):
                     doc_sent_indices_to_use = set.intersection(*doc_sent_indices)
                     sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
-            query_result = QueryResult(None, [], clusters_query, [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId, sent.sentIndex) for sent in sentences])
-            if any(sentences):
-                if len(sentences) > 1:
-                    summarizer = get_item("bart_summarizer")
-                    summary_sents = summarizer.summarize(sentences)
-                else:
-                    # No need to summarize one sentence
-                    summary_sents = [sent.spacy_rep for sent in sentences]
+                query_result = QueryResult(None, [], clusters_query, [
+                    QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId,
+                                        sent.sentIndex) for sent in sentences], datetime.utcnow().isoformat())
+                if any(sentences):
+                    if len(sentences) > 1:
+                        summarizer = get_item("bart_summarizer")
+                        summary_sents = summarizer.summarize(sentences)
+                    else:
+                        # No need to summarize one sentence
+                        summary_sents = [sent.spacy_rep for sent in sentences]
 
-                query_result.result_sentences = [QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=False, original_sentences=sentences)) for sent in summary_sents]
+                    query_result.result_sentences = [QueryResultSentence(
+                        self._split_sent_text_to_tokens(sent, is_original_sentences=False,
+                                                        original_sentences=sentences)) for sent in summary_sents]
 
-                # Save queries and mark similar sentences to those used
-                query_results_analyzer.analyze_repeating(query_result)
-                query_result.query_idx = query_results_analyzer.add_query_results(query_result)
+                    # Save queries and mark similar sentences to those used
+                    query_results_analyzer.analyze_repeating(query_result)
+                    query_result.query_idx = query_results_analyzer.add_query_results(query_result)
 
-        reply = {
-            "reply_query": {
+            reply_query = {
                 "queryResult": query_result.to_dict(),
                 "isCachedResult": is_cached_result,
                 "textLength": 0,
-                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, query_result.get_doc_sent_indices()),
-                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, query_result.get_doc_sent_indices()),
-                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus, query_result.get_doc_sent_indices())
+            }
+
+            doc_sent_indices = query_result.get_doc_sent_indices()
+
+        m_infoManager.add_ui_action_log(clientId, UIAction("query", {
+            "query_idx": query_result.query_idx if query_result is not None else None
+        }, datetime.utcnow().isoformat()))
+
+        # Always return the clusters even if query is none
+        reply_query = {
+            **reply_query,
+            **{
+                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, doc_sent_indices),
+                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, doc_sent_indices),
+                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus,
+                                                                        doc_sent_indices)
             }
         }
 
-        return json.dumps(reply)
+        return json.dumps({
+            "reply_query": reply_query
+        })
+
+    def _get_clusters_query_from_request(self, request):
+        clusters_query = request['clusters_query'] if 'clusters_query' in request else None
+        clusters_query = [ClusterQuery.from_dict(cluster_query) for cluster_query in
+                          clusters_query] if clusters_query else clusters_query
+
+        return clusters_query
+
+    def _clusters_query_to_doc_sent_indices(self, clusters_query, corpus) -> List[Set[DocSent]]:
+        doc_sent_indices = []
+        for cluster_query in clusters_query:
+            cluster = self._get_clusters(corpus, cluster_query.cluster_id, cluster_query.cluster_type)
+            doc_sent_indices.append(
+                {DocSent(mention['doc_id'], mention['sent_idx']) for mention in cluster['mentions']})
+
+        return doc_sent_indices
 
     def _get_sentences_for_query(self, doc_sent_indices: Set[DocSent], corpus):
         sentences = []
@@ -466,18 +507,27 @@ class IntSummHandler(tornado.web.RequestHandler):
         client_id = client_json['clientId']
         doc_id = client_json['request_document']['docId']
 
-        doc = self.get_doc_by_id(m_infoManager.getSummarizer(client_id).corpus, doc_id)
+        corpus = m_infoManager.getCorpus(client_id)
+        doc = self.get_doc_by_id(corpus, doc_id)
+
+        doc_result = DocumentResult(doc_id, [
+            QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId,
+                                sent.sentIndex) for sent in doc.sentences])
+
+        m_infoManager.add_ui_action_log(client_id, UIAction("open_original_doc", {
+            "doc_id": doc_id
+        }, datetime.utcnow().isoformat()))
 
         reply = {
             "reply_document": {
-                "doc": {
-                    "id": doc_id,
-                    "sentences": self._corpus_sents_to_response_sents(doc.sentences)
-                }
+                "doc": doc_result.to_dict()
             }
         }
 
         return json.dumps(reply)
+
+    def _is_sent_in_doc_sent_indices(self, doc_sent_indices, sent) -> bool:
+        return DocSent(sent.docId, sent.sentIndex) in doc_sent_indices
 
     def get_doc_by_id(self, corpus, doc_id):
         found_docs = [x for x in corpus.documents if doc_id in x.id]
@@ -534,7 +584,6 @@ class IntSummHandler(tornado.web.RequestHandler):
             raise ValueError(f"Cluster not found ; coref_cluster_id {cluster_id}")
         return cluster
 
-
     def getQuestionAnswerJson(self, clientJson):
         clientId = clientJson['clientId']
         questionId = clientJson['request_set_question_answer']['qId']
@@ -573,7 +622,8 @@ class IntSummHandler(tornado.web.RequestHandler):
         return jsonReply
 
     def setSubmitInfo(self, clientId, questionAnswersDict, timeUsedForExploration, commentsFromUser):
-        isSuccess, msg = m_infoManager.setSubmitInfo(clientId, questionAnswersDict, timeUsedForExploration, commentsFromUser)
+        isSuccess, msg = m_infoManager.setSubmitInfo(clientId, questionAnswersDict, timeUsedForExploration,
+                                                     commentsFromUser)
         return isSuccess
 
     def getStartTimeJson(self, clientJson):
@@ -624,12 +674,25 @@ class IntSummHandler(tornado.web.RequestHandler):
         return jsonReply
 
     def setQuestionnaireRating(self, clientId, questionId, questionText, rating):
-        m_infoManager.setQuestionnaireRatings(clientId, {questionId: {'text':questionText, 'rating': rating}})
+        m_infoManager.setQuestionnaireRatings(clientId, {questionId: {'text': questionText, 'rating': rating}})
 
     def getErrorJson(self, msg):
         reply = {"error": msg}
         logging.info("Sending Error JSON: " + msg)
         return json.dumps(reply)
+
+    def log_ui_action(self, client_json):
+        client_id = client_json['clientId']
+        action = client_json['request_log_ui_action']['action']
+        action_details = client_json['request_log_ui_action']['actionDetails']
+
+        m_infoManager.add_ui_action_log(client_id, UIAction(action, action_details, datetime.utcnow().isoformat()))
+
+        return json.dumps({
+            "reply_log_ui_action": {
+                "status": "success"
+            }
+        })
 
 
 if __name__ == '__main__':

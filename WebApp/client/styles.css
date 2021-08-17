@@ -144,6 +144,12 @@ ul {
     text-decoration: underline dotted;
 }
 
+.doc-id-header {
+    color: var(--dark);
+    text-decoration: underline dotted;
+    font-size: 25px;
+}
+
 /*li {*/
 .exploreItem {
 	list-style: none;
@@ -181,7 +187,7 @@ ul {
 
 
 /* buttons that should look like links */
-.exploreItem > button, .show-more-btn > button {
+#summaryHeader button, .exploreItem > button, .show-more-btn > button {
 	font-weight: normal;
 	background: none;
 	border: none;
@@ -821,7 +827,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 .highlight-hover {
     border: 1px dashed;
     position: relative;
-    line-height: 22px;
+    /* line-height: 22px; */
     /* display: flex; */
     /* Removed colors
     color: var(--gray-dark);
@@ -837,21 +843,12 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 */
 
-.highlight-no-hover {
-    border: 1px dashed;
-    margin: 4px 8px 4px 4px;
-    position: relative;
-    line-height: 22px;
-    display: flex;
-    /* Removed colors:
-    border: 2px solid;
-    color: var(--gray-dark);
-    background: var(--light);*/
-    padding-left: 4px;
-}
-
 .sentence-span.highlight-hover {
     margin: 4px 8px 4px 4px;
+    color: var(--red);
+}
+
+.fixed-sent-idx {
     color: var(--red);
 }
 
@@ -910,7 +907,7 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 /* Cancel the default list item padding to make a compact view in main screen */
-#clustersIdsListContainer .cluster-list-item {
+.cluster-list-item {
     padding-top: 0;
     padding-bottom: 0;
 }
@@ -935,7 +932,11 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     border: 0;
 }
 
-.clean-card-header, .facets-values-list .list-group-item, #clustersIdsListContainer .list-group-item {
+.clean-card .card-body, .clean-card .card-header {
+    padding: 0;
+}
+
+.clean-card-header, .label-list-group-item, .cluster-list-item {
     border: 0;
 }
 
@@ -962,17 +963,18 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 }
 
 .show-more-btn {
-    padding: 0 20px;  /* to have the same padding as the list */
+    float: left;
 }
 
 #queryArea {
     width: 100%;  /* Don't shrink based on clusters sizes */
 }
 
-#navigation-header, #summary-header {
+#navigation-header, #summaryHeader .main-component-title {
     text-align: left;
     font-size: 20px;
     border: 0;
+    float: left;
 }
 
 #navigation-header .card-body {
@@ -1030,4 +1032,18 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
 
 .query-badge-remove {
     border-left: 1px solid;  /* separates the wrod from the query */
+}
+
+.history-button, .original-sentences-button {
+    cursor: pointer;
+}
+
+.doc-id-header {
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .modal-fixed-lg {
+        min-width: 1200px;
+    }
 }

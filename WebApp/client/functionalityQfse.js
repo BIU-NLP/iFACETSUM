@@ -14,31 +14,26 @@ const $mentionsPane = $('#mentionsPane');
 const $propositionsPane = $('#propositionsPane');
 const globalListItemCallbacks = [];
 //var moreInfoButton = document.getElementById("addMoreButton");
-var exploreList = document.getElementById("explorationPane");
 var keywordList = document.getElementById("keywordsList");
 var keywordsArea = document.getElementById("keywordsArea");
 var topicsDropdown = document.getElementById("topicsDropdownContent");
 var stopExploringButton = document.getElementById('stopExploringButton');
 var curTopicId = null;
-var curLoadingInicatorElement = null;
 var isWaitingForResponse = false;
 var isWaitingForInitial = false;
 var questionnaireBatchInd = -1;
 var totalTextLength = 0;
 let globalDocumentsMetas = null;
-let globalCorefClustersMetas = null;
-let globalPropositionClustersMetas = null;
 let globalQueriesResults = {};
 const globalClustersMetas = {};
-var pageBaseUrl = "qfse.html";
+const globalState = {};
+var pageBaseUrl = "index.html";
 var summaryType = "qfse";
 var timeAllowed = -1;
-var lastQueryType = '';
 var lastQuery = null;
 var iterationNum = 0; // keeps track of how many iterations there are (0 is the initial summary)
 var iterationStarRatingType = 0; // 0=none , 1=rating , 2=newInfo
 var lastIterationRated = false; // each iteration's summary must be rated before continuing to the next iteration
-var numSentencesInQueryResponse = 2; // the number of sentences requested as a response to a query
 var allTextsInSession = [];
 var questionnaireList = [];
 var assignmentId = '';
@@ -47,8 +42,8 @@ var workerId = '';
 var turkSubmitTo = '';
 var clientId = uuidv4(); // generate a random clientID for this summarization session
 
-const KEY_CONCEPTS_LABEL = "Key concepts";
-const KEY_STATEMENTS_LABEL = "Key statements";
+const KEY_CONCEPTS_LABEL = "Concepts";
+const KEY_STATEMENTS_LABEL = "Statements";
 const PERSON_LABEL = "Person";
 const ORGANIZATION_LABEL = "Organization";
 const LOCATION_LABEL = "Location";
@@ -61,22 +56,24 @@ const MISC_LABEL = "Miscellaneous";
 const FIELD_TO_SORT_CLUSTERS = "num_sents_filtered";
 
 
-const CLUSTERS_LABELS_ORDER = [KEY_CONCEPTS_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, ORGANIZATION_LABEL, LOCATION_LABEL, NORP_LABEL,DATE_LABEL, ENTITIES_LABEL, MISC_LABEL];
+const CLUSTERS_FACETS_ORDER = [KEY_CONCEPTS_LABEL, ENTITIES_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, LOCATION_LABEL, ORGANIZATION_LABEL, NORP_LABEL, MISC_LABEL];
 
-const CLUSTER_LABEL_TO_TOOLTIP = {};
+const CLUSTER_FACET_TO_TOOLTIP = {};
 const default_tooltip = "co-occurring in the document set, press a cluster to get its summary and filtered navigation";
-CLUSTER_LABEL_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[PERSON_LABEL]  = `People ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organizations ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[LOCATION_LABEL] = `Locations ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[NORP_LABEL] = `Nationality, religious or political entities ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[DATE_LABEL] = `Dates ${default_tooltip}`;
-CLUSTER_LABEL_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[KEY_CONCEPTS_LABEL] = `Concepts ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[KEY_STATEMENTS_LABEL] = `Statements ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[ENTITIES_LABEL] = `Entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[PERSON_LABEL] = `Person entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[ORGANIZATION_LABEL] = `Organization entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[LOCATION_LABEL] = `Location entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[NORP_LABEL] = `${NORP_LABEL} entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[DATE_LABEL] = `${DATE_LABEL} entities ${default_tooltip}`;
+CLUSTER_FACET_TO_TOOLTIP[MISC_LABEL] = `Uncategorized entities ${default_tooltip}`;
 
-NUM_OF_SENTS_PER_CLUSTER_LABEL = {};
-NUM_OF_SENTS_PER_CLUSTER_LABEL[KEY_STATEMENTS_LABEL] = 2;
+NUM_OF_SENTS_PER_FACET = {};
+NUM_OF_SENTS_PER_FACET[KEY_STATEMENTS_LABEL] = 3;
+
+LABELS_TO_FILTER = [DATE_LABEL];
 
 
 //var CHAR_NUMBER = String.fromCharCode(0x2780); // see https://www.toptal.com/designers/htmlarrows/symbols/ for more
@@ -113,16 +110,11 @@ function setNoTopicChosen() {
 
 /* Resets the keyphrases list and the the exploration pane. */
 function resetPage() {
-    while (exploreList.firstChild) {
-        exploreList.removeChild(exploreList.firstChild);
-    }
 //    while (keywordList.firstChild) {
 //        keywordList.removeChild(keywordList.firstChild);
 //    }
 
     $('#queriesModal').modal('hide');
-
-    curLoadingInicatorElement = null;
 }
 
 
@@ -135,11 +127,10 @@ function setTopic(topicInfo) {
     const documentsMetas = topicInfo['documentsMetas'];
     globalDocumentsMetas = documentsMetas;
     const corefClustersMetas = topicInfo['corefClustersMetas'];
-    globalCorefClustersMetas = topicInfo['corefClustersMetas'];
     const eventsClustersMetas = topicInfo['eventsClustersMetas'];
     const propositionClustersMetas = topicInfo['propositionClustersMetas'];
-    globalPropositionClustersMetas = topicInfo['propositionClustersMetas'];
     saveCorefClusters(corefClustersMetas, eventsClustersMetas, propositionClustersMetas);
+    insertSummaryItemsInExplorationPane([], isLoading=false);
 
 
     //var timeAllowed = topicInfo['timeAllowed'];
@@ -176,18 +167,27 @@ function setTopic(topicInfo) {
     showPageToAnnotator();
 }
 
+function getFixedClustersBasedOnGlobalQueries(dataQueryIdx) {
+    const queryResult = globalQueriesResults[dataQueryIdx];
+    const origSentences = queryResult['orig_sentences'];
+
+    const fixedClusters = [];
+    for (const clusterQuery of queryResult['query']) {
+        fixedClusters.push(parseInt(clusterQuery['cluster_id']));
+    }
+
+    return fixedClusters;
+}
+
 function initializeModal() {
     $('#origSentencesModal').on('show.bs.modal', function(event) {
         const dataQueryIdx = $(event.relatedTarget).attr('data-query-idx');
         const queryResult = globalQueriesResults[dataQueryIdx];
         const origSentences = queryResult['orig_sentences'];
 
-        const htmlElementToRenderInto = document.createElement("div");
+        const fixedClusters = getFixedClustersBasedOnGlobalQueries(dataQueryIdx);
 
-        const fixedClusters = [];
-        for (const clusterQuery of queryResult['query']) {
-            fixedClusters.push(parseInt(clusterQuery['cluster_id']));
-        }
+        const htmlElementToRenderInto = document.createElement("div");
 
         const reactToRender = e(
             ListItem,
@@ -205,6 +205,8 @@ function initializeModal() {
 
         const $modalBody = $('#origSentencesModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("orig_sentences_modal", {"query_idx": dataQueryIdx});
 
     });
 
@@ -228,30 +230,100 @@ function initializeModal() {
 
         const $modalBody = $('#historyModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("historyModal", {});
+
     });
 
     $('#queriesModal').on('show.bs.modal', function(event) {
-        const clusterLabel = $(event.relatedTarget).attr('data-cluster-label');
+        const clusterFacet = $(event.relatedTarget).attr('data-cluster-facet');
 
         const allClusters = globalClustersMetas['all'];
-        const labelClusters = allClusters[clusterLabel];
+        const labelClusters = allClusters[clusterFacet];
         const clustersQuery = globalQuery;
 
         const htmlElementToRenderInto = document.createElement("div");
 
-        let reactToRender = e(
-            LabelClustersItem,
-            {
-                "labelClusters": labelClusters,
-                "clustersQuery": clustersQuery,
-                "minimized": false
+        const multiFacetLabel = ENTITIES_LABEL;
+
+        let reactToRender;
+        if (clusterFacet !== multiFacetLabel) {
+            reactToRender = e(
+                LabelClustersItem,
+                {
+                    "labelClusters": labelClusters,
+                    "clustersQuery": clustersQuery,
+                    "minimized": false
+                }
+            );
+        } else {
+            const entitiesClusters = {};
+            for (const cluster of globalClustersMetas["all"][ENTITIES_LABEL]) {
+                const clusterLabel = cluster['cluster_label'];
+                const currArray = entitiesClusters[clusterLabel] || [];
+                entitiesClusters[clusterLabel] = currArray;
+                currArray.push(cluster);
             }
-        );
+
+            // Multiple sub facets
+            reactToRender = e(
+                ClustersIdsList,
+                {
+                    "allClusters": entitiesClusters,
+                    "clustersQuery": globalQuery,
+                    "useLabelAsFacet": true,
+                    "minimized": false
+                }
+            );
+        }
 
         ReactDOM.render(reactToRender, htmlElementToRenderInto);
 
         const $modalBody = $('#queriesModal .modal-body');
         $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("queriesModal", {
+            "clusterFacet": clusterFacet
+        });
+    });
+
+    $('#documentModal').on('show.bs.modal', function(event) {
+        const replyDocument = globalState['document'];
+        const dataQueryIdx = globalState['lastQueryIdx'];
+        const docId = replyDocument['doc']['doc_id'];
+
+        const htmlElementToRenderInto = document.createElement("div");
+
+        const lastQueryIdx = globalState['lastQueryIdx'];
+        const docIdToSentences = createDocIdToSentences(globalQueriesResults[lastQueryIdx]['orig_sentences']);
+        const fixedClusters = getFixedClustersBasedOnGlobalQueries(dataQueryIdx);
+
+        const fixedSentsIds = [];
+        for (const sent of docIdToSentences[docId]) {
+            fixedSentsIds.push(sent['sent_idx']);
+        }
+
+        const reactToRender = e(
+            ListItem,
+            {
+                "resultSentences": replyDocument['doc']['orig_sentences'],
+                "numSentToShow": 999,
+                "showPopover": false, // Don't show a popover inside a modal
+                "fixedClusters": fixedClusters,
+                "fixedSentsIndices": fixedSentsIds,
+                "isSummary": false
+            }
+        );
+
+        ReactDOM.render(reactToRender, htmlElementToRenderInto);
+
+        const $modalBody = $('#documentModal .modal-body');
+        $modalBody[0].replaceChildren(htmlElementToRenderInto); //add to exploration list
+
+        logUIAction("documentModal", {
+            "query_idx": dataQueryIdx,
+            "doc_id": docId
+        });
     });
 }
 
@@ -303,6 +375,11 @@ class ClusterIdItem extends React.Component {
     render() {
 
         const cluster = this.props.cluster;
+        const useLabelAsFacet = this.props.useLabelAsFacet;
+
+        const displayName = cluster['display_name'];
+        const clusterLabel = cluster['cluster_label'];
+        const clusterFacet = cluster['cluster_facet'];
         const clusterSelected = isClusterSelected(cluster);
         const clusterSelectedClassName = clusterSelected ? "selected" : "";
 
@@ -317,6 +394,11 @@ class ClusterIdItem extends React.Component {
         mentionWithCount.sort((first, second) => second[1] - first[1]);
 
         const allMentionsText = mentionWithCount.map(mentionWithCount => `${mentionWithCount[0]} (${mentionWithCount[1]})`).join("\n");
+
+        let final_display_name = displayName;
+        if (clusterLabel !== clusterFacet && clusterLabel !== MISC_LABEL && !useLabelAsFacet) {
+            final_display_name = `${clusterLabel}: ${displayName}`;
+        }
 
         return e(
             "div",
@@ -348,7 +430,7 @@ class ClusterIdItem extends React.Component {
                                 "className": "form-check-label"
                             },
                             [
-                                `${cluster['display_name']}`
+                                final_display_name
                             ]
                         )
                     ]
@@ -425,11 +507,16 @@ class LabelClustersItem extends React.Component {
 
     render() {
         const labelClusters = this.props.labelClusters;
+        const amountOfFacets = this.props.amountOfFacets;
         const clusterLabel = labelClusters[0]['cluster_label'];
+        const clusterFacet = labelClusters[0]['cluster_facet'];
         const clustersQuery = this.props.clustersQuery;
-        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_CLUSTER_LABEL[clusterLabel] || 6;
+        const numSentToShow = this.props.numSentToShow || NUM_OF_SENTS_PER_FACET[clusterFacet] || 8;
         const maxSentsToShow = this.props.maxSentsToShow || 999;
+        const useLabelAsFacet = this.props.useLabelAsFacet;
         const minimized = this.state.minimized;
+
+        const labelToUse = useLabelAsFacet ? clusterLabel : clusterFacet;
 
         const clustersItems = [];
         clustersItems.push(
@@ -437,11 +524,10 @@ class LabelClustersItem extends React.Component {
                 "div",
                 {
                     "className": "card-header clean-card-header clusters-label",
-                    "data-parent": `#accordion-${clusterLabel}`,
                     "data-toggle": "tooltip",
-                    "title": CLUSTER_LABEL_TO_TOOLTIP[clusterLabel]
+                    "title": CLUSTER_FACET_TO_TOOLTIP[labelToUse]
                 },
-                clusterLabel
+                labelToUse
             )
         );
         for (let i = 0; i < labelClusters.length; i++) {
@@ -452,7 +538,8 @@ class LabelClustersItem extends React.Component {
                 const clusterIdItemReact = e(
                     ClusterIdItem,
                     {
-                        "cluster": cluster
+                        "cluster": cluster,
+                        "useLabelAsFacet": useLabelAsFacet
                     }
                 )
 
@@ -478,7 +565,7 @@ class LabelClustersItem extends React.Component {
                             },
                             "data-toggle": "modal",
                             "data-target": "#queriesModal",
-                            "data-cluster-label": clusterLabel
+                            "data-cluster-facet": clusterFacet
                         },
                         [
                             "Show all"
@@ -490,11 +577,21 @@ class LabelClustersItem extends React.Component {
 
         const minimizedClass = minimized ? " minimized" : "";
 
+        let numColumnsInGrid = Math.floor(12 / amountOfFacets);
+        if (numColumnsInGrid > 4) {
+            numColumnsInGrid = 4;
+        }
+
+        const colClass = `col-md-${numColumnsInGrid}`;
+
+        let facetsValuesListClasses = "facets-values-list ";
+        if (!minimized) {
+            facetsValuesListClasses += colClass;
+        }
+
         let facetsValuesList = e(
-             "div",
-             {
-                 "className": "facets-values-list"
-             },
+            "div",
+            {"className": facetsValuesListClasses},
             clustersItems
         );
 
@@ -502,8 +599,7 @@ class LabelClustersItem extends React.Component {
             facetsValuesList = e(
                 "div",
                 {
-                    "id": `accordion-${clusterLabel}`,
-                    "className": "list-group-item label-list-group-item list-group accordion label-clusters-item card col-md-3"
+                    "className": `list-group-item label-list-group-item list-group accordion label-clusters-item card ${colClass}`
                 },
                 [
                     facetsValuesList,
@@ -521,22 +617,32 @@ class ClustersIdsList extends React.Component {
     render() {
         const allClusters = this.props.allClusters;
         const clustersQuery = this.props.clustersQuery;
+        const useLabelAsFacet = this.props.useLabelAsFacet;  // In multi facets, when opening show more we want the label to show as the facet
+        const minimized = this.props.minimized;
+
+        const facetsToUse = [];
+        for (const clusterFacet of CLUSTERS_FACETS_ORDER) {
+            if (Object.keys(allClusters).includes(clusterFacet)) {
+                facetsToUse.push(clusterFacet);
+            }
+        }
 
         const labelClustersItems = [];
-        for (const clusterLabel of CLUSTERS_LABELS_ORDER) {
-            if (Object.keys(allClusters).includes(clusterLabel)) {
-                const labelClusters = allClusters[clusterLabel];
+        for (const clusterFacet of facetsToUse) {
+            const labelClusters = allClusters[clusterFacet];
 
-                const labelClustersItem = e(
-                    LabelClustersItem,
-                    {
-                        "labelClusters": labelClusters,
-                        "clustersQuery": clustersQuery
-                    }
-                )
+            const labelClustersItem = e(
+                LabelClustersItem,
+                {
+                    "labelClusters": labelClusters,
+                    "clustersQuery": clustersQuery,
+                    "useLabelAsFacet": useLabelAsFacet,
+                    "amountOfFacets": facetsToUse.length,
+                    "minimized": minimized
+                }
+            )
 
-                labelClustersItems.push(labelClustersItem);
-            }
+            labelClustersItems.push(labelClustersItem);
         }
 
         return e(
@@ -600,11 +706,14 @@ function categorizeClustersByLabels(clusters) {
     const labelsClusters = {};
     clusters = clusters.sort((a,b) => b[FIELD_TO_SORT_CLUSTERS] - a[FIELD_TO_SORT_CLUSTERS]);
     for (const cluster of clusters) {
+        const clusterFacet = cluster['cluster_facet'];
         const clusterLabel = cluster['cluster_label'];
-        cluster['cluster_label'] = clusterLabel;
-        const labelClusters = labelsClusters[clusterLabel] || [];
-        labelsClusters[clusterLabel] = labelClusters;
-        labelClusters.push(cluster);
+        if (!LABELS_TO_FILTER.includes(clusterLabel)) {
+            cluster['cluster_facet'] = clusterFacet;
+            const labelClusters = labelsClusters[clusterFacet] || [];
+            labelsClusters[clusterFacet] = labelClusters;
+            labelClusters.push(cluster);
+        }
     }
 
     return labelsClusters;
@@ -721,19 +830,20 @@ function insertQueryItemInExplorationPane(txt, paneItem) {
     paneItem.appendChild(listElementQuery); //add to exploration list
 }
 
-function insertSummaryItemsInExplorationPane(queryResults) {
+function insertSummaryItemsInExplorationPane(queryResults, isLoading) {
     const listElementResult = document.createElement("div");
 
     const liReact = e(
-        SummaryList,
+        ExplorationPage,
         {
-            "queryResults": queryResults
+            "queryResults": queryResults,
+            "isLoading": isLoading
         }
     );
 
     ReactDOM.render(liReact, listElementResult);
 
-    exploreList.appendChild(listElementResult);
+    $('#explorationPage')[0].replaceChildren(listElementResult);
 }
 
 function insertQueryItems() {
@@ -755,12 +865,9 @@ function insertQueryItems() {
 }
 
 function openDocument(e) {
-    const docId = e.target.textContent;
-    $('#navigationDocumentsButton').click();
+    const docId = $(e.target).attr('data-doc-id');
     fetchDocument(docId, docId);
-
 }
-$(document).on('click', '.open-document', openDocument);
 
 function openCorefCluster(e) {
     const corefId = $(e.target).attr('data-coref-cluster-idx');
@@ -815,16 +922,10 @@ class TokensGroup extends React.Component {
 
             if (showHighlight) {
                 const groupColor = group_id_to_color[groupId % GROUPS_COLORS.length];
-                className = "highlight-" + groupColor;
+                className = `highlight-${groupColor}`;
+                className += " highlight-hover";
                 onMouseEnterFunc = () => this.props.startHighlightCluster(groupId);
                 onMouseLeaveFunc = () => this.props.stopHighlightCluster(groupId);
-
-                if (this.props.highlightedClusters.includes(groupId)) {
-                    className += " highlight-hover";
-                } else {
-                    className += " highlight-no-hover";
-                }
-
 
                 const groupIcon = e(
                     "span",
@@ -859,7 +960,9 @@ class TokensGroup extends React.Component {
             let currGroupId = tokensGroup['cluster_id'];
             const isCluster = currGroupId !== undefined;
 
-            const showCluster = isCluster && this.props.fixedClusters && this.props.fixedClusters.includes(currGroupId);
+            const noFixedClusters = this.props.fixedClusters === undefined;
+            const isInFixedClusters = this.props.fixedClusters && this.props.fixedClusters.includes(currGroupId);
+            const showCluster = isCluster && (isInFixedClusters || noFixedClusters);
 
 
             if (showCluster) {
@@ -931,6 +1034,37 @@ class TokensGroup extends React.Component {
     }
 }
 
+function createDocIdToSentences(sentences) {
+    let docIdToSentences = {};
+
+    // Build docIdToSentences
+    for (const sentence of sentences) {
+        const docId = sentence['doc_id'];
+        const docIdSentences = docIdToSentences[docId] || [];
+        docIdToSentences[docId] = docIdSentences;
+        docIdSentences.push(sentence);
+    }
+
+    return docIdToSentences;
+}
+
+function createSortedSentences(sentences) {
+    const docIdToSentences = createDocIdToSentences(sentences);
+
+    // Sort sentences by sent_idx
+    for (const docId of Object.keys(docIdToSentences)) {
+        const docSentences = docIdToSentences[docId];
+        docSentences.sort((first, second) => first['sent_idx'] - second['sent_idx']);
+    }
+
+    // Sort documents by number of sentences
+    const docIdsWithCounts = Object.keys(docIdToSentences).map(key => [key, docIdToSentences[key].length]);
+    docIdsWithCounts.sort((first, second) => second[1] - first[1]);
+
+    return docIdsWithCounts.map(docIdWithCount => docIdToSentences[docIdWithCount[0]]);
+}
+
+
 class ListItem extends React.Component {
     constructor(props) {
         super(props);
@@ -975,58 +1109,58 @@ class ListItem extends React.Component {
     }
 
     initializePopOver = () => {
-        const $this = $(ReactDOM.findDOMNode(this));
-        const $popoverElements = $this.find('[data-toggle=popover]');
-        $popoverElements.on('shown.bs.popover', function(event) {
-            const $target = $(event.target);
-            const clusterId = $target.attr('data-coref-cluster-idx');
-            const clusterType = $target.attr('data-coref-cluster-type');
-            const sentIdx = $target.closest('[data-sent-idx]').attr('data-sent-idx');
-
-            let clustersMeta = globalCorefClustersMetas;
-            if (clusterType === "propositions") {
-                clustersMeta = globalPropositionClustersMetas;
-            }
-
-            if (clustersMeta[clusterId].sentences === undefined) {
-                sendRequest({
-                    "clientId": clientId,
-                    "request_coref_cluster": {
-                        "corefClusterId": clusterId,
-                        "corefClusterType": clusterType
-                    }
-                });
-            } else {
-                let sentences = clustersMeta[clusterId]['sentences'];
-                sentences = sentences.filter(x => x['idx'] != sentIdx);
-
-                let liReact;
-                if (sentences.length > 0){
-                    liReact = e(
-                        ListItem,
-                        {
-                            "resultSentences": sentences,
-                            "numSentToShow": 999,
-                            "showPopover": false,  // Don't show a popover inside a popover
-                            "fixedClusters": [parseInt(clusterId)]
-                        }
-                    );
-                } else {
-                    liReact = e(
-                        "span",
-                        {},
-                        "This is the only sentence"
-                    );
-                }
-
-                const $popoverDataContent = $('#popover-loading');
-                ReactDOM.render(liReact, $popoverDataContent[0]);
-            }
-
-            // avoid more popups showing if mention inside mention
-            event.preventDefault();
-        });
-        $popoverElements.popover();
+//        const $this = $(ReactDOM.findDOMNode(this));
+//        const $popoverElements = $this.find('[data-toggle=popover]');
+//        $popoverElements.on('shown.bs.popover', function(event) {
+//            const $target = $(event.target);
+//            const clusterId = $target.attr('data-coref-cluster-idx');
+//            const clusterType = $target.attr('data-coref-cluster-type');
+//            const sentIdx = $target.closest('[data-sent-idx]').attr('data-sent-idx');
+//
+//            let clustersMeta = globalCorefClustersMetas;
+//            if (clusterType === "propositions") {
+//                clustersMeta = globalPropositionClustersMetas;
+//            }
+//
+//            if (clustersMeta[clusterId].sentences === undefined) {
+//                sendRequest({
+//                    "clientId": clientId,
+//                    "request_coref_cluster": {
+//                        "corefClusterId": clusterId,
+//                        "corefClusterType": clusterType
+//                    }
+//                });
+//            } else {
+//                let sentences = clustersMeta[clusterId]['sentences'];
+//                sentences = sentences.filter(x => x['idx'] != sentIdx);
+//
+//                let liReact;
+//                if (sentences.length > 0){
+//                    liReact = e(
+//                        ListItem,
+//                        {
+//                            "resultSentences": sentences,
+//                            "numSentToShow": 999,
+//                            "showPopover": false,  // Don't show a popover inside a popover
+//                            "fixedClusters": [parseInt(clusterId)]
+//                        }
+//                    );
+//                } else {
+//                    liReact = e(
+//                        "span",
+//                        {},
+//                        "This is the only sentence"
+//                    );
+//                }
+//
+//                const $popoverDataContent = $('#popover-loading');
+//                ReactDOM.render(liReact, $popoverDataContent[0]);
+//            }
+//
+//            // avoid more popups showing if mention inside mention
+//            event.preventDefault();
+//        });
+//        $popoverElements.popover();
     }
 
     componentDidMount = () => {
@@ -1043,33 +1177,6 @@ class ListItem extends React.Component {
 //        this.initializePopOver()
     }
 
-    createDocIdToSentences = (sentences) => {
-        let docIdToSentences = {};
-
-        // Build docIdToSentences
-        for (const sentence of sentences) {
-            const docId = sentence['doc_id'];
-            const docIdSentences = docIdToSentences[docId] || [];
-            docIdToSentences[docId] = docIdSentences;
-            docIdSentences.push(sentence);
-        }
-
-        // Sort sentences by sent_idx
-        for (const docId of Object.keys(docIdToSentences)) {
-            const docSentences = docIdToSentences[docId];
-            docSentences.sort((first, second) => first['sent_idx'] - second['sent_idx']);
-        }
-
-        // Sort documents by number of sentences
-        const docIdsWithCounts = Object.keys(docIdToSentences).map(key => [key, docIdToSentences[key].length]);
-        docIdsWithCounts.sort((first, second) => second[1] - first[1]);
-
-        docIdToSentences = docIdsWithCounts.map(docIdWithCount => docIdToSentences[docIdWithCount[0]]);
-
-
-        return docIdToSentences
-    }
-
     shouldShowMore = (numSentencesShown, numSentToShow) => {
         return numSentencesShown < numSentToShow || !this.state.minimized
     }
@@ -1077,17 +1184,18 @@ class ListItem extends React.Component {
     render() {
         const queryIdx = this.props.queryIdx;
         const resultSentences = this.props.resultSentences;
+        const fixedSentsIndices = this.props.fixedSentsIndices || [];
         const origSentences = this.props.origSentences;
         const numSentToShow = this.props.numSentToShow || 1;
         const isSummary = this.props.isSummary !== undefined ? this.props.isSummary : true;
         const sentences = [];
 
         // put the list of sentences separately line by line with a small margin in between:
-        const docIdToSentences = this.createDocIdToSentences(resultSentences);
+        const sortedSentences = createSortedSentences(resultSentences);
         let numSentencesShown = 0;
         const showSentIdx = !isSummary;
 
-        for (const docSentences of docIdToSentences) {
+        for (const docSentences of sortedSentences) {
             if (this.shouldShowMore(numSentencesShown, numSentToShow)) {
                 const docId = docSentences[0]['doc_id']
 
@@ -1107,12 +1215,20 @@ class ListItem extends React.Component {
                         let colClass = "col-12";
 
                         if (showSentIdx) {
+                            let sentIndexClasses = "sentence-index col-1";
+
+                            if (fixedSentsIndices.includes(sentIdx)) {
+                                sentIndexClasses += " fixed-sent-idx";
+                            }
+
                             sentItems.push(e(
-                               "span",
-                               {
-                                   "className": "sentence-index col-1"
-                               },
-                               `#${sentIdx}`
+                                "span",
+                                {
+                                    "className": sentIndexClasses,
+                                    "data-toggle": "tooltip",
+                                    "title": "Sentence index"
+                                },
+                                `#${sentIdx}`
                            ));
 
                            colClass = "col-11";
@@ -1161,7 +1277,9 @@ class ListItem extends React.Component {
                             e(
                                 "div",
                                 {
-                                    "className": "card-header clean-card-header"
+                                    "className": "card-header clean-card-header doc-id-header",
+                                    "data-doc-id": docId,
+                                    "onClick": openDocument
                                 },
                                 `Document: ${docId}`
                             ),
@@ -1207,45 +1325,6 @@ class ListItem extends React.Component {
                     "Read less"
                 );
                 sentences.push(readLessBtn);
-            }
-        }
-
-        if (queryIdx) {
-            let summaryMsg = `The summary is based on ${origSentences.length} sentences`;
-            if (origSentences.length == 1) {
-                summaryMsg = `The text is the original sentence`;
-            }
-
-            sentences.push(e(
-                'button',
-                {
-                    style: {
-                        "marginTop": "10px",
-                        "marginBottom": "10px",
-                        "cursor": "pointer"
-                    },
-                    "data-toggle": "modal",
-                    "data-target": "#origSentencesModal",
-                    "data-query-idx": queryIdx,
-                    "data-query-id": this.props.queryId
-                },
-                summaryMsg
-            ));
-
-            if (this.props.showHistoryBtn) {
-                sentences.push(e(
-                    'button',
-                    {
-                        style: {
-                            "marginTop": "10px",
-                            "marginBottom": "10px",
-                            "cursor": "pointer"
-                        },
-                        "data-toggle": "modal",
-                        "data-target": "#historyModal"
-                    },
-                    `Show history`
-                ));
             }
         }
 
@@ -1316,6 +1395,153 @@ class SummaryList extends React.Component {
             {},
             queryResultItems
         )
+    }
+}
+
+class LoadingSpinner extends React.Component {
+    render() {
+        return e(
+            "div",
+            {},
+            e(
+                "div",
+                {
+                    "className": "spinner-border text-primary",
+                    "role": "status"
+                },
+                e(
+                    "span",
+                    {"className": "sr-only"},
+                    "Loading..."
+                )
+            )
+        );
+    }
+}
+
+class ExplorationPageHeader extends React.Component {
+    render() {
+        const queryResults = this.props.queryResults;
+        const anyHistory = this.props.anyHistory;
+
+        const headerButtons = [];
+
+        if (anyHistory) {
+            const historyBtn = e(
+                'button',
+                {
+                    "className": "history-button",
+                    "data-toggle": "modal",
+                    "data-target": "#historyModal"
+                },
+                `History`
+            );
+
+            headerButtons.push(historyBtn);
+        }
+
+        // Can show original sentences only if there is one query on screen
+        if (queryResults && queryResults.length == 1) {
+            const query = queryResults[0];
+
+            const originalSentencesButton = e(
+                'button',
+                {
+                    "id": "original-sentences-button",
+                    "data-toggle": "modal",
+                    "data-target": "#origSentencesModal",
+                    "data-query-idx": query['query_idx'],
+                    "data-query-id": this.props.queryId
+                },
+                `Original sentences`
+            );
+
+            headerButtons.push(originalSentencesButton);
+        }
+
+        return e(
+            "div",
+            {
+                "id": "summaryHeader",
+                "className": "card-header"
+            },
+            [
+                e(
+                    "div",
+                    {
+                        "className": "main-component-title"
+                    },
+                    "Summary"
+                ),
+                headerButtons
+            ]
+        )
+    }
+}
+
+class ExplorationPage extends React.Component {
+    render() {
+        const queryResults = this.props.queryResults;
+        const isLoading = this.props.isLoading;
+
+        const exploreItems = [];
+
+        if (queryResults.length == 0) {
+            if (isLoading) {
+                exploreItems.push(e(
+                    LoadingSpinner
+                ));
+            } else {
+                const introMsg = "Query the document set using the navigation. A summary will be produced for your query and the navigation will be filtered based on co-occurrence with your query.";
+                exploreItems.push(
+                    e(
+                        "li",
+                        {
+                            "className": "exploreItem"
+                        },
+                        introMsg
+                    )
+                );
+            }
+        } else {
+            exploreItems.push(e(
+                SummaryList,
+                {
+                    "queryResults": queryResults
+                }
+            ));
+        }
+
+        return e(
+            "div",
+            {
+                "className": "card"
+            },
+            [
+                e(
+                    ExplorationPageHeader,
+                    {
+                        "queryResults": queryResults,
+                        "anyHistory": Object.keys(globalQueriesResults).length > 0
+                    }
+                ),
+                e(
+                    "div",
+                    {
+                        "id": "explorationCard",
+                        "className": "card-body"
+                    },
+                    e(
+                        "div",
+                        {
+                            "id": "explorationPane",
+                            "className": "pane listItems card"
+                        },
+                        exploreItems
+                    )
+                )
+            ]
+        );
     }
 }
 
@@ -1472,32 +1698,6 @@ function showQuestionnaire() {
     }, 500);
 }
 
-
-//function onTextMouseUp() {
-//    // get the currently selected text on the page:
-//    var text = "";
-//    if (window.getSelection) {
-//        text = window.getSelection().toString();
-//    } else if (document.selection && document.selection.type != "Control") {
-//        text = document.selection.createRange().text;
-//    }
-//
-//    // add a space at the end of the highlighted text if there isn't one:
-//    if (text != "") {
-//        text = text.trim();
-//        text += ' ';
-//    }
-//    // if there's no space before the newly added text, add one:
-//    if (queryInputBox.value != "" && !queryInputBox.value.endsWith(' ')) {
-//        text = ' ' + text;
-//    }
-//
-//    // put the selected text in the query box, and focus on the query box:
-//    queryInputBox.value += text; // set the search query to the highlighted text (append text)
-//    lastQueryType = 'highlight'
-//    queryInputBox.focus();
-//}
-
 /* Handle a query string. */
 function query(queryStr, clusterId, clusterType) {
     resetPage();
@@ -1508,14 +1708,10 @@ function query(queryStr, clusterId, clusterType) {
             "cluster_type": clusterType,
             "token": queryStr
         });
-
-        const emptyQueryResults = [{
-            "query": globalQuery,
-            "result_sentences": []
-        }];
-
-        insertSummaryItemsInExplorationPane(emptyQueryResults);
     }
+    insertSummaryItemsInExplorationPane([], isLoading=true);
+
+    createClustersIdsList();
 
     /* Even if the query is empty we want to refresh the view */
     insertQueryItems();
@@ -1526,22 +1722,6 @@ function query(queryStr, clusterId, clusterType) {
         queryStr += ` ${cluster['display_name']}`;
     }
 
-    if (globalQuery.length > 0) {
-        // create the query list item in the exploration pane:
-        /* insertQueryItemInExplorationPane(queryStr, exploreList); */
-
-        // put a loading ellipsis:
-        insertLoadingIndicatorInExplorationPane(exploreList);
-    }
-
-    // scroll to bottom:
-    exploreList.scrollTop = exploreList.scrollHeight;
-
-    // if no query type was set until now ('freetext' or 'highlight' or 'keyword'), then it must be that some text was copy-pasted into the query box:
-    if (lastQueryType == '') {
-        lastQueryType = 'copypaste';
-    }
-
     // if the new query is not a "more info" query, then keep remember it:
     if (queryStr != '') {
         lastQuery = [queryStr, clusterId, clusterType];
@@ -1549,18 +1729,11 @@ function query(queryStr, clusterId, clusterType) {
 
     // get query response info from the server:
     clustersQuery = globalQuery;
-    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "clusters_query": clustersQuery, "query": queryStr, "summarySentenceCount":numSentencesInQueryResponse, "type":lastQueryType}});
+    sendRequest({"clientId": clientId, "request_query": {"topicId": curTopicId, "clusters_query": clustersQuery, "query": queryStr}});
     // the response will be sent to function setQueryResponse asynchronously
 }
 
 function fetchDocument(documentId, documentName) {
-    insertQueryItemInExplorationPane(documentName, $documentsPane[0]);
-
-    insertLoadingIndicatorInExplorationPane($documentsPane[0]);
-
-    // scroll to bottom:
-    $documentsPane[0].scrollTop = $documentsPane[0].scrollHeight;
-
     sendRequest({
         "clientId": clientId,
         "request_document": {
@@ -1568,11 +1741,10 @@ function fetchDocument(documentId, documentName) {
         }
     });
 }
+
 function fetchCorefCluster(corefClusterId, corefClusterType) {
     const corefClusterText = globalCorefClustersMetas[corefClusterId]['display_name'];
     insertQueryItemInExplorationPane(corefClusterText, $mentionsPane[0]);
-
-    insertLoadingIndicatorInExplorationPane($mentionsPane[0]);
 
     // scroll to bottom:
     $mentionsPane[0].scrollTop = $mentionsPane[0].scrollHeight;
@@ -1590,8 +1762,6 @@ function fetchPropositionCluster(propositionClusterId) {
     const propositionClusterText = globalPropositionClustersMetas[propositionClusterId]['display_name'];
 //    insertQueryItemInExplorationPane(propositionClusterText, $propositionsPane[0]);
 
-    insertLoadingIndicatorInExplorationPane($propositionsPane[0]);
-
     // scroll to bottom:
     $propositionsPane[0].scrollTop = $propositionsPane[0].scrollHeight;
 
@@ -1604,21 +1774,15 @@ function fetchPropositionCluster(propositionClusterId) {
     });
 }
 
-function queryRepeatOnButtonClick() {
-    if (lastQuery == null) {
-        alert("No query to repeat.")
-    }
-    // if a query was run before, rerun it:
-    else if (canSendRequest()) {
-        lastQueryType = 'repeat';
-        query(...lastQuery); // run the last query
-    }
-}
-
-function moreInfoOnButtonClick() {
+function logUIAction(action, actionDetails) {
     if (canSendRequest()) {
-        lastQueryType = 'moreinfo';
-        query(''); // run the query
+        sendRequest({
+                "clientId": clientId,
+                "request_log_ui_action": {
+                    "action": action,
+                    "actionDetails": actionDetails
+                }
+            });;
     }
 }
 
