@@ -52,8 +52,8 @@ const DATE_LABEL = "Date";
 const ENTITIES_LABEL = "Entities";
 const MISC_LABEL = "Miscellaneous";
 
-//const FIELD_TO_SORT_CLUSTERS = "num_mentions_filtered";
-const FIELD_TO_SORT_CLUSTERS = "num_sents_filtered";
+const FIELD_TO_SORT_CLUSTERS = "num_mentions_filtered";
+//const FIELD_TO_SORT_CLUSTERS = "num_sents_filtered";
 
 
 const CLUSTERS_FACETS_ORDER = [KEY_CONCEPTS_LABEL, ENTITIES_LABEL, KEY_STATEMENTS_LABEL, PERSON_LABEL, LOCATION_LABEL, ORGANIZATION_LABEL, NORP_LABEL, MISC_LABEL];
