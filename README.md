@@ -30,6 +30,8 @@ To support reproducibility efforts and adding custom document-sets, all models u
 2. Use the WEC model to score each pairwise (link will be added soon).
 3. Use agglomerative clustering to combine WD and CD mentions into clusters.
 
+For the end-to-end iFᴀᴄᴇᴛSᴜᴍ entities script (following above instructions) refer to https://github.com/AlonEirew/wd-plus-srl-extraction#wec-cd-coreference
+
 #### Proposition Alignment
 
 1. Please refer to https://github.com/oriern/SuperPAL for instructions of extracting propositions using OIE and extracting pairwise scores.
