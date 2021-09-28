@@ -26,11 +26,11 @@ To support reproducibility efforts and adding custom document-sets, all models u
 
 #### CD Entities Co-reference Alignment
 
-1. Create entities mentions using SpanBert, accessible from https://docs.allennlp.org/models/main/.
-2. Use the WEC model to score each pairwise (link will be added soon).
-3. Use agglomerative clustering to combine WD and CD mentions into clusters.
-
 For the end-to-end iFᴀᴄᴇᴛSᴜᴍ entities script (following above instructions) refer to https://github.com/AlonEirew/wd-plus-srl-extraction#wec-cd-coreference
+
+1. Create entities mentions using SpanBert, accessible from https://docs.allennlp.org/models/main/.
+2. Use the WEC model to score each pairwise.
+3. Use agglomerative clustering to combine WD and CD mentions into clusters.
 
 #### Proposition Alignment
 
