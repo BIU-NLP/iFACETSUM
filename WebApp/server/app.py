@@ -368,7 +368,7 @@ class IntSummHandler(tornado.web.RequestHandler):
         corpus: Corpus = corpus_registry.get_corpus(topicId)
         doc_sent_indices: Optional[Set[DocSent]] = None
 
-        query_result = None
+        query_result_wrapper = None
 
         if clusters_query:
             query_registry: QueryRegistry = get_item("query_registry")
