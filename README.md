@@ -3,8 +3,8 @@
 
 iFᴀᴄᴇᴛSᴜᴍ is an interactive faceted summarization approach and system for navigating within a large document-set on a topic.
 
-* Paper 📄 https://arxiv.org/pdf/2109.11621.pdf
-* Demo 🤩 https://biu-nlp.github.io/iFACETSUM/WebApp/client
+* Paper 📄  https://arxiv.org/pdf/2109.11621.pdf
+* Demo 🤩  https://biu-nlp.github.io/iFACETSUM/WebApp/client
 
 ![iFacetSum Gif](https://github.com/BIU-NLP/iFACETSUM/raw/master/iFacetSum.gif)
 
