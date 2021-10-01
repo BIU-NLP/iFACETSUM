@@ -38,6 +38,25 @@ class Cluster:
 
 @dataclass_json
 @dataclass
+class ClusterUserWrapper:
+    shared_cluster: Cluster  # Since it is shared it should stay immutable, should not be updated per request
+    num_mentions_filtered: int
+
+    def custom_to_dict(self) -> dict:
+        """
+        We want to avoid having to change the UI for the wrapper
+        """
+
+        dict = self.to_dict()
+        shared_obj = dict.pop('shared_cluster')
+        for key, value in shared_obj.items():
+            dict[key] = value
+
+        return dict
+
+
+@dataclass_json
+@dataclass
 class CorefClusters:
     doc_name_to_clusters: Dict[str, List[Mention]]
     cluster_idx_to_mentions: Dict[str, Cluster]
@@ -94,7 +113,6 @@ class QueryResultSentence:
 @dataclass_json
 @dataclass
 class QueryResult:
-    query_idx: int
     result_sentences: List[QueryResultSentence]
     query: List[ClusterQuery]
     orig_sentences: List[QueryResultSentence]
@@ -102,6 +120,25 @@ class QueryResult:
 
     def get_doc_sent_indices(self) -> Set[DocSent]:
         return {DocSent(sent.doc_id, sent.sent_idx) for sent in self.orig_sentences}
+
+
+@dataclass_json
+@dataclass
+class QueryResultUserWrapper:
+    shared_query_result: QueryResult  # Since it is shared it should stay immutable, should not be updated per request
+    query_idx: int
+
+    def custom_to_dict(self) -> dict:
+        """
+        We want to avoid having to change the UI for the wrapper
+        """
+
+        dict = self.to_dict()
+        shared_obj = dict.pop('shared_query_result')
+        for key, value in shared_obj.items():
+            dict[key] = value
+
+        return dict
 
 
 @dataclass_json
