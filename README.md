@@ -1,8 +1,13 @@
 # iFᴀᴄᴇᴛSᴜᴍ
 
-iFᴀᴄᴇᴛSᴜᴍ ([demo link](https://biu-nlp.github.io/iFACETSUM/WebApp/client/?topicId=Native%20American%20Challenges)) is a demo application for exploring a document-set on a topic.
-It provides information-seeking support by creating a faceted-navigation experience, using latest `CD Coreference Resolution`, `Proposition Alignment` and `Abstractive Summarization` technologies.
 
+iFᴀᴄᴇᴛSᴜᴍ is an interactive faceted summarization approach and system for navigating within a large document-set on a topic.
+
+* Paper 📄: https://arxiv.org/pdf/2109.11621.pdf
+* Demo 🤩: https://biu-nlp.github.io/iFACETSUM/WebApp/client
+
+
+## Development
 ### How to run
 
 1. git clone the project
@@ -26,8 +31,10 @@ To support reproducibility efforts and adding custom document-sets, all models u
 
 #### CD Entities Co-reference Alignment
 
+For the end-to-end iFᴀᴄᴇᴛSᴜᴍ entities script (following above instructions) refer to https://github.com/AlonEirew/wd-plus-srl-extraction#wec-cd-coreference
+
 1. Create entities mentions using SpanBert, accessible from https://docs.allennlp.org/models/main/.
-2. Use the WEC model to score each pairwise (link will be added soon).
+2. Use the WEC model to score each pairwise.
 3. Use agglomerative clustering to combine WD and CD mentions into clusters.
 
 #### Proposition Alignment
