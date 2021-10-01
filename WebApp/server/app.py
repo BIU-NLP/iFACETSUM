@@ -7,12 +7,14 @@ from typing import List, Set, Dict, Union, Optional
 
 from nltk import word_tokenize
 
+from QFSE import Corpus
 from QFSE.Sentence import Sentence
 from QFSE.abstractive_coref.mentions_finder import MentionsFinder
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_PROPOSITIONS, COREF_TYPE_ENTITIES
+from QFSE.corpus_registry import CorpusRegistry, get_clusters_filtered
 from QFSE.models import Summary, DocSent, ClusterQuery, QueryResult, QueryResultSentence, \
-    TokensCluster, DocumentResult, UIAction
-from QFSE.propositions.utils import get_proposition_clusters
+    TokensCluster, DocumentResult, UIAction, QueryResultUserWrapper
+from QFSE.query_registry import QueryRegistry
 from QFSE.query_results_analyzer import QueryResultsAnalyzer
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
@@ -30,25 +32,15 @@ import ssl
 import WebApp.server.params as params
 
 from QFSE.Utilities import loadBert, get_item
-from QFSE.Utilities import REPRESENTATION_STYLE_SPACY, REPRESENTATION_STYLE_BERT
-
-# The SpaCy and BERT objects must be loaded before anything else, so that classes using them get the initialized objects.
-# The SpaCy and BERT objects are initialized only when needed since these init processes take a long time.
-REPRESENTATION_STYLE = REPRESENTATION_STYLE_SPACY  # REPRESENTATION_STYLE_W2V REPRESENTATION_STYLE_BERT
-get_item("spacy")
-if REPRESENTATION_STYLE == REPRESENTATION_STYLE_BERT:
-    loadBert()
 
 import data.Config as config
 from QFSE.SummarizerClustering import SummarizerClustering
 from QFSE.SummarizerAddMore import SummarizerAddMore
 from QFSE.SummarizerTextRankPlusLexical import SummarizerTextRankPlusLexical
-from QFSE.Corpus import Corpus
 from QFSE.SuggestedQueriesNgramCount import SuggestedQueriesNgramCount
 from QFSE.SuggestedQueriesTextRank import SuggestedQueriesTextRank
 from WebApp.server.InfoManager import InfoManager
 
-from QFSE.coref.utils import convert_corpus_to_coref_input_format, get_coref_clusters
 
 # request types
 TYPE_ERROR = -1
@@ -188,20 +180,10 @@ class IntSummHandler(tornado.web.RequestHandler):
         workerId = clientJson['request_get_initial_summary']['workerId']
         turkSubmitTo = clientJson['request_get_initial_summary']['turkSubmitTo']
 
-        # make sure the topic ID is valid:
-        if topicId in config.CORPORA_LOCATIONS:
-            referenceSummsFolder = os.path.join(config.CORPORA_LOCATIONS[topicId], config.CORPUS_REFSUMMS_RELATIVE_PATH)
-            questionnaireFilepath = os.path.join(config.CORPORA_LOCATIONS[topicId],
-                                                 config.CORPUS_QUESTIONNAIRE_RELATIVE_PATH)
-            corpus = Corpus(topicId, config.CORPORA_LOCATIONS[topicId], referenceSummsFolder, questionnaireFilepath,
-                            representationStyle=REPRESENTATION_STYLE)
-        else:
+        corpus_registry: CorpusRegistry = get_item("corpus_registry")
+        corpus = corpus_registry.get_corpus(topicId)
+        if corpus is None:
             return self.getErrorJson('Topic ID not supported: {}'.format(topicId))
-
-        formatted_topics = convert_corpus_to_coref_input_format(corpus, topicId)
-        get_coref_clusters(formatted_topics, corpus, COREF_TYPE_EVENTS)
-        get_coref_clusters(formatted_topics, corpus, COREF_TYPE_ENTITIES)
-        get_proposition_clusters(formatted_topics, corpus)
 
         m_infoManager.initClient(clientId, corpus, None, 0, None, topicId,
                                  questionnaireBatchIndex, timeAllowed, assignmentId, hitId, workerId, turkSubmitTo,
@@ -219,9 +201,9 @@ class IntSummHandler(tornado.web.RequestHandler):
                 "topicName": topicName,
                 "topicId": topicId,
                 "documentsMetas": {x.id: {"id": x.id, "num_sents": len(x.sentences)} for x in corpus.documents},
-                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus),
-                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus),
-                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus),
+                "corefClustersMetas": get_clusters_filtered(corpus.coref_clusters[COREF_TYPE_ENTITIES]),
+                "eventsClustersMetas": get_clusters_filtered(corpus.coref_clusters[COREF_TYPE_EVENTS]),
+                "propositionClustersMetas": get_clusters_filtered(corpus.coref_clusters[COREF_TYPE_PROPOSITIONS]),
                 "numDocuments": str(len(corpus.documents)),
                 "questionnaire": [],
                 "timeAllowed": str(timeAllowed),
@@ -230,35 +212,6 @@ class IntSummHandler(tornado.web.RequestHandler):
         }
         return json.dumps(reply)
 
-    def _get_clusters_filtered(self, cluster_type, corpus, doc_sent_indices: Set[DocSent] = None):
-        """
-        Filters clusters based on a query (faceted search)
-        """
-
-        clusters_filtered = {}
-        for cluster_idx, cluster in corpus.coref_clusters[cluster_type].items():
-            # Return all if no query
-            query_is_empty = doc_sent_indices is None or not any(doc_sent_indices)
-            cluster_sentences_shown_in_query = []
-            doc_sent_indices_filtered = set()
-            if doc_sent_indices:
-                for mention in cluster['mentions']:
-                    doc_sent_index = DocSent(mention['doc_id'], mention['sent_idx'])
-                    if doc_sent_index in doc_sent_indices:
-                        cluster_sentences_shown_in_query.append(mention)
-                        doc_sent_indices_filtered.add(doc_sent_index)
-
-            should_return_cluster = query_is_empty or any(cluster_sentences_shown_in_query)
-
-            if should_return_cluster:
-                cluster['num_mentions_filtered'] = cluster['num_mentions'] if query_is_empty else len(
-                    cluster_sentences_shown_in_query)
-                cluster['num_sents_filtered'] = cluster['num_sents'] if query_is_empty else len(
-                    doc_sent_indices_filtered)
-                # cluster['display_name_filtered'] = cluster['display_name'] if query_is_empty else create_cluster_obj(cluster_idx, cluster_type, [Mention.from_dict(mention) for mention in cluster_sentences_shown_in_query]).display_name
-                clusters_filtered[cluster_idx] = cluster
-
-        return clusters_filtered
 
     def _summary_sents_to_corpus_sents(self, corpus, summary: Summary) -> List[Sentence]:
         sentences_used = []
@@ -411,26 +364,25 @@ class IntSummHandler(tornado.web.RequestHandler):
 
         reply_query = {}
 
-        corpus = m_infoManager.getCorpus(clientId)
+        corpus_registry: CorpusRegistry = get_item("corpus_registry")
+        corpus: Corpus = corpus_registry.get_corpus(topicId)
         doc_sent_indices: Optional[Set[DocSent]] = None
 
         query_result = None
 
         if clusters_query:
+            query_registry: QueryRegistry = get_item("query_registry")
+            query_result = query_registry.get_query(clusters_query)
             query_results_analyzer = m_infoManager.get_query_results_analyzer(clientId)
-            query_result = query_results_analyzer.get_result_if_exists(clusters_query)
 
-            is_cached_result = False
-            if query_result is not None:
-                is_cached_result = True
-            else:
+            if query_result is None:
                 sentences = []
                 doc_sent_indices = self._clusters_query_to_doc_sent_indices(clusters_query, corpus)
                 if any(doc_sent_indices):
                     doc_sent_indices_to_use = set.intersection(*doc_sent_indices)
                     sentences = self._get_sentences_for_query(doc_sent_indices_to_use, corpus)
 
-                query_result = QueryResult(None, [], clusters_query, [
+                query_result = QueryResult([], clusters_query, [
                     QueryResultSentence(self._split_sent_text_to_tokens(sent, is_original_sentences=True), sent.docId,
                                         sent.sentIndex) for sent in sentences], datetime.utcnow().isoformat())
                 if any(sentences):
@@ -445,29 +397,33 @@ class IntSummHandler(tornado.web.RequestHandler):
                         self._split_sent_text_to_tokens(sent, is_original_sentences=False,
                                                         original_sentences=sentences)) for sent in summary_sents]
 
-                    # Save queries and mark similar sentences to those used
-                    query_results_analyzer.analyze_repeating(query_result)
-                    query_result.query_idx = query_results_analyzer.add_query_results(query_result)
+                query_registry.save_query(query_result)
+
+            # Save queries and mark similar sentences to those used
+            # query_results_analyzer.analyze_repeating(query_result)
+            query_idx = query_results_analyzer.add_query_results(query_result)
+            query_result_wrapper = QueryResultUserWrapper(query_result, query_idx)
 
             reply_query = {
-                "queryResult": query_result.to_dict(),
-                "isCachedResult": is_cached_result,
+                "queryResult": query_result_wrapper.custom_to_dict(),
                 "textLength": 0,
             }
 
             doc_sent_indices = query_result.get_doc_sent_indices()
 
         m_infoManager.add_ui_action_log(clientId, UIAction("query", {
-            "query_idx": query_result.query_idx if query_result is not None else None
+            "query_idx": query_result_wrapper.query_idx if query_result_wrapper is not None else None
         }, datetime.utcnow().isoformat()))
 
         # Always return the clusters even if query is none
         reply_query = {
             **reply_query,
             **{
-                "corefClustersMetas": self._get_clusters_filtered(COREF_TYPE_ENTITIES, corpus, doc_sent_indices),
-                "eventsClustersMetas": self._get_clusters_filtered(COREF_TYPE_EVENTS, corpus, doc_sent_indices),
-                "propositionClustersMetas": self._get_clusters_filtered(COREF_TYPE_PROPOSITIONS, corpus,
+                "corefClustersMetas": get_clusters_filtered(corpus.coref_clusters[COREF_TYPE_ENTITIES],
+                                                            doc_sent_indices),
+                "eventsClustersMetas": get_clusters_filtered(corpus.coref_clusters[COREF_TYPE_EVENTS],
+                                                             doc_sent_indices),
+                "propositionClustersMetas": get_clusters_filtered(corpus.coref_clusters[COREF_TYPE_PROPOSITIONS],
                                                                         doc_sent_indices)
             }
         }
