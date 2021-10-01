@@ -17,8 +17,3 @@ class QueryResultsAnalyzer:
         for result_sent in query_result.result_sentences:
             if result_sent.get_text() in previous_sentences:
                 result_sent.is_first_time_seen = False
-
-    def get_result_if_exists(self, query: List[ClusterQuery]) -> Optional[QueryResult]:
-        for prev_result in self._previous_results:
-            if set(prev_result.query) == set(query):
-                return prev_result

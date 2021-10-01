@@ -90,6 +90,18 @@ def loadBartSummarizer():
     return HuggingFaceSummarizer(get_item("abstract_summarizer_model_name"))
 
 
+@register("corpus_registry")
+def corpus_registry():
+    from QFSE.corpus_registry import CorpusRegistry
+    return CorpusRegistry()
+
+
+@register("query_registry")
+def query_registry():
+    from QFSE.query_registry import QueryRegistry
+    return QueryRegistry()
+
+
 def get_item(registry_key: str):
     if not registry[registry_key]['initialized']:
         registry[registry_key]['value'] = registry[registry_key]['func']()
