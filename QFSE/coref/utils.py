@@ -12,7 +12,7 @@ from QFSE.Corpus import Corpus
 from QFSE.consts import COREF_TYPE_EVENTS, COREF_TYPE_ENTITIES, MAX_MENTIONS_IN_CLUSTER
 from QFSE.coref.coref_expr import get_clusters, parse_doc_id
 from QFSE.coref.coref_labels import create_objs, EVENTS_DEFAULT_CLUSTER, \
-    UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER
+    UNCATEGORIZED_ENTITIES_DEFAULT_CLUSTER, ENTITIES_DEFAULT_CLUSTER, clean_text
 from QFSE.coref.models import DocumentLine, TokenLine, Mention, PartialCluster, PartialClusterType
 from QFSE.models import CorefClusters, Cluster
 from data.Config import COREF_LOCATIONS
@@ -89,6 +89,8 @@ def get_coref_clusters(formatted_topics, corpus: Corpus, cluster_type):
 
     clusters_ids_to_filter = get_clusters_ids_to_filter(clusters_objs)
     clusters_objs = {cluster_id: cluster for cluster_id, cluster in clusters_objs.items() if cluster_id not in clusters_ids_to_filter}
+    for cluster_obj in clusters_objs.values():
+        _choose_display_name(cluster_obj)
 
     coref_clusters = CorefClusters(documents, clusters_objs)
     coref_clusters_dict = coref_clusters.to_dict()
@@ -128,7 +130,7 @@ def get_clusters_ids_to_filter(clusters_objs):
 
 def merge_repeating_clusters(clusters_objs):
     """
-    We merge clusters (because we want to go from specific to generic, and allow let the user go to specific by faceted-navigation)
+    Merges clusters (because we want to present the user with generic, and let the user go to specific by faceted-navigation)
     """
 
     clusters_ids_to_filter = []
@@ -136,19 +138,32 @@ def merge_repeating_clusters(clusters_objs):
     clusters_seen = {}
     for cluster_idx, cluster_obj in sorted(clusters_objs.items(), key=lambda item: item[1].num_mentions, reverse=True):
         cluster_key = cluster_obj.display_name.lower()
-        if cluster_key not in clusters_seen:
-            clusters_seen[cluster_key] = cluster_obj
+        cluster_key_cleaned = clean_text(cluster_key)
+        if cluster_key_cleaned not in clusters_seen:
+            clusters_seen[cluster_key_cleaned] = cluster_obj
         else:
             clusters_ids_to_filter.append(cluster_idx)
-            _merge_clusters(clusters_seen[cluster_key], cluster_obj)
+            _merge_clusters(clusters_seen[cluster_key_cleaned], cluster_obj)
 
     return clusters_ids_to_filter
 
 
-def _merge_clusters(cluster_one: Cluster, cluster_two: Cluster):
-    cluster_one.num_mentions += cluster_two.num_mentions
-    cluster_one.num_sents += cluster_two.num_sents
-    cluster_one.mentions += cluster_two.mentions
+def _choose_display_name(cluster: Cluster) -> None:
+    """
+    After all the merging, recalculate the display name
+    """
+
+    token_counter = Counter()
+    for mention in cluster.mentions:
+        token_counter[mention.token] += 1
+
+    cluster.display_name = token_counter.most_common()[0][0]
+
+
+def _merge_clusters(cluster_kept: Cluster, cluster_merged: Cluster):
+    cluster_kept.num_mentions += cluster_merged.num_mentions
+    cluster_kept.num_sents += cluster_merged.num_sents
+    cluster_kept.mentions += cluster_merged.mentions
 
 
 def parse_conll_coref_file(data) -> Tuple[Dict[str, List[Mention]], Dict[str, List[Mention]]]:

@@ -70,6 +70,21 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_label, defaul
         pos_to_mentions[pos].append(mention)
         unique_sents_ids.add(f"{mention.doc_id} {mention.sent_idx}")
 
+    most_representative_mention, ner_label = _choose_most_representative_mention(
+        mentions, ents_counter, labels_to_mentions)
+
+    cluster_label = LABELS_MAP.get(ner_label, default_label)
+    cluster_facet = FACETS_MAP.get(ner_label, default_facet)
+
+    pos_label = None
+    if any(pos_counter):
+        pos_label = pos_counter.most_common()[0][0]
+
+    return Cluster(cluster_id, cluster_type, mentions, pos_label, cluster_label, cluster_facet,
+                   most_representative_mention, len(mentions), len(unique_sents_ids))
+
+
+def _choose_most_representative_mention(mentions, ents_counter, labels_to_mentions):
     mentions_used_for_representative = mentions
     ner_label = None
     if any(ents_counter):
@@ -79,14 +94,8 @@ def create_cluster_obj(cluster_id, cluster_type, mentions, default_label, defaul
     for mention in mentions_used_for_representative:
         token_counter[mention.token] += 1
     most_representative_mention = _get_shortest_most_common(token_counter)
-    cluster_label = LABELS_MAP.get(ner_label, default_label)
-    cluster_facet = FACETS_MAP.get(ner_label, default_facet)
 
-    pos_label = None
-    if any(pos_counter):
-        pos_label = pos_counter.most_common()[0][0]
-
-    return Cluster(cluster_id, cluster_type, mentions, pos_label, cluster_label, cluster_facet, most_representative_mention, len(mentions), len(unique_sents_ids))
+    return most_representative_mention, ner_label
 
 
 def _get_shortest_most_common(counter) -> str:
