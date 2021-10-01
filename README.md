@@ -6,6 +6,7 @@ iFᴀᴄᴇᴛSᴜᴍ is an interactive faceted summarization approach and syste
 * Paper 📄: https://arxiv.org/pdf/2109.11621.pdf
 * Demo 🤩: https://biu-nlp.github.io/iFACETSUM/WebApp/client
 
+![iFacetSum Gif](https://github.com/BIU-NLP/iFACETSUM/raw/master/iFacetSum.gif)
 
 ## Development
 ### How to run
