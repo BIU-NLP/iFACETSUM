@@ -322,6 +322,9 @@ function sendRequest(jsonStr) {
     isWaitingForResponse = true;
 }
 
+function sleep (time) {
+  return new Promise((resolve) => setTimeout(resolve, time));
+}
 
 function handleJsonReply(jsonObj) {
     isWaitingForResponse = false;
@@ -336,13 +339,17 @@ function handleJsonReply(jsonObj) {
         setTopicsList(jsonObj["reply_get_topics"]["topicsList"]);
     }
     else if ("reply_get_initial_summary" in jsonObj) {
-        setTopic(jsonObj["reply_get_initial_summary"])
+        sleep(2000).then(() => {
+            setTopic(jsonObj["reply_get_initial_summary"]);
+        });
     }
     else if ("reply_set_start" in jsonObj) {
         // nothing to do
     }
     else if ("reply_query" in jsonObj) {
-        setQueryResponse(jsonObj["reply_query"])
+        sleep(2000).then(() => {
+            setQueryResponse(jsonObj["reply_query"]);
+        });
     }
     else if ("reply_document" in jsonObj) {
         setDocumentResponse(jsonObj["reply_document"]);
