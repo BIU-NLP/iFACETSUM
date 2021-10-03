@@ -1060,8 +1060,12 @@ label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:
     display: none;
 }
 
-@media (min-width: 768px) {
-    .topbar-logos {
-        display: block;
+.emnlp-href {
+    display: none;
+}
+
+@media (min-width: 600px) {
+    .topbar-logos , .emnlp-href {
+        display: inline;
     }
 }
