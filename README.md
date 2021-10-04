@@ -42,3 +42,16 @@ For the end-to-end iFᴀᴄᴇᴛSᴜᴍ entities script (following above instru
 
 1. Please refer to https://github.com/oriern/SuperPAL for instructions of extracting propositions using OIE and extracting pairwise scores.
 2. iFᴀᴄᴇᴛSᴜᴍ's code takes care of converting the pairwise CSV from SuperPAL into clusters. 
+
+---
+## Citation:
+If you find our work useful, please cite the paper as:
+
+```bibtex
+@article{hirsch2021ifacetsum,
+  title={iFacetSum: Coreference-based Interactive Faceted Summarization for Multi-Document Exploration},
+  author={Hirsch, Eran and Eirew, Alon and Shapira, Ori and Caciularu, Avi and Cattan, Arie and Ernst, Ori and Pasunuru, Ramakanth and Ronen, Hadar and Bansal, Mohit and Dagan, Ido},
+  journal={Proceedings of the Conference on Empirical Methods in Natural Language Processing: System Demonstrations},
+  year={2021}
+}
+```
