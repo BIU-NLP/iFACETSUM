@@ -27,7 +27,7 @@ To support reproducibility efforts and adding custom document-sets, all models u
 #### CD Event Co-reference Alignment
 
 1. Create event mentions using the models and scripts in https://github.com/ariecattan/event_extractor.
-2. Create pairwise mention scores and clusters using CDLM (link will be added soon).
+2. Create pairwise mention scores and clusters using CDLM https://github.com/aviclu/CDLM.
 3. Use agglomerative clustering to combine mentions into clusters.
 
 #### CD Entities Co-reference Alignment
