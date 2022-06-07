@@ -3,3 +3,4 @@
 *.pyc
 models/
 *.cache
+node_modules/

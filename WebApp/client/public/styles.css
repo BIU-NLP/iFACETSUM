@@ -1,0 +1,1071 @@
+body {
+	text-align: center;
+	font-family: 'Open Sans', sans-serif;
+	background-color: #eee;
+}
+
+.title {
+    padding-top: 100px;
+    width: 100%;
+}
+
+.intro {
+	margin: 20px 0px;
+	font-weight: bold;
+}
+
+
+h1 {
+	/*color: #ffffff;*/
+	text-transform: uppercase;
+	font-weight: 800;
+}
+
+h5 {
+    /* color: #ffffff; */
+}
+
+p {
+	font-weight: 600;
+}
+
+.queryButton {
+	border: none;
+	padding: 8px 8px;
+	border-radius: 5px;
+	color: #04A1BF;
+	background-color: #025F70;
+	transition: all 0.75s ease;
+	-webkit-transition: all 0.75s ease;
+	-moz-transition: all 0.75s ease;
+	-ms-transition: all 0.75s ease;
+	-o-transition: all 0.75 ease;
+	font-weight: normal;
+    cursor: hand;
+}
+
+.queryButton:hover{
+	background-color: #02798F;
+	color: #FFCD5D;
+}
+
+.stopExploringButton {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    font-size: small;
+    display: none; /* initially not shown */
+}
+
+.stopExploringMessage {
+    position: fixed;
+    border: 1px solid rgb(2, 95, 112);
+    padding: 3px;
+    border-radius: 3px;
+    color: #ffc107;
+    cursor: default;
+    display: block;
+    font-size: medium;
+    bottom: 12px;
+    /*right: 145px;*/
+    right: 10px;
+    display: none; /* initially not shown */
+}
+
+.facets-values-list {
+    min-height: 200px;  /* So the footer will always show in the same place */
+}
+
+#explorationCard {
+    height: 400px;
+}
+
+#navigation-card {
+    padding-top: 0; /* has padding by default from the card, redundant with the cards of the lists */
+}
+
+.pane, #navigation-card > div {
+    /* overflow-y: scroll; */
+    /* min-height: 550px; */
+    /* padding-top: 20; */
+    width: 100%;
+}
+
+ul {
+	text-align: left;
+}
+
+#backToIndex {
+	border: none;
+    padding: 8px 8px;
+	border-radius: 5px;
+	color: #FFFFFF;
+    cursor: hand;
+}
+
+#backToIndex:hover{
+	background-color: #ddd;
+	color: #000000;
+}
+
+
+.interactiveSummaryOptionButton {
+	padding: 10px 20px;
+	color: #ffffff;
+	/*text-transform: capitalize;*/
+	font-weight: 600;
+	border: 1px solid #025f70;
+	border-radius: 5px;
+    margin: auto;
+	margin-bottom: 10px;
+	background: #4EB9CD;
+	transition: all 0.75s ease;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	-ms-transition: all 0.5s ease;
+	-o-transition: all 0.5 ease;
+    max-width: 350;
+    word-break: break-word;
+    text-align: center;
+    cursor: hand;
+}
+
+.interactiveSummaryOptionButton:hover {
+	background: #76CFE0;
+}
+
+.interactiveSummaryOptionButton > button {
+	font-weight: normal;
+	background: none;
+	border: none;
+	float: right;
+	/* color: #025f70; */
+    color: var(--dark);
+    text-decoration: underline dotted;
+}
+
+.doc-id-header {
+    color: var(--dark);
+    text-decoration: underline dotted;
+    font-size: 25px;
+}
+
+/*li {*/
+.exploreItem {
+	list-style: none;
+	padding: 10px 20px;
+	/* color: #ffffff; */
+	/*text-transform: capitalize;*/
+	font-weight: 600;
+	/*border: 2px solid #025f70;*/
+	border-radius: 5px;
+	margin-bottom: 10px;
+	/*background: #4EB9CD;*/
+	/*background: #0593af;*/
+	transition: all 0.75s ease;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	-ms-transition: all 0.5s ease;
+	-o-transition: all 0.5 ease;
+    word-break: break-word;
+    text-align: left;
+}
+
+.userItem {
+    /* background: #4ecda4; */
+}
+
+.exploreItem p:hover {
+	/*background: #76CFE0;*/
+	/*background: #04A1BF;*/
+	/* background: #038098; */
+}
+
+.userItem:hover {
+    /* background: #3ecda4; */
+}
+
+
+/* buttons that should look like links */
+#summaryHeader button, .exploreItem > button, .show-more-btn > button {
+	font-weight: normal;
+	background: none;
+	border: none;
+	float: right;
+	/* color: #025f70; */
+    color: var(--dark);
+    text-decoration: underline dotted;
+}
+
+.keywordItem {
+    list-style: none;
+	padding: 5px 5px;
+	color: #ffffff;
+	font-weight: 400;
+	/*border: 1px solid #025f70;*/
+	border-radius: 3px;
+	/*margin-bottom: 10px;*/
+	/*background: #4EB9CD;*/
+	transition: all 0.75s ease;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	-ms-transition: all 0.5s ease;
+	-o-transition: all 0.5 ease;
+    cursor: pointer;
+}
+
+.keywordItem:hover {
+	background: #76CFE0;
+}
+
+.keywordUsed {
+	/*background: #51DF70 !important;*/
+	color: #a56490; /*#00891E;*/
+    /*cursor: not-allowed;*/
+}
+
+/* For the query box */
+.queryBox {
+	border-radius: 5px;
+	min-width: 65%;
+	padding: 5px;
+	border: none;
+    /*margin: 10px 0px;*/
+}
+
+.floatleft {
+    float: left;
+    clear: both; /* To put the div under the preceding div */
+}
+.floatright {
+    float:right;
+    clear: both; /* To put the div under the preceding div */
+}
+
+
+
+/* For splitting the screen to right-left */
+.split {
+  /*height: 100%;*/
+  width: 50%;
+  position: absolute;
+  z-index: 1;
+  /*top: 0;*/
+  /*overflow-x: hidden;*/
+}
+
+#mainContentRow {
+  margin-top: 20px;
+}
+
+.componentSubtitle {
+    margin-top: 20px; margin-bottom: 10px; font-style: italic; color: antiquewhite;
+}
+
+/* Control the left side */
+.left {
+  left: 0;
+  width: 60%;
+  /*background-color: #111;*/
+}
+
+/* Control the right side */
+.right {
+  right: 0;
+  width: 40%;
+  /*background-color: red;*/
+}
+
+/* If you want the content centered horizontally and vertically */
+/*.centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}*/
+
+.centeredForLeft {
+  position: absolute;
+  text-align: center;
+  width: 100%;
+}
+
+.centeredForRight {
+  position: absolute;
+  text-align: center;
+}
+/* For splitting the screen to right-left end */
+
+
+/* scrollbar */
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+/* end scrollbar */
+
+
+/* The navigation bar */
+.topBar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+}
+
+
+/* Fixed menu bar at the top of the page */
+.navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.dropdown {
+  float: left;
+  /*overflow: hidden;*/
+}
+
+.dropdown .dropbtn {
+  font-size: 16px;
+  border: none;
+  outline: none;
+  /* color: white; */
+  padding: 14px 16px;
+  background-color: inherit;
+  font-family: inherit;
+  margin: 0;
+  cursor: hand;
+}
+
+.navbar a:hover, .dropdown:hover .dropbtn {
+  background: #ddd;
+  color: black;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  width: max-content;
+  height: 400;
+  overflow-y: scroll;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  float: none;
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+/* The navigation bar end */
+
+.dialogButton {
+    padding: 10px 20px;
+    border-radius: 5px;
+    width: 120px;
+    background: #025F70;
+    transition: all 0.75s ease;
+    cursor: hand;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    margin-left: calc(50% - 60px);
+    text-align: center;
+}
+
+.dialogButton:hover {
+	background-color: #02798F;
+	color: #FFCD5D;
+}
+
+.pageCover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9;
+}
+
+.directionsMessage {
+    margin-top: 90;
+    margin-bottom: 10;
+    z-index: 10;
+    position: absolute;
+    color: #ffffff;
+    text-align: center;
+    background: #333333;
+    border: 1px solid #025f70;
+    width: 600px;
+    left: calc(50% - 250px);
+    font-size: large;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.directionsImage {
+    height: 400px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border: 3px solid #88001b;
+    border-radius: 6px;
+    transition: transform .2s;
+    cursor: zoom-in;
+}
+.directionsImage:hover {
+  transform: translate(0px, -100px) scale(1.4);
+  border: 5px solid #88001b;
+}
+
+.submitButton {
+	padding: 10px 20px;
+	color: #ffffff;
+	/*text-transform: capitalize;*/
+	font-weight: 600;
+	border: 1px solid #025f70;
+	border-radius: 5px;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 0px;
+    width: 120px;
+    display: grid;
+    background: #025F70;
+	transition: all 0.75s ease;
+	-webkit-transition: all 0.5s ease;
+	-moz-transition: all 0.5s ease;
+	-ms-transition: all 0.5s ease;
+	-o-transition: all 0.5 ease;
+    word-break: break-word;
+    text-align: center;
+    cursor: hand;
+}
+
+.submitButton:hover {
+	background-color: #02798F;
+	color: #FFCD5D;
+}
+
+.submitButton > button {
+	font-weight: normal;
+	background: none;
+	border: none;
+	float: right;
+	/* color: #025f70; */
+    color: var(--dark);
+    text-decoration: underline dotted;
+}
+
+
+/* Elipssis loading */
+.loadingParent {
+    width: 120;
+    height: 50;
+    position: relative;
+    right: calc(-50% + 60px);
+    clear: both;
+}
+
+.loading {
+    position: absolute;
+    line-height: 24px;
+    bottom: 25%;
+    /* color: white; */
+}
+
+.dot {
+    font-size: 16px;
+    -webkit-animation: dot 1.3s infinite;
+    width: 25px;
+}
+
+.one {
+    -webkit-animation-delay: 0.0s;
+    display:inline;
+}
+
+.two {
+    -webkit-animation-delay: 0.2s;
+    display:inline;
+}
+
+.three {
+    -webkit-animation-delay: 0.3s;
+    display:inline;
+}
+
+@-webkit-keyframes dot {
+      0% { font-size: 16px; }
+     50% { font-size: 18px; }
+    100% { font-size: 24px; }
+}
+/* Elipssis loading end */
+
+
+/* to override the search cancel option over bootstrap */
+input[type="search"] {
+ -webkit-box-sizing: content-box;
+ -moz-box-sizing: content-box;
+ box-sizing: content-box;
+ -webkit-appearance: searchfield;
+}
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: searchfield-cancel-button;
+}
+
+
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  bottom: 100%;  /* At the top of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent black transparent;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+
+.highlighterCursor {
+  cursor: url("highlighter.png") 0 20, text;
+}
+
+
+/* The star rating style */
+.rating {
+	padding: 5px 2px 5px 55px;
+    margin-top: -5px;
+    margin-right: 11px;
+}
+
+.rating label {
+	float: right;
+	position: relative;
+	width: 15px;
+	height: 15px;
+	cursor: pointer;
+	z-index: 1; /*To place above rating instructions in case they are place next to it and covers the rating labels*/
+}
+
+.rating label:not(:first-of-type) {
+	padding-right: 2px;
+}
+
+.rating label:before {
+	content: attr(label-before-content); /*"\2605";*/
+	font-size: 15px;
+	color: #dee2e6;
+	line-height: 1;
+}
+
+.rating input {
+	display: none;
+}
+
+.rating input:checked ~ label:before,
+	input:not(:checked) > label:hover:before,
+	input:not(:checked) > label:hover ~ label:before {
+	color: #013f4a;
+}
+
+.ratingInstructions {
+    font-size: 12;
+    padding-right: 5px;
+    color: #faebd7;
+    font-style: italic;
+}
+
+.ratingInstructionsGlow {
+  text-shadow: 0 0 10px #f7ff00;
+  /*color: black;*/
+}
+
+.explainLabelAboveUMUX{
+  font-size: x-small;
+  margin-left: 315;
+  position: absolute;
+  color: #002b33;
+  margin-top: -12;
+}
+input:nth-of-type(5):checked  ~ .explainLabelAboveUMUX:before{ content:"Strongly Disagree"; }
+label:nth-of-type(5):hover  ~ .explainLabelAboveUMUX:before{ content:"Strongly Disagree"!important; }
+input:nth-of-type(4):checked  ~ .explainLabelAboveUMUX:before{ content:"Disagree"; }
+label:nth-of-type(4):hover  ~ .explainLabelAboveUMUX:before{ content:"Disagree"!important; }
+input:nth-of-type(3):checked  ~ .explainLabelAboveUMUX:before{ content:"Neutral"; }
+label:nth-of-type(3):hover  ~ .explainLabelAboveUMUX:before{ content:"Neutral"!important; }
+input:nth-of-type(2):checked  ~ .explainLabelAboveUMUX:before{ content:"Agree"; }
+label:nth-of-type(2):hover  ~ .explainLabelAboveUMUX:before{ content:"Agree"!important; }
+input:nth-of-type(1):checked  ~ .explainLabelAboveUMUX:before{ content:"Strongly Agree"; }
+label:nth-of-type(1):hover  ~ .explainLabelAboveUMUX:before{ content:"Strongly Agree"!important; }
+
+.explainLabelAboveResponsiveness{
+  font-size: x-small;
+  margin-left: 315;
+  position: absolute;
+  color: #002b33;
+  margin-top: -12;
+}
+input:nth-of-type(5):checked  ~ .explainLabelAboveResponsiveness:before{ content:"Not at all satisfied"; }
+label:nth-of-type(5):hover  ~ .explainLabelAboveResponsiveness:before{ content:"Not at all satisfied"!important; }
+input:nth-of-type(4):checked  ~ .explainLabelAboveResponsiveness:before{ content:"Slightly satisfied"; }
+label:nth-of-type(4):hover  ~ .explainLabelAboveResponsiveness:before{ content:"Slightly satisfied"!important; }
+input:nth-of-type(3):checked  ~ .explainLabelAboveResponsiveness:before{ content:"Neutral"; }
+label:nth-of-type(3):hover  ~ .explainLabelAboveResponsiveness:before{ content:"Neutral"!important; }
+input:nth-of-type(2):checked  ~ .explainLabelAboveResponsiveness:before{ content:"Satisfied"; }
+label:nth-of-type(2):hover  ~ .explainLabelAboveResponsiveness:before{ content:"Satisfied"!important; }
+input:nth-of-type(1):checked  ~ .explainLabelAboveResponsiveness:before{ content:"Very satisfied"; }
+label:nth-of-type(1):hover  ~ .explainLabelAboveResponsiveness:before{ content:"Very satisfied"!important; }
+
+.explainLabelAboveType1{
+  font-size: x-small;
+  margin-left: 315;
+  position: absolute;
+  color: #000000;
+  margin-top: -12;
+}
+input:nth-of-type(5):checked  ~ .explainLabelAboveType1:before{ content:"Strongly Disagree"; }
+label:nth-of-type(5):hover  ~ .explainLabelAboveType1:before{ content:"Strongly Disagree"!important; }
+input:nth-of-type(4):checked  ~ .explainLabelAboveType1:before{ content:"Disagree"; }
+label:nth-of-type(4):hover  ~ .explainLabelAboveType1:before{ content:"Disagree"!important; }
+input:nth-of-type(3):checked  ~ .explainLabelAboveType1:before{ content:"Neutral"; }
+label:nth-of-type(3):hover  ~ .explainLabelAboveType1:before{ content:"Neutral"!important; }
+input:nth-of-type(2):checked  ~ .explainLabelAboveType1:before{ content:"Agree"; }
+label:nth-of-type(2):hover  ~ .explainLabelAboveType1:before{ content:"Agree"!important; }
+input:nth-of-type(1):checked  ~ .explainLabelAboveType1:before{ content:"Strongly Agree"; }
+label:nth-of-type(1):hover  ~ .explainLabelAboveType1:before{ content:"Strongly Agree"!important; }
+
+.explainLabelAboveType2Iteration1{
+  font-size: x-small;
+  margin-left: 245;
+  position: absolute;
+  color: #000000;
+  margin-top: -35;
+}
+input:nth-of-type(5):checked  ~ .explainLabelAboveType2Iteration1:before{ content:"1 - Not at all"; }
+label:nth-of-type(5):hover  ~ .explainLabelAboveType2Iteration1:before{ content:"1 - Not at all"!important; }
+input:nth-of-type(4):checked  ~ .explainLabelAboveType2Iteration1:before{ content:"2 - A little"; }
+label:nth-of-type(4):hover  ~ .explainLabelAboveType2Iteration1:before{ content:"2 - A little"!important; }
+input:nth-of-type(3):checked  ~ .explainLabelAboveType2Iteration1:before{ content:"3 - Neutral"; }
+label:nth-of-type(3):hover  ~ .explainLabelAboveType2Iteration1:before{ content:"3 - Neutral"!important; }
+input:nth-of-type(2):checked  ~ .explainLabelAboveType2Iteration1:before{ content:"4 - Very useful"; }
+label:nth-of-type(2):hover  ~ .explainLabelAboveType2Iteration1:before{ content:"4 - Very useful"!important; }
+input:nth-of-type(1):checked  ~ .explainLabelAboveType2Iteration1:before{ content:"5 - Extremely useful"; }
+label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration1:before{ content:"5 - Extremely useful"!important; }
+
+.explainLabelAboveType2Iteration2{
+  font-size: x-small;
+  margin-left: 245;
+  position: absolute;
+  color: #000000;
+  margin-top: -53;
+}
+input:nth-of-type(5):checked  ~ .explainLabelAboveType2Iteration2:before{ content:"1 - Nothing"; }
+label:nth-of-type(5):hover  ~ .explainLabelAboveType2Iteration2:before{ content:"1 - Nothing"!important; }
+input:nth-of-type(4):checked  ~ .explainLabelAboveType2Iteration2:before{ content:"2 - A little"; }
+label:nth-of-type(4):hover  ~ .explainLabelAboveType2Iteration2:before{ content:"2 - A little"!important; }
+input:nth-of-type(3):checked  ~ .explainLabelAboveType2Iteration2:before{ content:"3 - Neutral"; }
+label:nth-of-type(3):hover  ~ .explainLabelAboveType2Iteration2:before{ content:"3 - Neutral"!important; }
+input:nth-of-type(2):checked  ~ .explainLabelAboveType2Iteration2:before{ content:"4 - A large amount"; }
+label:nth-of-type(2):hover  ~ .explainLabelAboveType2Iteration2:before{ content:"4 - A large amount"!important; }
+input:nth-of-type(1):checked  ~ .explainLabelAboveType2Iteration2:before{ content:"5 - A huge amount"; }
+label:nth-of-type(1):hover  ~ .explainLabelAboveType2Iteration2:before{ content:"5 - A huge amount"!important; }
+
+.hidden {
+    display: none;
+}
+
+.toolbar-navigation-item {
+    cursor: pointer;
+}
+
+.toolbar-navigation-item.active {
+    cursor: default;
+}
+
+/* Make documentsList scrollable because there are a lot of documents */
+#documentsList, #mentionsList, #propositionsList {
+    overflow-y: scroll;
+    height: 400px;
+}
+
+.sentence-paragraph {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    width: 100%;
+    font-size: 20px;  /* make summary stand out */
+}
+
+.sentence-span {
+    /* line-height: 42px; */
+    /* display: flex; */
+    flex-wrap: wrap;
+    /* white-space: pre; */
+    cursor: default;
+    -webkit-box-align: center;
+    align-items: center;
+}
+
+.list-group svg {
+    vertical-align: middle;
+}
+
+/* start - highlight css */
+
+/* Removed colors
+.highlight-blue.highlight-blue {
+    border-color: var(--blue);
+}
+
+.highlight-blue.highlight-icon {
+    background: var(--blue);
+}
+
+.highlight-blue.highlight-hover {
+    background: var(--blue);
+}
+
+.highlight-pink.highlight-pink {
+   border-color: var(--pink);
+}
+
+.highlight-pink.highlight-icon {
+    background: var(--pink);
+}
+
+.highlight-pink.highlight-hover {
+    background: var(--pink);
+}
+
+.highlight-orange.highlight-orange {
+   border-color: var(--orange);
+}
+
+.highlight-orange.highlight-icon {
+    background: var(--orange);
+}
+
+.highlight-orange.highlight-hover {
+    background: var(--orange);
+}
+
+.highlight-red.highlight-red {
+   border-color: var(--red);
+}
+
+.highlight-red.highlight-icon {
+    background: var(--red);
+}
+
+.highlight-red.highlight-hover {
+    background: var(--red);
+}
+*/
+
+.highlight-icon {
+    padding: 0px 8px;
+    font-size: 0.8125rem;
+    margin-right: 4px;
+    margin-left: -1px;
+    margin-top: -1px;
+    margin-bottom: -1px;
+}
+
+.highlight-icon.highlight-icon {
+    color: var(--light);
+}
+
+.highlight-hover {
+    border: 1px dashed;
+    position: relative;
+    /* line-height: 22px; */
+    /* display: flex; */
+    /* Removed colors
+    color: var(--gray-dark);
+    background: var(--light);
+    */
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+/*
+.highlight-not-fixed {
+    border: 1px dashed;
+}
+*/
+
+.sentence-span.highlight-hover {
+    margin: 4px 8px 4px 4px;
+    color: var(--red);
+}
+
+.fixed-sent-idx {
+    color: var(--red);
+}
+
+/* end - highlight css */
+
+
+#groups-toggle {
+    margin-top: 15px;
+}
+
+.open-coref-cluster, .open-proposition-cluster {
+    padding: 0px;
+}
+
+.popover {
+    max-width: 500px;
+}
+
+.popover-body {
+    max-height: 500px;
+    max-width: 500px;
+    overflow-y: auto;
+    white-space:pre-wrap;
+}
+
+#keywordsList {
+    display: none;
+}
+
+#clustersIdsListContainer .label-list-group-item {
+    padding: 0;
+}
+
+#keywordsList {
+    overflow-y: auto;
+    height: 350px;
+    /*padding-top: 20;*/
+    /*padding-right: 10;*/
+}
+
+#clustersIdsListContainer {
+    overflow-y: auto;
+    min-width: 300px;
+}
+
+.cluster-list-item .form-check-input, .cluster-list-item .form-check-label {
+    cursor: pointer;
+}
+
+.cluster-list-item .form-check-input {
+    margin-top: 7px; /* So the checkbox will be in the same height as the display_name */
+}
+
+.cluster-list-item .badge {
+    cursor: context-menu;
+}
+
+/* Cancel the default list item padding to make a compact view in main screen */
+.cluster-list-item {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.list-group-item.selected {
+    /* background-color: #e6e6e7; */
+}
+
+.sentence-seen {
+    color: #7221a98c;
+}
+
+#navigationBar {
+    padding: 20px 10%;  /* Should be half of mainDiv width */
+    background-color: white;
+    border-bottom: #dcdcdc 1px solid;
+}
+
+/* Remove default border from card header and items both in popup and main screen */
+
+.clean-card {
+    border: 0;
+}
+
+.clean-card .card-body, .clean-card .card-header {
+    padding: 0;
+}
+
+.clean-card-header, .label-list-group-item, .cluster-list-item {
+    border: 0;
+}
+
+.clean-card-header {
+    text-align: left;
+    background-color: white;
+    font-weight: 800
+}
+
+/* End clean card */
+
+.list-group-item .form-check {
+    width: 90%;  /* So the propositions won't touch the badge */
+    text-align: left;
+}
+
+
+/* Make them less stand out */
+.show-more-btn, .show-less-btn, .show-more-btn a, .show-less-btn a {
+    text-align: left;
+    margin-left: 10px;
+    color: var(--dark);
+    text-decoration: underline dotted;
+}
+
+.show-more-btn {
+    float: left;
+}
+
+#queryArea {
+    width: 100%;  /* Don't shrink based on clusters sizes */
+}
+
+#navigation-header, #summaryHeader .main-component-title {
+    text-align: left;
+    font-size: 20px;
+    border: 0;
+    float: left;
+}
+
+#navigation-header .card-body {
+    padding: 0; /* the list inside already have paddings because they are cards */
+}
+
+#explorationPane {
+    border: 0;
+}
+
+#explorationPane ul, #historyModal ul {
+    padding: 0;  /* Cancel default padding, not related */
+}
+
+.query-badge-item.clickable {
+    cursor: pointer;
+}
+
+.query-badge-item {
+    margin: 20px 5px;
+}
+
+.queryBadgesPane {
+    padding: 0 20px;
+    text-align: left;
+}
+
+.query-badge-item > span {
+    display: inline-block;
+    padding: 6px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.query-badge-item-text {
+    max-width: 450px;
+}
+
+#queryRow {
+    text-align: left; /* send the query badges to the left */
+}
+
+#queryCard {
+    padding: 0;  /* The card is too big to only contain the query */
+}
+
+.clusters-label {
+    cursor: help;  /* there is a tooltip */
+}
+
+.query-badge-wrapper {
+    vertical-align: middle;  /* otherwise the query is in a different height from the text */
+}
+
+.query-badge-remove {
+    border-left: 1px solid;  /* separates the wrod from the query */
+}
+
+.history-button, .original-sentences-button {
+    cursor: pointer;
+}
+
+.doc-id-header {
+    cursor: pointer;
+}
+
+@media (min-width: 768px) {
+    .modal-fixed-lg {
+        min-width: 1200px;
+    }
+}
+
+.emnlp-href a {
+    color: black;
+}
+
+.emnlp-href img {
+    height: 30px;
+}
+
+.topbar-logos {
+    display: none;
+}
+
+.emnlp-href {
+    display: none;
+}
+
+@media (min-width: 600px) {
+    .topbar-logos , .emnlp-href {
+        display: inline;
+    }
+}

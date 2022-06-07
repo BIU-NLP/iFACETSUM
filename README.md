@@ -11,11 +11,18 @@ iFᴀᴄᴇᴛSᴜᴍ is an interactive faceted summarization approach and syste
 ## Development
 ### How to run
 
-1. git clone the project
-2. Run `pip install -r requirements.txt`
-3. Run `python -m spacy download en_core_web_md`
-4. Run `python WebApp/server/app.py`
-5. Open in a web browser the file `WebApp/client/index.html`
+First, git clone the project.
+
+#### Set up the server
+1. Run `pip install -r requirements.txt`
+2. Run `python -m spacy download en_core_web_md`
+3. Run `python WebApp/server/app.py`
+
+#### Set up the client (node)
+1. Run `cd WebApp/client`
+2. Run `npm install`
+3. Run `npm start`
+4. Open the url `http://localhost:3000`
 
 ### How to add your own data
 
