@@ -16,7 +16,7 @@ First, git clone the project.
 #### Set up the server
 1. Run `pip install -r requirements.txt`
 2. Run `python -m spacy download en_core_web_md`
-3. Run `nltk.download('punkt')`
+3. From inside python, run `import nltk` and then `nltk.download('punkt')`
 4. Run `python WebApp/server/app.py`
 
 #### Set up the client (node)
