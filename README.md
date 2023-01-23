@@ -25,6 +25,9 @@ First, git clone the project.
 3. Run `npm start`
 4. Open the url `http://localhost:3000`
 
+### How to work with DUC2006 data
+You should request access for DUC2006Clean from https://duc.nist.gov/ and place it inside the `data/` directory.
+
 ### How to add your own data
 
 1. Change `Config.py` to point to your data directory, including the text files and the cluster files (either json or conll format).
